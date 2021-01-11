@@ -56,6 +56,8 @@ def parse_translations(soup):
     translations = []
     for header in soup.select('div.translate-entry-translation-header'):
         translation = header.select_one('h4[data-cy="translation"]').text
+        translation = translation[0:-1]
+
         spans = header.select('span.translate-entry-summary-info-text')
 
         sp = spans[0].text if len(spans) > 1 else None
@@ -70,31 +72,51 @@ def parse_translations(soup):
 
 
 def show_translations(translations):
+    if translations is None:
+        return
     for trans in translations:
-        show_translation(trans)
+        text = show_translation(trans)
+        if trans != translations[-1]:
+            print(text, end=', ')
+        else:
+            print(text)
+
+
+def format_gender(gender):
+    if 'ż' in gender:
+        gender = 'fem'
+    elif 'ę' in gender:
+        gender = 'masc'
+    elif 'nijaki' in gender:
+        gender = 'neut'
+    return gender
+
+
+def format_part_of_speech(sp):
+    if 'rzecz' in sp:
+        sp = 'noun'
+    if 'czas' in sp:
+        sp = 'verb'
+    if 'przym' in sp:
+        sp = 'adv.'
+    return sp
 
 
 def show_translation(trans):
     gender = trans["gender"]
     sp = trans["sp"]
     translation = trans["translation"]
-
-    if gender is not None and sp is not None:
-        print(translation + "[" + gender + "] (" + sp + ")")
-    elif gender is not None:
-        print(translation + " (" + gender + ")")
-    elif sp is not None:
-        print(translation + " (" + sp + ")")
-    else:
-        print(translation)
+    text = translation
+    if gender is not None:
+        text += f' [{format_gender(gender)}]'
+    if sp is not None:
+        text += f' ({format_part_of_speech(sp)})'
+    return text
 
 
-def translate(lang1, lang2, word, showing=False):
+def translate(lang1, lang2, word):
     translations = get_translations(lang1, lang2, word)
-    if showing:
-        show_translations(translations)
-    words = set((lang2, trans["translation"]) for trans in translations)
-    return words
+    return translations
 
 
 def is_connection(hostname):
@@ -108,22 +130,68 @@ def is_connection(hostname):
     return False
 
 
-def save_languages(lang1, lang2):
+def save_language(lang1):
     with open(working_dir + 'last.txt', 'w') as f:
-        f.writelines(lang1 + lang2)
+        f.writelines(lang1)
 
 
-def get_last_languages():
+def get_last_language():
     with open(working_dir + 'last.txt', 'r') as f:
         line = f.readlines()[0]
-    return line[:2], line[2:]
+    return line[:2]
 
 
-def check_and_translate(lang1, lang2, word, showing=False):
+def read_languages():
+    langs = []
+    with open(working_dir + 'languages.txt', 'r') as f:
+        langs = f.readlines()
+    return [l.replace('\n', '') for l in langs]
+
+
+def update_languages(languages, lang):
+    if lang not in languages:
+        return
+    languages.remove(lang)
+    languages.insert(0, lang)
+    with open(working_dir + 'languages.txt', 'w') as f:
+        for lang in languages:
+            f.write(lang)
+            f.write('\n')
+
+
+
+def check_and_translate(lang1, lang2, word):
     if is_connection(main_url):
-        translate(lang1, lang2, word, showing)
+        return get_translations(lang1, lang2, word, False)
     else:
         print("Brak dostępu do strony")
+
+
+def foresee_language(word):
+    lang = None
+    if any(c for c in 'ąęłśńćżź' if c in word):
+        lang = 'pl'
+    elif any(c for c in 'ôîïèëêâæœ' if c in word):
+        lang = 'fr'
+    elif any(c for c in 'ñ' if c in word):
+        lang = 'es'
+    return lang
+
+
+def start_multitranslation(word, lang1):
+    languages = read_languages()
+    for lang in languages:
+        if lang == lang1:
+            continue
+        # print("translating {} from {} to {}...".format(word, lang1, lang))
+        print(f'{lang}: ', end='')
+        translations = check_and_translate(lang1, lang, word)
+        show_translations(translations)
+    update_languages(languages, lang1)
+
+
+def get_arg(i):
+    return sys.argv[i] if len(sys.argv) > i else None
 
 
 def main():
@@ -131,21 +199,21 @@ def main():
         print('Składnia programu:')
         print('trans <word> [[language of word] [target language]] [-r]')
         print('trans cześć pl en')
-    elif len(sys.argv) in [2, 3]:
-        lang1, lang2 = get_last_languages()
-        word = sys.argv[1]
-        if '-r' in sys.argv:
-            lang1, lang2 = lang2, lang1
-        print("translating {} from {} to {}...".format(word, lang1, lang2))
-        check_and_translate(lang1, lang2, word, True)
-    elif len(sys.argv) >= 4:
-        lang1 = sys.argv[2]
-        lang2 = sys.argv[3]
-        word = sys.argv[1]
-        if '-r' in sys.argv:
-            lang1, lang2 = lang2, lang1
-        check_and_translate(lang1, lang2, word, True)
-        save_languages(lang1, lang2)
+    else:
+        word = get_arg(1)
+        lang1 = get_arg(2)
+        lang2 = get_arg(3)
+        if lang1 is None:
+            lang1 = get_last_language()
+            guess = foresee_language(word)
+            lang1 = guess if guess is not None else lang1
+        if lang2 is None:
+            start_multitranslation(word, lang1)
+        else:
+            if '-r' in sys.argv:
+                lang1, lang2 = lang2, lang1
+            res = translate(lang1, lang2, word)
+            show_translations(res)
 
 
 if __name__ == '__main__':

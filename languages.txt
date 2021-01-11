@@ -1,0 +1,7 @@
+fr
+es
+pl
+en
+de
+ru
+zh

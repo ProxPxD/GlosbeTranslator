@@ -333,12 +333,12 @@ def main():
             show_pronunciations(word, pronunciations)
             update_languages(get_all_languages(), lang1)
         else:
-            if get_conf('mode') == 'multi':
+            if get_conf('mode') == 'multi' and lang2 is None:
                 if lang1 is None:
                     lang1 = get_last_languages()[0]
                 start_multitranslation(word, lang1, True)
                 save_last_languages(lang1)
-            elif get_conf('mode') == 'single':
+            elif get_conf('mode') == 'single' or lang2 is not None:
                 if lang1 is None:
                     lang1 = get_last_languages()[0]
                 if lang2 is None:

@@ -1,4 +1,4 @@
-#!/usr/bin/python3.8
+#!/usr/bin/python3
 import sys
 import requests
 from bs4 import BeautifulSoup
@@ -54,6 +54,26 @@ def start_translation(lang1, lang2, word):
     show_translations(res[0])
 
 
+def parse_translations(soup):
+    translations = []
+    for header in soup.select('div.translate-entry-translation-header'):
+        translation = header.select_one('h4[data-cy="translation"]').text
+        translation = translation[0:-1]
+
+        spans = header.select('span.translate-entry-summary-info-text')
+
+        sp = spans[0].text if len(spans) > 1 else None
+        gender = None
+        for span in spans:
+            if "r." in span.text:
+                gender = span.text
+
+        translations.append({"translation": translation, "sp": sp, "gender": gender})
+
+    return translations
+
+
+# Temporary don't remove an argument
 def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=False):
     global status
     url = create_proper_url(main_url, lang1, lang2, word)
@@ -77,25 +97,6 @@ def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=Fal
     else:
         print("Error: ", page.status_code)
     return [translations, pronunciations]
-
-
-def parse_translations(soup):
-    translations = []
-    for header in soup.select('div.translate-entry-translation-header'):
-        translation = header.select_one('h4[data-cy="translation"]').text
-        translation = translation[0:-1]
-
-        spans = header.select('span.translate-entry-summary-info-text')
-
-        sp = spans[0].text if len(spans) > 1 else None
-        gender = None
-        for span in spans:
-            if "r." in span.text:
-                gender = span.text
-
-        translations.append({"translation": translation, "sp": sp, "gender": gender})
-
-    return translations
 
 
 def show_translations(translations):
@@ -143,6 +144,8 @@ def show_translation(trans):
 
 
 def show_pronunciations(word, pronunciations):
+    if pronunciations is None:
+        return None
     text = f'{word} ('
     for pron in pronunciations:
         text += pron
@@ -273,8 +276,10 @@ def parse_pronunciation(soup):
     return ipa_line.text.replace(' ', '')[:-1].split(',')
 
 
-def get_arg(i):
-    return sys.argv[i] if len(sys.argv) > i else None
+def get_arg(i, args=None):
+    if args is None:
+        args = sys.argv
+    return args[i] if len(args) > i else None
 
 
 def configure():
@@ -295,32 +300,117 @@ def print_settings():
         print(f'{conf} = {confs[conf]}')
 
 
+def display_to_user(to_show=None):
+    if to_show is None:
+        to_show = get_arg(2)
+    if to_show == 'settings':
+        print_settings()
+    elif to_show == 'last':
+        lang1, lang2 = tuple(get_last_languages())
+        print(lang1, '=>', lang2)
+    elif to_show == 'languages':
+        langs = get_all_languages()
+        for lang in langs:
+            print(lang, end='')
+            if lang != langs[-1]:
+                print(', ', end='')
+        print()
+    elif to_show == 'mode':
+        print(f'mode = {get_configurations()["mode"]}')
+
+
+def print_help():
+    print_instruction()
+
+
 def print_instruction():
     print('Składnia programu:')
     print('trans <word> [[language of word] [target language]] [-r]')
     print('trans cześć pl en')
 
+    print()
+    print('-l    : sets multitranslation language limit')
+    print('-m    : sets mode (multitranslation or single)')
+    print('-ll   : show all displaying languages')
+    print('-last : show last used languages')
+    print('-ss   : shows settings')
+    print('trans -s settings/last/languages')
+
+def translation_loop():
+    langs = get_last_languages()
+    lang1 = langs[0]
+    lang2 = langs[1]
+    mode = get_conf('mode')
+    in_loop = True
+    print('Please enter a word')
+    if mode == 'single':
+        print(f'trans ? {lang1} {lang2}')
+    else:
+        print(f'trans ? {lang1}')
+    while in_loop:
+        word = input()
+        if word[:2] in ['l1', '-l1']:
+            lang1 = word[3:]
+            print(f'trans ? {lang1} {lang2}')
+        elif word[:2] in ['l2', '-l2']:
+            lang2 = word[3:]
+            print(f'trans ? {lang1} {lang2}')
+        elif word[:2] in ['-m', '-0', 'm', '0']:
+            mode = 'multi'
+            print(f'trans ? {lang1}')
+        elif word[:2] in ['-1', '1']:
+            mode = 'single'
+            print(f'trans ? {lang1} {lang2}')
+        elif word[:2] in ['-r', 'r']:
+            lang1, lang2 = lang2, lang1
+            print(f'trans ? {lang1} {lang2}')
+        elif word[:2] in ['-q', 'q']:
+            in_loop = False
+        else:
+            if len(word) > 0:
+                if mode == 'multi':
+                    start_multitranslation(word, lang1, True)
+                else:
+                    start_translation(lang1, lang2, word)
+                print('—' * 30)
+
 
 def main():
-    if len(sys.argv) == 1:
+    args = sys.argv
+    mode = ''
+    if len(args) == 1:
         print_instruction()
-    elif get_arg(1) == 'set':
-        configure()
-    elif get_arg(1) == 'show':
-        to_show = get_arg(2)
-        if to_show == 'settings':
-            print_settings()
-        elif to_show == 'last':
-            lang1, lang2 = tuple(get_last_languages())
-            print(lang1, '=>', lang2)
-        elif to_show == 'languages':
-            langs = get_all_languages()
-            for lang in langs:
-                print(lang, end='')
-                if lang != langs[-1]:
-                    print(', ', end='')
-            print()
-    else:
+    elif get_arg(1) == '-help' or '-h' in sys.argv:
+        print_help()
+    elif get_arg(1) == '-l':
+        new_limit = get_arg(2)
+        if new_limit is None:
+            print('The limit has to be entered')
+            return
+        save_conf('language_limit', new_limit)
+    elif get_arg(1) == '-m':
+        new_mode = get_arg(2)
+        if new_mode in ['multi', '-1', '0']:
+            save_conf('mode', 'multi')
+        elif new_mode in ['single', '1']:
+            save_conf('mode', 'single')
+    elif get_arg(1) == '-ll':
+        display_to_user('languages')
+    elif get_arg(1) == '-last':
+        display_to_user('last')
+    elif get_arg(1) == '-ss':
+        print_settings()
+    elif get_arg(1) == '-show' or get_arg(1) == '-s':
+        display_to_user()
+    elif get_arg(1) == '-loop':
+        translation_loop()
+    else:  # End of settings
+        if '-0' in args or '-m' in args:
+            mode = 'multi'
+        if '-1' in args:
+            mode = 'single'
+        [args.remove(tag) for tag in ['-0', '-m', '-1'] if tag in args]
+
         word = get_arg(1)
         lang1 = get_arg(2)
         lang2 = get_arg(3)
@@ -333,16 +423,18 @@ def main():
             show_pronunciations(word, pronunciations)
             update_languages(get_all_languages(), lang1)
         else:
-            if get_conf('mode') == 'multi' and lang2 is None:
+            if (get_conf('mode') == 'multi' and lang2 is None) or mode == 'multi':
                 if lang1 is None:
                     lang1 = get_last_languages()[0]
                 start_multitranslation(word, lang1, True)
                 save_last_languages(lang1)
-            elif get_conf('mode') == 'single' or lang2 is not None:
+            elif (get_conf('mode') == 'single' or lang2 is not None) or mode == 'single':
                 if lang1 is None:
                     lang1 = get_last_languages()[0]
                 if lang2 is None:
                     lang2 = get_last_languages()[1]
+                    if lang2 == lang1:
+                        lang2 = get_last_languages()[0]
                 if '-r' in sys.argv:
                     lang1, lang2 = lang2, lang1
                 start_translation(lang1, lang2, word)
@@ -350,7 +442,8 @@ def main():
                 save_last_languages(lang1, lang2)
 
 
-
-
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

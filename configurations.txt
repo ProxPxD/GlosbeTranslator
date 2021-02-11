@@ -1,4 +1,4 @@
 {
-    "language_limit": 4,
-    "mode": "multi"
+    "language_limit": null,
+    "mode": "single"
 }

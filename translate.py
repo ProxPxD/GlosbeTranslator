@@ -33,7 +33,6 @@ def create_proper_url(base_url, *args):
     url = ".".join(["https://pl", base_url])
     for part in args:
         url = "/".join([url, part])
-
     return url
 
 
@@ -49,6 +48,7 @@ def append_to_dict(data, *keys):
 
 def start_translation(lang1, lang2, word):
     res = get_translations(lang1, lang2, word, with_pronunciation=True)
+
     if res[1] is not None:
         show_pronunciations(word, res[1])
     show_translations(res[0])
@@ -56,17 +56,19 @@ def start_translation(lang1, lang2, word):
 
 def parse_translations(soup):
     translations = []
-    for header in soup.select('div.translate-entry-translation-header'):
-        translation = header.select_one('h4[data-cy="translation"]').text
-        translation = translation[0:-1]
-
-        spans = header.select('span.translate-entry-summary-info-text')
-
-        sp = spans[0].text if len(spans) > 1 else None
+    for header in soup.findAll('li', {'data-element': 'translation'}):
+        sp = None
         gender = None
-        for span in spans:
-            if "r." in span.text:
-                gender = span.text
+        try:
+            translation = header.select_one('h3[class="translation"]').select_one('button').text[1:-1]
+        except Exception:
+            continue
+        spans = header.findAll('span', {'class': 'phrase__summary__field'})
+        spans = [s.text for s in spans]
+        if len(spans) > 0:
+            sp = spans[0]
+        if len(spans) > 1:
+            gender = spans[1]
 
         translations.append({"translation": translation, "sp": sp, "gender": gender})
 
@@ -75,9 +77,24 @@ def parse_translations(soup):
 
 # Temporary don't remove an argument
 def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=False):
+    headers = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+        'Dnt': '1',
+        'Host': 'httpbin.org',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) '
+                      'AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/83.0.4103.97 Safari/537.36',
+        'X-Amzn-Trace-Id': 'Root=1-5ee7bbec-779382315873aa33227a5df6'}
+
     global status
     url = create_proper_url(main_url, lang1, lang2, word)
-    page = requests.get(url)
+    s = requests.Session()
+    s.headers.update({'User-agent': 'Mozilla/5.0'})
+    page = s.get(url, allow_redirects=False)
+    s.close()
     translations = None
     pronunciations = None
     if page.status_code == 200:
@@ -94,8 +111,12 @@ def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=Fal
     elif page.status_code == 429:
         print("Too many requests: ", page.status_code)
         status = page.status_code
+    elif page.status_code == 301:
+        print("Moved permanently: ", page.status_code)
+        status = page.status_code
     else:
         print("Error: ", page.status_code)
+        print(page.text)
     return [translations, pronunciations]
 
 
@@ -146,12 +167,11 @@ def show_translation(trans):
 def show_pronunciations(word, pronunciations):
     if pronunciations is None:
         return None
-    text = f'{word} ('
+    text = f'{word} '
     for pron in pronunciations:
-        text += pron
+        text += f'/{pron}/'
         if pron != pronunciations[-1]:
             text += ', '
-    text += ')'
     print(text)
 
 
@@ -246,9 +266,12 @@ def start_multitranslation(word, lang1, with_pronunciation):
         if with_pronunciation and result[1] is not None:
             with_pronunciation = False
             show_pronunciations(word, result[1])  # Pronunciations
-        print(f'{lang}:', end=' ')
 
-        show_translations(result[0])  # Translations
+        print(f'{lang}:', end=' ')
+        if len(result[0]) != 0:
+            show_translations(result[0])  # Translations
+        else:
+            print()
     update_languages(languages, lang1)
 ###Pronunciation
 
@@ -270,10 +293,12 @@ def find_pronunciation(lang1, word):
 
 
 def parse_pronunciation(soup):
-    ipa_line = soup.select_one('app-ipa-line')
-    if ipa_line is None or len(ipa_line) == 0:
-        return None
-    return ipa_line.text.replace(' ', '')[:-1].split(',')
+    pronunciations = []
+    summaries = soup.findAll('span', {'class': 'phrase__summary__field'})
+    for summary in summaries:
+        if summary.text[-1] in ']/':
+            pronunciations.append(summary.text.replace(' ', '')[1:-1])
+    return pronunciations
 
 
 def get_arg(i, args=None):
@@ -376,6 +401,10 @@ def translation_loop():
 
 
 def main():
+    #sys.argv = ['trans' for i in range(4)]
+    #sys.argv[1] = 'trzymać'
+    #sys.argv[2] = 'pl'
+    #sys.argv[3] = 'uk'
     args = sys.argv
     mode = ''
     if len(args) == 1:
@@ -387,7 +416,7 @@ def main():
         if new_limit is None:
             print('The limit has to be entered')
             return
-        save_conf('language_limit', new_limit)
+        save_conf('language_limit', int(new_limit))
     elif get_arg(1) == '-m':
         new_mode = get_arg(2)
         if new_mode in ['multi', '-1', '0']:

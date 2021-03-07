@@ -60,7 +60,7 @@ def parse_translations(soup):
         sp = None
         gender = None
         try:
-            translation = header.select_one('h3[class="translation"]').select_one('button').text[1:-1]
+            translation = header.select_one('button[data-element="phrase"]').text[1:-1]
         except Exception:
             continue
         spans = header.findAll('span', {'class': 'phrase__summary__field'})

@@ -30,7 +30,7 @@ def save_conf(conf, value):
 
 
 def create_proper_url(base_url, *args):
-    url = ".".join(["https://pl", base_url])
+    url = "https://" + base_url
     for part in args:
         url = "/".join([url, part])
     return url
@@ -60,7 +60,7 @@ def parse_translations(soup):
         sp = None
         gender = None
         try:
-            translation = header.select_one('button[data-element="phrase"]').text[1:-1]
+            translation = header.select_one('span[data-element="phrase"]').text[1:-1]
         except Exception:
             continue
         spans = header.findAll('span', {'class': 'phrase__summary__field'})

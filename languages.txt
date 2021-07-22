@@ -1,8 +1,8 @@
-es
-pl
 en
+pl
 fr
+es
 zh
-de
 ru
+de
 uk

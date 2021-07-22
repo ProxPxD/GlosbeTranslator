@@ -268,7 +268,7 @@ def start_multitranslation(word, lang1, with_pronunciation):
             show_pronunciations(word, result[1])  # Pronunciations
 
         print(f'{lang}:', end=' ')
-        if len(result[0]) != 0:
+        if result[0] is not None and len(result[0]) != 0:
             show_translations(result[0])  # Translations
         else:
             print()

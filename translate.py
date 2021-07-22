@@ -400,16 +400,8 @@ def translation_loop():
                 print('—' * 30)
 
 
-def main():
-    #sys.argv = ['trans' for i in range(4)]
-    #sys.argv[1] = 'trzymać'
-    #sys.argv[2] = 'pl'
-    #sys.argv[3] = 'uk'
-    args = sys.argv
-    mode = ''
-    if len(args) == 1:
-        print_instruction()
-    elif get_arg(1) == '-help' or '-h' in sys.argv:
+def set_instructions():
+    if get_arg(1) == '-help' or '-h' in sys.argv:
         print_help()
     elif get_arg(1) == '-l':
         new_limit = get_arg(2)
@@ -433,42 +425,59 @@ def main():
         display_to_user()
     elif get_arg(1) == '-loop':
         translation_loop()
-    else:  # End of settings
-        if '-0' in args or '-m' in args:
-            mode = 'multi'
-        if '-1' in args:
-            mode = 'single'
-        [args.remove(tag) for tag in ['-0', '-m', '-1'] if tag in args]
 
-        word = get_arg(1)
-        lang1 = get_arg(2)
-        lang2 = get_arg(3)
 
-        if lang1 is None:
-            lang1 = guess_language(word)
+def choose_program():  # Refactor
+    mode = ''
+    args = sys.argv
+    if '-0' in args or '-m' in args:
+        mode = 'multi'
+    if '-1' in args:
+        mode = 'single'
+    [args.remove(tag) for tag in ['-0', '-m', '-1'] if tag in args]
 
-        if '-p' in sys.argv:  # get pronunciation
-            pronunciations = get_pronunciation(lang1, word)
-            show_pronunciations(word, pronunciations)
-            update_languages(get_all_languages(), lang1)
-        else:
-            if (get_conf('mode') == 'multi' and lang2 is None) or mode == 'multi':
-                if lang1 is None:
-                    lang1 = get_last_languages()[0]
-                start_multitranslation(word, lang1, True)
-                save_last_languages(lang1)
-            elif (get_conf('mode') == 'single' or lang2 is not None) or mode == 'single':
-                if lang1 is None:
-                    lang1 = get_last_languages()[0]
-                if lang2 is None:
-                    lang2 = get_last_languages()[1]
-                    if lang2 == lang1:
-                        lang2 = get_last_languages()[0]
-                if '-r' in sys.argv:
-                    lang1, lang2 = lang2, lang1
-                start_translation(lang1, lang2, word)
-                update_languages(get_all_languages(), lang1, lang2)
-                save_last_languages(lang1, lang2)
+    word = get_arg(1)
+    lang1 = get_arg(2)
+    lang2 = get_arg(3)
+
+    if lang1 is None:
+        lang1 = guess_language(word)
+
+    if '-p' in sys.argv:  # get pronunciation
+        pronunciations = get_pronunciation(lang1, word)
+        show_pronunciations(word, pronunciations)
+        update_languages(get_all_languages(), lang1)
+    else:
+        if (get_conf('mode') == 'multi' and lang2 is None) or mode == 'multi':
+            if lang1 is None:
+                lang1 = get_last_languages()[0]
+            start_multitranslation(word, lang1, True)
+            save_last_languages(lang1)
+        elif (get_conf('mode') == 'single' or lang2 is not None) or mode == 'single':
+            if lang1 is None:
+                lang1 = get_last_languages()[0]
+            if lang2 is None:
+                lang2 = get_last_languages()[1]
+                if lang2 == lang1:
+                    lang2 = get_last_languages()[0]
+            if '-r' in sys.argv:
+                lang1, lang2 = lang2, lang1
+            start_translation(lang1, lang2, word)
+            update_languages(get_all_languages(), lang1, lang2)
+            save_last_languages(lang1, lang2)
+
+
+def main():
+    #sys.argv = ['trans' for i in range(4)]
+    #sys.argv[1] = 'trzymać'
+    #sys.argv[2] = 'pl'
+    #sys.argv[3] = 'uk'
+    if len(sys.argv) == 1:
+        print_instruction()
+    elif get_arg(1)[0] == '-':
+        set_instructions()
+    else:
+        choose_program()
 
 
 if __name__ == '__main__':

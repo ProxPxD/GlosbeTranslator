@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 import sys
 import requests
 from bs4 import BeautifulSoup
@@ -98,7 +98,7 @@ def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=Fal
     translations = None
     pronunciations = None
     if page.status_code == 200:
-        soup = BeautifulSoup(page.text,  "lxml")
+        soup = BeautifulSoup(page.text, features="html.parser")
         translations = parse_translations(soup)
         pronunciations = parse_pronunciation(soup)
         status = page.status_code
@@ -468,17 +468,37 @@ def choose_program():  # Refactor
 
 
 def main():
-    #sys.argv = ['trans' for i in range(4)]
-    #sys.argv[1] = 'trzymać'
-    #sys.argv[2] = 'pl'
-    #sys.argv[3] = 'uk'
-    if len(sys.argv) == 1:
+    # sys.argv = ['trans' for i in range(4)]
+    # sys.argv[1] = 'trzymać'
+    # sys.argv[2] = 'pl'
+    # sys.argv[3] = 'uk'
+    sys.argv = sanitize_args(sys.argv)
+
+    #UA change
+     
+    #UA  change
+    if 'u' == get_arg(1)[0]:
+        word = get_arg(2)
+        for lang in ['ru', 'uk']:
+            start_translation('pl', lang, word)
+    elif len(sys.argv) > 4 and not any('-' in arg for arg in sys.argv):
+        lang1 = get_arg(2)
+        word = get_arg(1)
+        for lang in sys.argv[2:]:
+            start_translation(lang1, lang, word)
+    elif len(sys.argv) == 1:
         print_instruction()
     elif get_arg(1)[0] == '-':
         set_instructions()
     else:
         choose_program()
 
+def sanitize_args(args):
+    if len(args) < 2:
+        return args
+    while "t" == args[1] or "trans" == args:
+        args = args[1:]
+    return args
 
 if __name__ == '__main__':
     try:

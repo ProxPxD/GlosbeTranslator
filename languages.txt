@@ -1,9 +1,0 @@
-pl
-en
-es
-fr
-zh
-ru
-de
-uk
-eo

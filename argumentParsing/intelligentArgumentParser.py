@@ -28,11 +28,7 @@ class IntelligentArgumentParser(AbstractArgumentParser, ABC):
         if self._is_multiple_modes_use():
             raise ValueError(self._modes)  # TODO: expand type
 
-        try:
-            i = self._modes_on.index(True)
-        except IndexError:
-            i = 0
-
+        i = self._modes_on.index(True) if any(self._modes_on) else 0
         self._mode_parse_methods[i]()
 
     def _is_multiple_modes_use(self):

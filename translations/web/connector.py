@@ -12,10 +12,23 @@ class WebConstants:
 
 class Connector:
 
-    def __init__(self, from_lang: str, to_lang: str, word: str):
-        self.from_lang: str = from_lang
-        self.to_lang: str = to_lang
-        self.word: str = word
+    def __init__(self, from_lang: str, to_lang: str, word: str = None):
+        self._from_lang: str = from_lang
+        self._to_lang: str = to_lang
+        self._word: str = word
+
+    def set_langs(self, from_lang, to_lang):
+        self.set_from_lang(from_lang)
+        self.set_to_lang(to_lang)
+
+    def set_from_lang(self, from_lang: str):
+        self._from_lang = from_lang
+
+    def set_to_lang(self, to_lang: str):
+        self._to_lang = to_lang
+
+    def set_word(self, word: str):
+        self._word = word
 
     def get_page(self):
         page: requests.Response = self._request_page()
@@ -23,13 +36,12 @@ class Connector:
             raise ConnectionError(page)
         return page
 
-
     def _request_page(self) -> requests.Response:
         url: str = self._create_target_url()
         return Connector._request_page(url)
 
     def _create_target_url(self):
-        return utils.join_url_with_slashes(WebConstants.MAIN_URL, self.from_lang, self.to_lang, self.word)
+        return utils.join_url_with_slashes(WebConstants.MAIN_URL, self._from_lang, self._to_lang, self._word)
 
     @staticmethod
     def _request_page(url: str):

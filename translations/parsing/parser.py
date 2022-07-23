@@ -6,3 +6,5 @@ class Parser:
     def set_page_text(self, text: str):
         self._text = text
 
+    def parse(self):
+        pass

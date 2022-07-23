@@ -1,3 +1,5 @@
+from typing import Union
+
 import requests
 
 from parsing.parser import Parser
@@ -11,15 +13,25 @@ class Translator:
         self._parser: Parser = Parser()
         self._html: str = ""
 
-    def change_to_lang(self, to_lang: str):
+    def set_to_lang(self, to_lang: str):
         self._connector.set_to_lang(to_lang)
 
-    def translate(self, word: str = None):
+    def multi_lang_translate(self, word: str, to_langs: list[str, ...]):
+        return {to_lang: self.single_translate(word, to_lang) for to_lang in to_langs}
+
+    def multi_word_translate(self, words: list[str, ...]):
+        return {word: self.single_translate(word) for word in words}
+
+    def single_translate(self, word: str, to_lang: str = None):
+        self._connector.set_word(word)
+        if to_lang:
+            self.set_to_lang(to_lang)
+        return self._translate_from_attributes()
+
+    def _translate_from_attributes(self):
         try:
-            if word:
-                self._connector.set_word(word)
             page: requests.Response = self._connector.get_page()
             self._parser.set_page_text(page.text)
+            return self._parser.parse()
         except ConnectionError as err:
             raise err
-

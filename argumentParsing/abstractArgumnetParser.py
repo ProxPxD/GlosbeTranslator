@@ -6,7 +6,7 @@ from argumentParsing import configurations
 class AbstractArgumentParser(ABC):
 
     def __int__(self, args: list[str, ...]):
-        self._args: list[str, ...] = args
+        self._args: list[str, ...] = args[1:]
         self._modes = []
         self._words = []
         self._from_lang = None
@@ -19,6 +19,10 @@ class AbstractArgumentParser(ABC):
     @property
     def to_langs(self):
         return self._to_langs
+
+    @property
+    def words(self):
+        return self._words
 
     @abstractmethod
     def parse(self):

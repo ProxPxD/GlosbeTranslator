@@ -4,6 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 import socket
 import json
+from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from translations.translator import Translator
 
 main_url = "glosbe.com"
 working_dir = "/home/proxpxd/Desktop/moje_programy/systemowe/glosbeTranslations/"
@@ -492,6 +494,22 @@ def main():
         set_instructions()
     else:
         choose_program()
+
+    argumentParser = IntelligentArgumentParser(sys.argv)
+    argumentParser.parse()
+
+    translator = Translator(argumentParser.from_lang)
+
+    if argumentParser.is_multi_lang_mode():
+        translation = translator.multi_lang_translate(argumentParser.words[0], argumentParser.to_langs)
+    elif argumentParser.is_multi_word_mode():
+        translator.set_to_lang(argumentParser.to_langs[0])
+        translation = translator.multi_word_translate(argumentParser.words)
+    else:
+        translation = translator.single_translate(argumentParser.words, argumentParser.to_langs[0])
+
+
+
 
 def sanitize_args(args):
     if len(args) < 2:

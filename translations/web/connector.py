@@ -12,7 +12,7 @@ class WebConstants:
 
 class Connector:
 
-    def __init__(self, from_lang: str, to_lang: str, word: str = None):
+    def __init__(self, from_lang: str, to_lang: str = None, word: str = None):
         self._from_lang: str = from_lang
         self._to_lang: str = to_lang
         self._word: str = word

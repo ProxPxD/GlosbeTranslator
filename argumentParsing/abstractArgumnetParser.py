@@ -12,6 +12,14 @@ class AbstractArgumentParser(ABC):
         self._from_lang = None
         self._to_langs = []
 
+    @property
+    def from_lang(self):
+        return self._from_lang
+
+    @property
+    def to_langs(self):
+        return self._to_langs
+
     @abstractmethod
     def parse(self):
         pass

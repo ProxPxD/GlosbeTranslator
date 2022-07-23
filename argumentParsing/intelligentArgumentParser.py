@@ -33,6 +33,15 @@ class IntelligentArgumentParser(AbstractArgumentParser, ABC):
     def modes(self):
         return self._modes_on
 
+    def is_multi_lang_mode(self):
+        return self.is_mode(Modes.MULTI_LANG)
+
+    def is_multi_word_mode(self):
+        return self.is_mode(Modes.MULTI_WORD)
+
+    def is_mode(self, mode: str):
+        return self._modes_on[mode]
+
     def parse(self):
         self._collect_modes()
         if self._is_multiple_modes_use():

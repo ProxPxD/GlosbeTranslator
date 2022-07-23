@@ -98,39 +98,6 @@ def is_connection(hostname):
 # end connect
 
 
-def save_last_languages(lang1, lang2=None):
-    if lang2 is None:
-        with open(working_dir + 'last.txt', 'r') as f:
-            lang2 = f.readline().split(':')[1]
-    with open(working_dir + 'last.txt', 'w') as f:
-        f.writelines(f'{lang1}:{lang2}')
-
-
-def get_last_languages():
-    with open(working_dir + 'last.txt', 'r') as f:
-        line = f.readline()
-    return line.split(':')
-
-
-def get_all_languages():
-    langs = []
-    with open(working_dir + 'languages.txt', 'r') as f:
-        langs = f.readlines()
-    return [l.replace('\n', '') for l in langs]
-
-
-def update_languages(languages, *used_languages):
-    for lang in reversed(used_languages):
-        if lang not in languages:
-            continue
-        languages.remove(lang)
-        languages.insert(0, lang)
-    with open(working_dir + 'languages.txt', 'w') as f:
-        for lang in languages:
-            f.write(lang)
-            f.write('\n')
-
-
 def check_and_translate(lang1, lang2, word, with_pronunciation=False):
     if is_connection(main_url):
         return get_translations(lang1, lang2, word, first_exec=False,
@@ -190,13 +157,7 @@ def parse_pronunciation(soup):
             pronunciations.append(summary.text.replace(' ', '')[1:-1])
     return pronunciations
 
-
-def get_arg(i, args=None):
-    if args is None:
-        args = sys.argv
-    return args[i] if len(args) > i else None
-
-
+# start config
 def configure():
     if get_arg(2) == 'limit':
         new_limit = get_arg(3)
@@ -207,6 +168,10 @@ def configure():
             save_conf('mode', 'multi')
         elif new_mode in ['single', '1']:
             save_conf('mode', 'single')
+
+# end config
+
+#start printing
 
 
 def print_settings():
@@ -250,6 +215,8 @@ def print_instruction():
     print('-last : show last used languages')
     print('-ss   : shows settings')
     print('trans -s settings/last/languages')
+
+#end printing
 
 def translation_loop():
     langs = get_last_languages()

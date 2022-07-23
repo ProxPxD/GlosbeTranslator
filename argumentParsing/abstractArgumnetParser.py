@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from argumentParsing import configurations
+from argumentParsing.configurations import Configs
 
 
 class AbstractArgumentParser(ABC):
@@ -31,8 +32,8 @@ class AbstractArgumentParser(ABC):
     def _has_arg(self, i: int):
         return i < len(self._args)
 
-    def _get_arg_or_config_if_non(self, i: int, config_name: str):
-        return self._args[i] if self._has_arg(i) else configurations.get_conf(config_name)
+    def _get_arg_else_none(self, i: int):
+        return self._args[i] if self._has_arg(i) else None
 
     def _collect_modes(self):
         self._modes = [arg for arg in self._args if self._is_mode(arg)]

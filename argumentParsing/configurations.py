@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -13,8 +14,6 @@ class Paths:
 
 class Configs:
     MODE: str = 'mode'
-    FROM_LANG: str = 'from_lang'
-    TO_LANG: str = 'to_lang'
     LANG_LIMIT: str = 'lang_limit'
     SAVED_LANGS: str = 'saved_langs'
 
@@ -30,9 +29,13 @@ def __get_default_config():
     }
 
 
-def change_conf(conf: dict, value):
+def change_conf(conf: str, value):
+    __change_configs([conf], [value])
+
+def __change_configs(confs: list[str, ...], values: list[Any, ...]):
     configs = get_configurations()
-    configs[conf] = value
+    for conf, value in zip(confs, values):
+        configs[conf] = value
     __save(configs)
 
 
@@ -45,6 +48,12 @@ def get_configurations() -> dict:
 def get_conf(name: str):
     return get_configurations()[name]
 
+def save_last_used_languages(*langs):
+    languages: list[str, ...] = get_conf(Configs.SAVED_LANGS)
+    for lang in langs:
+        languages.remove(lang)
+        languages.index(lang, 0)
+    change_conf(Configs.SAVED_LANGS, languages)
 
 def __save(configs: dict):
     with open(Paths.CONFIG_FILE, 'w') as f:

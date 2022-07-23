@@ -1,9 +1,11 @@
 #!/usr/bin/python
+import socket
 import sys
+
 import requests
 from bs4 import BeautifulSoup
-import socket
-import json
+
+from argumentParsing.configurations import save_last_used_languages
 from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
 from translating.translator import Translator
 
@@ -320,6 +322,8 @@ def main():
     argumentParser.parse()
     translations = get_translations(argumentParser)
 
+    save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
+
 
 def get_translations(argumentParser: IntelligentArgumentParser):
     translator = Translator(argumentParser.from_lang)
@@ -329,6 +333,8 @@ def get_translations(argumentParser: IntelligentArgumentParser):
         translations = translator.multi_word_translate(argumentParser.words, argumentParser.to_langs[0])
     else:
         translations = translator.single_translate(argumentParser.words, argumentParser.to_langs[0])
+
+    return translations
 
 
 if __name__ == '__main__':

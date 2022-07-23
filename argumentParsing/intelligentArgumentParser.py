@@ -39,6 +39,9 @@ class IntelligentArgumentParser(AbstractArgumentParser, ABC):
     def is_multi_word_mode(self):
         return self.is_mode(Modes.MULTI_WORD)
 
+    def is_single_mode(self):
+        return not any(self._modes_on.values()) or self.is_mode(Modes.SINGLE)
+
     def is_mode(self, mode: str):
         return self._modes_on[mode]
 
@@ -65,8 +68,18 @@ class IntelligentArgumentParser(AbstractArgumentParser, ABC):
 
     def _parse_normal(self):
         self._words.append(self._args[0])
-        self._from_lang = self._get_arg_or_config_if_non(1, Configs.FROM_LANG)
-        self._to_langs.append(self._get_arg_or_config_if_non(2, Configs.TO_LANG))
+        self._from_lang = self._get_arg_else_none(0)
+        self._to_langs.append(self._get_arg_else_none(1))
+
+        if not self.from_lang or not self.to_langs:
+            self._load_args_from_memory(1)
+
+    def _load_args_from_memory(self, to_lang_limit: int):
+        langs = configurations.get_conf(Configs.SAVED_LANGS)
+        if not self.from_lang:
+            self._from_lang = langs[0]
+        if not self._to_langs:
+            self._to_langs.extend(langs[1:to_lang_limit+1])
 
     def _parse_multi_lang(self):
         self._words.append(self._args[0])

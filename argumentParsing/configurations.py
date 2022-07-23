@@ -29,7 +29,7 @@ def __get_default_config():
     }
 
 
-def change_conf(conf: str, value):
+def change_conf(conf: str, value):  # TODO: implement a config held in the memory to minimalize the calls. Possible a config singleton class
     __change_configs([conf], [value])
 
 def __change_configs(confs: list[str, ...], values: list[Any, ...]):

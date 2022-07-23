@@ -5,47 +5,7 @@ from bs4 import BeautifulSoup
 import socket
 import json
 from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
-from translations.translator import Translator
-
-main_url = "glosbe.com"
-working_dir = "/home/proxpxd/Desktop/moje_programy/systemowe/glosbeTranslations/"
-status = 200
-
-
-def get_configurations():
-    with open(working_dir + 'configurations.txt', 'r') as f:
-        lines = json.load(f)
-    return lines
-
-
-def get_conf(name):
-    return get_configurations()[name]
-
-
-def save_conf(conf, value):
-    with open(working_dir + 'configurations.txt', 'r') as f:
-        lines = json.load(f)
-
-    lines[conf] = value
-    with open(working_dir + 'configurations.txt', 'w') as f:
-        json.dump(lines, f, indent=4, sort_keys=True)
-
-
-def create_proper_url(base_url, *args):
-    url = "https://" + base_url
-    for part in args:
-        url = "/".join([url, part])
-    return url
-
-
-def append_to_dict(data, *keys):
-    data_part = data
-    for key in keys:
-        if key not in data_part:
-            data_part[key] = {}
-        data_part = data_part[key]
-
-    return data_part
+from translating.translator import Translator
 
 
 def start_translation(lang1, lang2, word):
@@ -58,10 +18,9 @@ def start_translation(lang1, lang2, word):
 
 # Temporary don't remove an argument
 def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=False):
-    translations = parse_translations(soup)
     pronunciations = parse_pronunciation(soup)
-    status = page.status_code
 
+# start show
 
 def show_translations(translations):
     if translations is None:
@@ -117,8 +76,12 @@ def show_pronunciations(word, pronunciations):
             text += ', '
     print(text)
 
+# end show
+
 
 # Implementation
+
+# start connect
 
 def is_connection(hostname):
     try:
@@ -129,6 +92,8 @@ def is_connection(hostname):
     except:
         pass
     return False
+
+# end connect
 
 
 def save_last_languages(lang1, lang2=None):
@@ -353,9 +318,11 @@ def set_instructions():
 def main():
     argumentParser = IntelligentArgumentParser(sys.argv)
     argumentParser.parse()
+    translations = get_translations(argumentParser)
 
+
+def get_translations(argumentParser: IntelligentArgumentParser):
     translator = Translator(argumentParser.from_lang)
-
     if argumentParser.is_multi_lang_mode():
         translations = translator.multi_lang_translate(argumentParser.words[0], argumentParser.to_langs)
     elif argumentParser.is_multi_word_mode():

@@ -16,6 +16,7 @@ class Configs:
     FROM_LANG: str = 'from_lang'
     TO_LANG: str = 'to_lang'
     LANG_LIMIT: str = 'lang_limit'
+    SAVED_LANGS: str = 'saved_langs'
 
 
 def init():

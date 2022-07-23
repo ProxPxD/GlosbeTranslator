@@ -11,14 +11,21 @@ class Paths:
     LAST_USED_LANGUAGES = WORKING_DIR / 'languages.txt'
 
 
+class Configs:
+    MODE: str = 'mode'
+    FROM_LANG: str = 'from_lang'
+    TO_LANG: str = 'to_lang'
+    LANG_LIMIT: str = 'lang_limit'
+
+
 def init():
     __save(__get_default_config())
 
 
 def __get_default_config():
     return {
-        "language_limit": 6,
-        "mode": "single"
+        Configs.MODE: '-s',
+        Configs.LANG_LIMIT: 6
     }
 
 

@@ -17,16 +17,16 @@ class Translator:
         self._connector.set_to_lang(to_lang)
 
     def multi_lang_translate(self, word: str, to_langs: list[str, ...]):
-        return {to_lang: self.single_translate(word, to_lang) for to_lang in to_langs}
+        return ((to_lang, self.single_translate(word, to_lang)) for to_lang in to_langs)
 
-    def multi_word_translate(self, words: list[str, ...]):
-        return {word: self.single_translate(word) for word in words}
+    def multi_word_translate(self, to_lang, words: list[str, ...]):
+        return ((word, self.single_translate(word, to_lang)) for word in words)
 
     def single_translate(self, word: str, to_lang: str = None):
         self._connector.set_word(word)
         if to_lang:
             self.set_to_lang(to_lang)
-        return self._translate_from_attributes()
+        return iter(self._translate_from_attributes())  # TODO: maybe a generator?
 
     def _translate_from_attributes(self):
         try:

@@ -56,70 +56,11 @@ def start_translation(lang1, lang2, word):
     show_translations(res[0])
 
 
-def parse_translations(soup):
-    translations = []
-    for header in soup.findAll('li', {'data-element': 'translation'}):
-        sp = None
-        gender = None
-        try:
-            translation = header.select_one('span[data-element="phrase"]').text[1:-1]
-        except Exception:
-            continue
-        spans = header.findAll('span', {'class': 'phrase__summary__field'})
-        spans = [s.text for s in spans]
-        if len(spans) > 0:
-            sp = spans[0]
-        if len(spans) > 1:
-            gender = spans[1]
-
-        translations.append({"translation": translation, "sp": sp, "gender": gender})
-
-    return translations
-
-
 # Temporary don't remove an argument
 def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=False):
-    headers = {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-        'Dnt': '1',
-        'Host': 'httpbin.org',
-        'Upgrade-Insecure-Requests': '1',
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) '
-                      'AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/83.0.4103.97 Safari/537.36',
-        'X-Amzn-Trace-Id': 'Root=1-5ee7bbec-779382315873aa33227a5df6'}
-
-    global status
-    url = create_proper_url(main_url, lang1, lang2, word)
-    s = requests.Session()
-    s.headers.update({'User-agent': 'Mozilla/5.0'})
-    page = s.get(url, allow_redirects=False)
-    s.close()
-    translations = None
-    pronunciations = None
-    if page.status_code == 200:
-        soup = BeautifulSoup(page.text, features="html.parser")
-        translations = parse_translations(soup)
-        pronunciations = parse_pronunciation(soup)
-        status = page.status_code
-    elif page.status_code == 404:
-        print("Not found: ", page.status_code)
-        if first_exec:
-            print("Starting reverse translating...\n")
-            return get_translations(lang2, lang1, word, False)
-
-    elif page.status_code == 429:
-        print("Too many requests: ", page.status_code)
-        status = page.status_code
-    elif page.status_code == 301:
-        print("Moved permanently: ", page.status_code)
-        status = page.status_code
-    else:
-        print("Error: ", page.status_code)
-        print(page.text)
-    return [translations, pronunciations]
+    translations = parse_translations(soup)
+    pronunciations = parse_pronunciation(soup)
+    status = page.status_code
 
 
 def show_translations(translations):
@@ -229,26 +170,6 @@ def check_and_translate(lang1, lang2, word, with_pronunciation=False):
                                 with_pronunciation=with_pronunciation)
     else:
         print("Brak dostępu do strony")
-
-
-def foresee_language(word):
-    lang = None
-    if any(c for c in 'ąęłśńćżź' if c in word):
-        lang = 'pl'
-    elif any(c for c in 'ôîïèëêâæœ' if c in word):
-        lang = 'fr'
-    elif any(c for c in 'ñ' if c in word):
-        lang = 'es'
-    elif any(c for c in 'иъ' if c in word):
-        lang = 'ru'
-    return lang
-
-
-def guess_language(word):
-    lang = get_last_languages()[0]
-    guess = foresee_language(word)
-    lang = guess if guess is not None else lang
-    return lang
 
 
 def get_pronunciation(lang, word):
@@ -429,94 +350,19 @@ def set_instructions():
         translation_loop()
 
 
-def choose_program():  # Refactor
-    mode = ''
-    args = sys.argv
-    if '-0' in args or '-m' in args:
-        mode = 'multi'
-    if '-1' in args:
-        mode = 'single'
-    [args.remove(tag) for tag in ['-0', '-m', '-1'] if tag in args]
-
-    word = get_arg(1)
-    lang1 = get_arg(2)
-    lang2 = get_arg(3)
-
-    if lang1 is None:
-        lang1 = guess_language(word)
-
-    if '-p' in sys.argv:  # get pronunciation
-        pronunciations = get_pronunciation(lang1, word)
-        show_pronunciations(word, pronunciations)
-        update_languages(get_all_languages(), lang1)
-    else:
-        if (get_conf('mode') == 'multi' and lang2 is None) or mode == 'multi':
-            if lang1 is None:
-                lang1 = get_last_languages()[0]
-            start_multitranslation(word, lang1, True)
-            save_last_languages(lang1)
-        elif (get_conf('mode') == 'single' or lang2 is not None) or mode == 'single':
-            if lang1 is None:
-                lang1 = get_last_languages()[0]
-            if lang2 is None:
-                lang2 = get_last_languages()[1]
-                if lang2 == lang1:
-                    lang2 = get_last_languages()[0]
-            if '-r' in sys.argv:
-                lang1, lang2 = lang2, lang1
-            start_translation(lang1, lang2, word)
-            update_languages(get_all_languages(), lang1, lang2)
-            save_last_languages(lang1, lang2)
-
-
 def main():
-    # sys.argv = ['trans' for i in range(4)]
-    # sys.argv[1] = 'trzymać'
-    # sys.argv[2] = 'pl'
-    # sys.argv[3] = 'uk'
-    sys.argv = sanitize_args(sys.argv)
-
-    #UA change
-     
-    #UA  change
-    if 'u' == get_arg(1)[0]:
-        word = get_arg(2)
-        for lang in ['ru', 'uk']:
-            start_translation('pl', lang, word)
-    elif len(sys.argv) > 4 and not any('-' in arg for arg in sys.argv):
-        lang1 = get_arg(2)
-        word = get_arg(1)
-        for lang in sys.argv[2:]:
-            start_translation(lang1, lang, word)
-    elif len(sys.argv) == 1:
-        print_instruction()
-    elif get_arg(1)[0] == '-':
-        set_instructions()
-    else:
-        choose_program()
-
     argumentParser = IntelligentArgumentParser(sys.argv)
     argumentParser.parse()
 
     translator = Translator(argumentParser.from_lang)
 
     if argumentParser.is_multi_lang_mode():
-        translation = translator.multi_lang_translate(argumentParser.words[0], argumentParser.to_langs)
+        translations = translator.multi_lang_translate(argumentParser.words[0], argumentParser.to_langs)
     elif argumentParser.is_multi_word_mode():
-        translator.set_to_lang(argumentParser.to_langs[0])
-        translation = translator.multi_word_translate(argumentParser.words)
+        translations = translator.multi_word_translate(argumentParser.words, argumentParser.to_langs[0])
     else:
-        translation = translator.single_translate(argumentParser.words, argumentParser.to_langs[0])
+        translations = translator.single_translate(argumentParser.words, argumentParser.to_langs[0])
 
-
-
-
-def sanitize_args(args):
-    if len(args) < 2:
-        return args
-    while "t" == args[1] or "trans" == args:
-        args = args[1:]
-    return args
 
 if __name__ == '__main__':
     try:

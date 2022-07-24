@@ -1,5 +1,3 @@
-from typing import Union
-
 import requests
 
 from .parsing.parser import Parser

@@ -1,14 +1,7 @@
-from dataclasses import dataclass
-
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-
-@dataclass
-class TranslationParts:
-    TRANSLATION: str = 'translation'
-    GENDER: str = 'gender'
-    PART_OF_SPEECH: str = 'part of speech'
+from ..constants import TranslationParts
 
 
 class Parser:

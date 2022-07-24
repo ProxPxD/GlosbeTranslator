@@ -5,8 +5,8 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 
-from argumentParsing.configurations import save_last_used_languages
-from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser, Mode
+from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
 
 
@@ -34,26 +34,6 @@ def show_translations(translations):
             print(text, end=', ')
         else:
             print(text)
-
-
-def format_gender(gender):
-    if 'ż' in gender:
-        gender = 'fem'
-    elif 'ę' in gender:
-        gender = 'masc'
-    elif 'nijaki' in gender:
-        gender = 'neut'
-    return gender
-
-
-def format_part_of_speech(sp):
-    if 'rzecz' in sp:
-        sp = 'noun'
-    if 'czas' in sp:
-        sp = 'verb'
-    if 'przym' in sp:
-        sp = 'adv.'
-    return sp
 
 
 def show_translation(trans):
@@ -290,6 +270,8 @@ def main():
     argumentParser = IntelligentArgumentParser(sys.argv)
     argumentParser.parse()
     translations = get_translations(argumentParser)
+    translation_printer = TranslationPrinter()
+    translation_printer.print_translations(translations, argumentParser)
     for t in translations:
         print(t)
     # print(translations)

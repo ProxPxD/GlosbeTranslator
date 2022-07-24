@@ -1,9 +1,9 @@
 from abc import ABC
 from dataclasses import dataclass
 
-from abstractArgumnetParser import AbstractArgumentParser
-from configurations import Configs
-import configurations
+from . import configurations
+from .abstractArgumnetParser import AbstractArgumentParser
+from .configurations import Configs
 
 
 @dataclass(frozen=True)

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import requests
 
-import utils
+from . import utils
 
 
 @dataclass(frozen=True)

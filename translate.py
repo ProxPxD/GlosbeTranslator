@@ -285,11 +285,18 @@ def set_instructions():
 
 
 def main():
+    if len(sys.argv) == 1:
+        sys.argv = get_test_arguments()
     argumentParser = IntelligentArgumentParser(sys.argv)
     argumentParser.parse()
     translations = get_translations(argumentParser)
 
+
     save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
+
+
+def get_test_arguments():
+    return ['trans', 'anioł', 'pl', 'fr']
 
 
 def get_translations(argumentParser: IntelligentArgumentParser):

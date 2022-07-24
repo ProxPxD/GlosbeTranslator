@@ -2,8 +2,8 @@ from typing import Union
 
 import requests
 
-from parsing.parser import Parser
-from web.connector import Connector
+from .parsing.parser import Parser
+from .web.connector import Connector
 
 
 class Translator:

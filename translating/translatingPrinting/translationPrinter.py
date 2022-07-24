@@ -24,8 +24,7 @@ class TranslationPrinter:
     def _print_multi_translation_mode(self, translations, argument_parser: IntelligentArgumentParser):
         constant_elem: str = self._get_constant_translation_element(argument_parser)
 
-        print(argument_parser.from_lang)
-        print(f'{constant_elem}:', end=' ')
+        print(f'{argument_parser.from_lang}:', constant_elem)
         for i, (variable_elem, translation) in enumerate(translations):
             translation_string = self._formatter.format_translation_into_string(translation)
             print(f'{variable_elem}: {translation_string}')

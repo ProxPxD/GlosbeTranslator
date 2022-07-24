@@ -280,7 +280,7 @@ def main():
 
 
 def get_test_arguments():
-    return ['trans', 'anioł', 'pl', '-m', 'fr']
+    return ['trans', 'pl', 'de', '-w', 'chcieć']
 
 
 def get_translations(argumentParser: IntelligentArgumentParser):
@@ -290,7 +290,7 @@ def get_translations(argumentParser: IntelligentArgumentParser):
     if modes.is_multi_lang_mode():
         translations = translator.multi_lang_translate(argumentParser.words[0], argumentParser.to_langs)
     elif modes.is_multi_word_mode():
-        translations = translator.multi_word_translate(argumentParser.words, argumentParser.to_langs[0])
+        translations = translator.multi_word_translate(argumentParser.to_langs[0], argumentParser.words)
     elif modes.is_single_mode():
         translations = translator.single_translate(argumentParser.words[0], argumentParser.to_langs[0])
 

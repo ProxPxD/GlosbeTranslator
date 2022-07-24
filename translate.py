@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from argumentParsing.configurations import save_last_used_languages
-from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser, Mode
 from translating.translator import Translator
 
 
@@ -303,11 +303,13 @@ def get_test_arguments():
 
 def get_translations(argumentParser: IntelligentArgumentParser):
     translator = Translator(argumentParser.from_lang)
-    if argumentParser.is_multi_lang_mode():
+    modes = argumentParser.modes
+    translations = None
+    if modes.is_multi_lang_mode():
         translations = translator.multi_lang_translate(argumentParser.words[0], argumentParser.to_langs)
-    elif argumentParser.is_multi_word_mode():
+    elif modes.is_multi_word_mode():
         translations = translator.multi_word_translate(argumentParser.words, argumentParser.to_langs[0])
-    else:
+    elif modes.is_single_mode():
         translations = translator.single_translate(argumentParser.words[0], argumentParser.to_langs[0])
 
     return translations

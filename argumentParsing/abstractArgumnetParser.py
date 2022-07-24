@@ -32,10 +32,5 @@ class AbstractArgumentParser(ABC):
     def _get_arg_else_none(self, i: int):
         return self._args[i] if self._has_arg(i) else None
 
-    def _collect_modes(self):
-        self._modes = [arg for arg in self._args if self._is_mode(arg)]
-        self._args = [arg for arg in self._args if not self._is_mode(arg)]
-        return self._modes
-
     def _is_mode(self, arg: str):
         return arg.startswith('-')

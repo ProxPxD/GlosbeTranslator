@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class AbstractArgumentParser(ABC):
 
-    def __int__(self, args: list[str, ...]):
+    def __init__(self, args: list[str, ...]):
         self._args: list[str, ...] = args[1:]
         self._modes = []
         self._words = []

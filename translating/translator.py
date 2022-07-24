@@ -23,10 +23,13 @@ class Translator:
         return ((word, self.single_translate(word, to_lang)) for word in words)
 
     def single_translate(self, word: str, to_lang: str = None):
+        return (self._generate_translation(word, to_lang) for _ in [0])
+
+    def _generate_translation(self, word: str, to_lang: str = None):
         self._connector.set_word(word)
         if to_lang:
             self.set_to_lang(to_lang)
-        return iter(self._translate_from_attributes())  # TODO: maybe a generator?
+        return self._translate_from_attributes()
 
     def _translate_from_attributes(self):
         try:

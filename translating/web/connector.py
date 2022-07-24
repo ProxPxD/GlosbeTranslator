@@ -38,13 +38,13 @@ class Connector:
 
     def _request_page(self) -> requests.Response:
         url: str = self._create_target_url()
-        return Connector._request_page(url)
+        return Connector._request_page_from_url(url)
 
     def _create_target_url(self):
         return utils.join_url_with_slashes(WebConstants.MAIN_URL, self._from_lang, self._to_lang, self._word)
 
     @staticmethod
-    def _request_page(url: str):
+    def _request_page_from_url(url: str):
         with requests.Session() as session:
             session.headers.update(Connector._get_default_headers())
             page = session.get(url, allow_redirects=False)

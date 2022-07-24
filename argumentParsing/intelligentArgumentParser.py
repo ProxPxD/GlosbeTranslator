@@ -1,4 +1,3 @@
-from abc import ABC
 from dataclasses import dataclass
 
 from . import configurations
@@ -16,10 +15,10 @@ class Modes:
     SINGLE_FULL: str = '--single'
 
 
-class IntelligentArgumentParser(AbstractArgumentParser, ABC):
+class IntelligentArgumentParser(AbstractArgumentParser):
 
-    def __int__(self, args: list[str, ...]):
-        super(args)
+    def __init__(self, args: list[str, ...]):
+        super().__init__(args)
         self._mode_names = [Modes.SINGLE, Modes.MULTI_LANG, Modes.MULTI_WORD]
         self._modes_on = {name: False for name in self._mode_names}
         self._modes_checkers = {Modes.SINGLE: self._is_single_on,
@@ -50,11 +49,11 @@ class IntelligentArgumentParser(AbstractArgumentParser, ABC):
         if self._is_multiple_modes_use():
             raise ValueError(self._modes)  # TODO: expand type
 
-        i = next((mode for mode, val in self._modes_on.values() if val), 0)
-        self._mode_parse_methods[i]()
+        mode = next((mode for mode, val in self._modes_on.items() if val), Modes.SINGLE)
+        self._mode_parse_methods[mode]()
 
     def _is_multiple_modes_use(self):
-        self._modes_on = {mode: checker() for mode, checker in self._modes_checkers}
+        self._modes_on = {mode: checker() for mode, checker in self._modes_checkers.items()}
         return sum(self._modes_on.values()) > 1
 
     def _is_multi_lang_on(self):
@@ -68,8 +67,8 @@ class IntelligentArgumentParser(AbstractArgumentParser, ABC):
 
     def _parse_normal(self):
         self._words.append(self._args[0])
-        self._from_lang = self._get_arg_else_none(0)
-        self._to_langs.append(self._get_arg_else_none(1))
+        self._from_lang = self._get_arg_else_none(1)
+        self._to_langs.append(self._get_arg_else_none(2))
 
         if not self.from_lang or not self.to_langs:
             self._load_args_from_memory(1)

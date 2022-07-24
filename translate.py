@@ -19,8 +19,8 @@ def start_translation(lang1, lang2, word):
 
 
 # Temporary don't remove an argument
-def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=False):
-    pronunciations = parse_pronunciation(soup)
+# def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=False):
+#     pronunciations = parse_pronunciation(soup)
 
 # start show
 
@@ -290,9 +290,11 @@ def main():
     argumentParser = IntelligentArgumentParser(sys.argv)
     argumentParser.parse()
     translations = get_translations(argumentParser)
+    for t in translations:
+        print(t)
+    # print(translations)
 
-
-    save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
+    # save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
 
 
 def get_test_arguments():
@@ -306,7 +308,7 @@ def get_translations(argumentParser: IntelligentArgumentParser):
     elif argumentParser.is_multi_word_mode():
         translations = translator.multi_word_translate(argumentParser.words, argumentParser.to_langs[0])
     else:
-        translations = translator.single_translate(argumentParser.words, argumentParser.to_langs[0])
+        translations = translator.single_translate(argumentParser.words[0], argumentParser.to_langs[0])
 
     return translations
 

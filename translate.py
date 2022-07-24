@@ -272,9 +272,6 @@ def main():
     translations = get_translations(argumentParser)
     translation_printer = TranslationPrinter()
     translation_printer.print_translations(translations, argumentParser)
-    for t in translations:
-        print(t)
-    # print(translations)
 
     # save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
 

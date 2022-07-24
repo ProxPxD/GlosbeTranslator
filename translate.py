@@ -280,7 +280,7 @@ def main():
 
 
 def get_test_arguments():
-    return ['trans', 'anioł', 'pl', 'fr']
+    return ['trans', 'anioł', 'pl', '-m', 'fr']
 
 
 def get_translations(argumentParser: IntelligentArgumentParser):

@@ -5,11 +5,11 @@ from ..constants import TranslationParts
 
 class Formatter:
 
-    def format_translations(self, translations: Generator[list[dict, ...], ...]) -> Generator[list[dict, ...], ...]:
+    def format_translations(self, translations):
         return (self._format_translation(translation) for translation in translations)
 
     def _format_translation(self, translation: list[dict, ...]):
-        for elem in translation:
+        for elem in translation[1]:
             elem[TranslationParts.GENDER] = self._format_gender(elem[TranslationParts.GENDER])
             elem[TranslationParts.PART_OF_SPEECH] = self._format_part_of_speech(elem[TranslationParts.PART_OF_SPEECH])
         return translation

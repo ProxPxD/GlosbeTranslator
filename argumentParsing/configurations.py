@@ -60,7 +60,7 @@ class Configurations:
         }
 
     @staticmethod
-    def change_conf(conf: str, value):  # TODO: implement a config held in the memory to minimalize the calls. Possible a config singleton class
+    def change_conf(conf: str, value):
         if not Configurations._configs:
             Configurations.init()
         Configurations._configs[conf] = value

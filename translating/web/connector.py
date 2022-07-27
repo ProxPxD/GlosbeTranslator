@@ -33,6 +33,8 @@ class Connector:
     def get_page(self):
         page: requests.Response = self._request_page()
         if page.status_code != 200:
+            if page.status_code == 404:
+                return None
             raise ConnectionError(page)
         return page
 

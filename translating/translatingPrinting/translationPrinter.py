@@ -18,15 +18,18 @@ class TranslationPrinter:
             self._print_multi_translation_mode(translations, argument_parser)
 
     def _print_single_translation_mode(self, translation: list[dict, ...], argument_parser: IntelligentArgumentParser):
-        print(argument_parser.words[0])
-        print(self._formatter.format_translation_into_string(translation))
+        if len(translation):
+            print(argument_parser.words[0])
+            print(self._formatter.format_translation_into_string(translation))
+        else:
+            self._print_no_translation()
 
     def _print_multi_translation_mode(self, translations, argument_parser: IntelligentArgumentParser):
         constant_elem: str = self._get_constant_translation_element(argument_parser)
 
         print(f'{argument_parser.from_lang}:', constant_elem)
-        for i, (variable_elem, translation) in enumerate(translations):
-            translation_string = self._formatter.format_translation_into_string(translation)
+        for variable_elem, translation in translations:
+            translation_string = self._formatter.format_translation_into_string(translation) if len(translation) else self._get_no_translation_string()
             print(f'{variable_elem}: {translation_string}')
 
     def _get_constant_translation_element(self, argument_parser: IntelligentArgumentParser):
@@ -34,3 +37,9 @@ class TranslationPrinter:
             return argument_parser.words[0]
         elif argument_parser.modes.is_multi_word_mode():
             return argument_parser.to_langs[0]
+
+    def _print_no_translation(self):
+        print(self._get_no_translation_string())
+
+    def _get_no_translation_string(self):
+        return 'No translation found!'

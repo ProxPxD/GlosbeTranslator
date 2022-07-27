@@ -67,7 +67,15 @@ class IntelligentArgumentParser(AbstractArgumentParser):
         self._from_lang = self._args[1]
         self._to_langs = self._args[2:]
         if not self._to_langs:
-            self._to_langs = configurations.get_conf(Configs.SAVED_LANGS)
+            self._to_langs = self._load_config_languages()
+
+    def _load_config_languages(self):
+        to_langs: list = configurations.get_conf(Configs.SAVED_LANGS)
+        to_langs.remove(self._from_lang)
+        limit: int = configurations.get_conf(Configs.LANG_LIMIT)
+        if len(to_langs) > limit:
+            to_langs = self._to_langs[0:limit]
+        return to_langs
 
     def _parse_multi_word(self):
         self._from_lang = self._args[0]

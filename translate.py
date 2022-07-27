@@ -5,20 +5,11 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 
+from argumentParsing import configurations
 from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
 
-
-def start_translation(lang1, lang2, word):
-    res = get_translations(lang1, lang2, word, with_pronunciation=True)
-
-    if res[1] is not None:
-        show_pronunciations(word, res[1])
-    show_translations(res[0])
-
-
-# Temporary don't remove an argument
 # def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=False):
 #     pronunciations = parse_pronunciation(soup)
 
@@ -34,18 +25,6 @@ def show_translations(translations):
             print(text, end=', ')
         else:
             print(text)
-
-
-def show_translation(trans):
-    gender = trans["gender"]
-    sp = trans["sp"]
-    translation = trans["translation"]
-    text = translation
-    if gender is not None:
-        text += f' [{format_gender(gender)}]'
-    if sp is not None:
-        text += f' ({format_part_of_speech(sp)})'
-    return text
 
 
 def show_pronunciations(word, pronunciations):
@@ -273,11 +252,11 @@ def main():
     translation_printer = TranslationPrinter()
     translation_printer.print_translations(translations, argumentParser)
 
-    # save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
+    configurations.save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
 
 
 def get_test_arguments():
-    return ['trans', 'pl', 'de', '-w', 'chcieć', 'widzieć']
+    return ['trans', 'mełk', 'es', 'pl']
 
 
 def get_translations(argumentParser: IntelligentArgumentParser):

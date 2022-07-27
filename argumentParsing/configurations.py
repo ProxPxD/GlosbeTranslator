@@ -25,7 +25,8 @@ def init():
 def __get_default_config():
     return {
         Configs.MODE: '-s',
-        Configs.LANG_LIMIT: 6
+        Configs.LANG_LIMIT: 6,
+        Configs.SAVED_LANGS: ['pl', 'en', 'es', 'ru', 'de', 'zh', 'fr']
     }
 
 
@@ -48,12 +49,14 @@ def get_configurations() -> dict:
 def get_conf(name: str):
     return get_configurations()[name]
 
+
 def save_last_used_languages(*langs):
     languages: list[str, ...] = get_conf(Configs.SAVED_LANGS)
     for lang in langs:
         languages.remove(lang)
-        languages.index(lang, 0)
+        languages.insert(0, lang)
     change_conf(Configs.SAVED_LANGS, languages)
+
 
 def __save(configs: dict):
     with open(Paths.CONFIG_FILE, 'w') as f:

@@ -259,7 +259,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't mieć pl -m es ua'.split(' ')
+    return 't mieć pl -m es uk'.split(' ')
 
 
 def get_translations(argumentParser: IntelligentArgumentParser):

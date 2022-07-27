@@ -42,4 +42,6 @@ class Translator:
         page: requests.Response = self._connector.get_page()
         if page:
             self._parser.set_page_text(page.text)
+        else:
+            self._parser.set_page_text('')
         return self._parser.parse()

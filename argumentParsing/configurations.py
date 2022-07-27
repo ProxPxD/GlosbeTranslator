@@ -18,46 +18,62 @@ class Configs:
     SAVED_LANGS: str = 'saved_langs'
 
 
-def init():
-    __save(__get_default_config())
+class Configurations:
 
+    _configs: dict = None
 
-def __get_default_config():
-    return {
-        Configs.MODE: '-s',
-        Configs.LANG_LIMIT: 6,
-        Configs.SAVED_LANGS: ['pl', 'en', 'es', 'ru', 'de', 'zh', 'fr']
-    }
+    @staticmethod
+    def init():
+        if not Configurations._configs:
+            Configurations._configs = Configurations._get_configurations()
 
+    @staticmethod
+    def _get_configurations() -> dict:
+        with open(Paths.CONFIG_FILE, 'r') as f:
+            configs = json.load(f)
+        return configs
 
-def change_conf(conf: str, value):  # TODO: implement a config held in the memory to minimalize the calls. Possible a config singleton class
-    __change_configs([conf], [value])
+    @staticmethod
+    def save():
+        Configurations.__save(Configurations._configs)
 
-def __change_configs(confs: list[str, ...], values: list[Any, ...]):
-    configs = get_configurations()
-    for conf, value in zip(confs, values):
-        configs[conf] = value
-    __save(configs)
+    @staticmethod
+    def save_and_close():
+        Configurations.save()
+        Configurations._configs = None
 
+    @staticmethod
+    def __save(configs: dict):
+        with open(Paths.CONFIG_FILE, 'w') as f:
+            json.dump(configs, f, indent=4, sort_keys=True)
 
-def get_configurations() -> dict:
-    with open(Paths.CONFIG_FILE, 'r') as f:
-        configs = json.load(f)
-    return configs
+    @staticmethod
+    def init_default():
+        Configurations.__save(Configurations.__get_default_config())
 
+    @staticmethod
+    def __get_default_config():
+        return {
+            Configs.MODE: '-s',
+            Configs.LANG_LIMIT: 6,
+            Configs.SAVED_LANGS: ['pl', 'en', 'es', 'ru', 'de', 'zh', 'fr']
+        }
 
-def get_conf(name: str):
-    return get_configurations()[name]
+    @staticmethod
+    def change_conf(conf: str, value):  # TODO: implement a config held in the memory to minimalize the calls. Possible a config singleton class
+        if not Configurations._configs:
+            Configurations.init()
+        Configurations._configs[conf] = value
 
+    @staticmethod
+    def get_conf(name: str):
+        return Configurations._configs[name]
 
-def save_last_used_languages(*langs):
-    languages: list[str, ...] = get_conf(Configs.SAVED_LANGS)
-    for lang in langs:
-        languages.remove(lang)
-        languages.insert(0, lang)
-    change_conf(Configs.SAVED_LANGS, languages)
-
-
-def __save(configs: dict):
-    with open(Paths.CONFIG_FILE, 'w') as f:
-        json.dump(configs, f, indent=4, sort_keys=True)
+    @staticmethod
+    def save_last_used_languages(*langs):
+        languages: list[str, ...] = Configurations.get_conf(Configs.SAVED_LANGS)
+        for lang in langs:
+            if lang in languages:
+                languages.remove(lang)
+                languages.insert(0, lang)
+        Configurations.change_conf(Configs.SAVED_LANGS, languages)

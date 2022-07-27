@@ -1,5 +1,3 @@
-from typing import Generator
-
 from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
 from translating.translatingPrinting.formatter import Formatter
 

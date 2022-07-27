@@ -6,6 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from argumentParsing import configurations
+from argumentParsing.configurations import Configurations
 from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
@@ -246,17 +247,19 @@ def set_instructions():
 def main():
     if len(sys.argv) == 1:
         sys.argv = get_test_arguments()
+
+    Configurations.init()
     argumentParser = IntelligentArgumentParser(sys.argv)
     argumentParser.parse()
     translations = get_translations(argumentParser)
     translation_printer = TranslationPrinter()
     translation_printer.print_translations(translations, argumentParser)
 
-    configurations.save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
+    Configurations.save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
 
 
 def get_test_arguments():
-    return ['trans', 'mełk', 'es', 'pl']
+    return 't mieć pl -m es ua'.split(' ')
 
 
 def get_translations(argumentParser: IntelligentArgumentParser):

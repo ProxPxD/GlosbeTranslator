@@ -40,8 +40,5 @@ class Translator:
 
     def _translate_from_attributes(self):
         page: requests.Response = self._connector.get_page()
-        if page:
-            self._parser.set_page_text(page.text)
-        else:
-            self._parser.set_page_text('')
+        self._parser.set_page_text(page.text if page else '')
         return self._parser.parse()

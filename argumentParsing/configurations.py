@@ -70,8 +70,26 @@ class Configurations:
         return Configurations._configs[name]
 
     @staticmethod
+    def get_saved_languages() -> list[str]:
+        return Configurations.get_conf(Configs.SAVED_LANGS)
+
+    @staticmethod
+    def get_nth_saved_language(index: int) -> str:
+        return Configurations.get_saved_languages()[index]
+
+    @staticmethod
+    def load_config_languages(to_skip: str = None):
+        langs: list = Configurations.get_conf(Configs.SAVED_LANGS)
+        limit: int = Configurations.get_conf(Configs.LANG_LIMIT)
+        if to_skip:
+            langs.remove(to_skip)
+        if limit is not None and len(langs) > limit:
+            langs = langs[:limit]
+        return langs
+
+    @staticmethod
     def save_last_used_languages(*langs):
-        languages: list[str, ...] = Configurations.get_conf(Configs.SAVED_LANGS)
+        languages: list[str] = Configurations.get_conf(Configs.SAVED_LANGS)
         for lang in langs:
             if lang in languages:
                 languages.remove(lang)

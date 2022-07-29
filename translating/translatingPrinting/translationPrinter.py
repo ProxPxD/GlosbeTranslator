@@ -9,7 +9,7 @@ class TranslationPrinter:
 
     def print_translations(self, translations, argument_parser: IntelligentArgumentParser):
         translations = self._formatter.format_translations(translations)
-        if argument_parser.modes.is_single_mode():
+        if argument_parser.modes.is_single_mode_on():
             translation = next(translations)[1]
             self._print_single_translation_mode(translation, argument_parser)
         else:
@@ -31,9 +31,9 @@ class TranslationPrinter:
             print(f'{variable_elem}: {translation_string}')
 
     def _get_constant_translation_element(self, argument_parser: IntelligentArgumentParser):
-        if argument_parser.modes.is_multi_lang_mode():
+        if argument_parser.modes.is_multi_lang_mode_on():
             return argument_parser.words[0]
-        elif argument_parser.modes.is_multi_word_mode():
+        elif argument_parser.modes.is_multi_word_mode_on():
             return argument_parser.to_langs[0]
 
     def _print_no_translation(self):

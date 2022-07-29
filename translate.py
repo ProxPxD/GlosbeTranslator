@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from argumentParsing import configurations
 from argumentParsing.configurations import Configurations
 from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from translating.constants import PageCodeMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
 
@@ -15,6 +16,8 @@ from translating.translator import Translator
 #     pronunciations = parse_pronunciation(soup)
 
 # start show
+from translating.web.wrongStatusCodeException import WrongStatusCodeException
+
 
 def show_translations(translations):
     if translations is None:
@@ -104,8 +107,6 @@ def find_pronunciation(lang1, word):
         soup = BeautifulSoup(page.text, "lxml")
         pronunciations = parse_pronunciation(soup)
         status = page.status_code
-    elif page.status_code == 404:
-        print("Not found: ", page.status_code)
     return pronunciations
 
 
@@ -248,14 +249,21 @@ def main():
     if len(sys.argv) == 1:
         sys.argv = get_test_arguments()
 
-    Configurations.init()
-    argumentParser = IntelligentArgumentParser(sys.argv)
-    argumentParser.parse()
-    translations = get_translations(argumentParser)
-    translation_printer = TranslationPrinter()
-    translation_printer.print_translations(translations, argumentParser)
+    try:
+        Configurations.init()
+        argumentParser = IntelligentArgumentParser(sys.argv)
+        argumentParser.parse()
+        translations = get_translations(argumentParser)
+        translation_printer = TranslationPrinter()
+        translation_printer.print_translations(translations, argumentParser)
 
-    Configurations.save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
+        Configurations.save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
+    except WrongStatusCodeException as err:
+        print(PageCodeMessages.UNHANDLED_PAGE_CODE)
+        print(f'{PageCodeMessages.STATUS}: {err.page.status_code}')
+        # TODO: found a library and implement saving to logs
+        print(PageCodeMessages.SAVING_IN_LOGS)
+        print(PageCodeMessages.PLEASE_REPORT)
 
 
 def get_test_arguments():
@@ -266,11 +274,11 @@ def get_translations(argumentParser: IntelligentArgumentParser):
     translator = Translator(argumentParser.from_lang)
     modes = argumentParser.modes
     translations = None
-    if modes.is_multi_lang_mode():
+    if modes.is_multi_lang_mode_on():
         translations = translator.multi_lang_translate(argumentParser.words[0], argumentParser.to_langs)
-    elif modes.is_multi_word_mode():
+    elif modes.is_multi_word_mode_on():
         translations = translator.multi_word_translate(argumentParser.to_langs[0], argumentParser.words)
-    elif modes.is_single_mode():
+    elif modes.is_single_mode_on():
         translations = translator.single_translate(argumentParser.words[0], argumentParser.to_langs[0])
 
     return translations

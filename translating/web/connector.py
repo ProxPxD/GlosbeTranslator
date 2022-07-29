@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import requests
 
 from . import utils
+from .wrongStatusCodeException import WrongStatusCodeException
 
 
 @dataclass(frozen=True)
@@ -35,7 +36,7 @@ class Connector:
         if page.status_code != 200:
             if page.status_code == 404:
                 return None
-            raise ConnectionError(page)
+            raise WrongStatusCodeException(page)
         return page
 
     def _request_page(self) -> requests.Response:

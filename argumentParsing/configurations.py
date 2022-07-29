@@ -1,15 +1,13 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 
 @dataclass(frozen=True)
 class Paths:
-    WORKING_DIR = Path(__file__).parent  # Path("/home/proxpxd/Desktop/moje_programy/systemowe/glosbeTranslations")
+    WORKING_DIR = Path(__file__).parent.parent  # Path("/home/proxpxd/Desktop/moje_programy/systemowe/glosbeTranslations")
     RESOURCES_DIR = WORKING_DIR / 'resources'
-    CONFIG_FILE = WORKING_DIR / 'configurations.txt'
-    LAST_USED_LANGUAGES = WORKING_DIR / 'languages.txt'
+    CONFIG_FILE = RESOURCES_DIR / 'configurations.txt'
 
 
 class Configs:
@@ -25,6 +23,8 @@ class Configurations:
     @staticmethod
     def init():
         if not Configurations._configs:
+            if not Paths.CONFIG_FILE.exists():
+                Configurations.init_default()
             Configurations._configs = Configurations._get_configurations()
 
     @staticmethod
@@ -35,7 +35,7 @@ class Configurations:
 
     @staticmethod
     def save():
-        Configurations.__save(Configurations._configs)
+        Configurations._save(Configurations._configs)
 
     @staticmethod
     def save_and_close():
@@ -43,13 +43,13 @@ class Configurations:
         Configurations._configs = None
 
     @staticmethod
-    def __save(configs: dict):
+    def _save(configs: dict):
         with open(Paths.CONFIG_FILE, 'w') as f:
             json.dump(configs, f, indent=4, sort_keys=True)
 
     @staticmethod
     def init_default():
-        Configurations.__save(Configurations.__get_default_config())
+        Configurations._save(Configurations.__get_default_config())
 
     @staticmethod
     def __get_default_config():

@@ -1,9 +1,11 @@
+import logging
 from dataclasses import dataclass
 
 import requests
 
 from . import utils
 from .wrongStatusCodeException import WrongStatusCodeException
+from ..constants import LogMessages, PageCodeMessages
 
 
 @dataclass(frozen=True)
@@ -35,7 +37,10 @@ class Connector:
         page: requests.Response = self._request_page()
         if page.status_code != 200:
             if page.status_code == 404:
+                logging.warning(LogMessages.NO_TRANSLATION)
                 return None
+            logging.error(LogMessages.UNKNOWN_PAGE_STATUS.format(page.status_code))
+            print(PageCodeMessages.PLEASE_REPORT)
             raise WrongStatusCodeException(page)
         return page
 

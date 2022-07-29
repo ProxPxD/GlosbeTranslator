@@ -1,6 +1,8 @@
 #!/usr/bin/python
+import logging
 import socket
 import sys
+from dataclasses import dataclass
 
 import requests
 from bs4 import BeautifulSoup
@@ -8,15 +10,14 @@ from bs4 import BeautifulSoup
 from argumentParsing import configurations
 from argumentParsing.configurations import Configurations
 from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
-from translating.constants import PageCodeMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
+# start show
+from translating.web.wrongStatusCodeException import WrongStatusCodeException
+
 
 # def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=False):
 #     pronunciations = parse_pronunciation(soup)
-
-# start show
-from translating.web.wrongStatusCodeException import WrongStatusCodeException
 
 
 def show_translations(translations):
@@ -245,7 +246,14 @@ def set_instructions():
         translation_loop()
 
 
+@dataclass(frozen=True)
+class Data:
+    LOG_PATH = configurations.Paths.RESOURCES_DIR / 'logs.txt'
+
+
 def main():
+    logging.basicConfig(filename=Data.LOG_PATH, encoding='utf-8', level=logging.WARNING,
+                        format='%(levelname)s: %(message)s ')
     if len(sys.argv) == 1:
         sys.argv = get_test_arguments()
 
@@ -259,15 +267,11 @@ def main():
 
         Configurations.save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
     except WrongStatusCodeException as err:
-        print(PageCodeMessages.UNHANDLED_PAGE_CODE)
-        print(f'{PageCodeMessages.STATUS}: {err.page.status_code}')
-        # TODO: found a library and implement saving to logs
-        print(PageCodeMessages.SAVING_IN_LOGS)
-        print(PageCodeMessages.PLEASE_REPORT)
+        pass
 
 
 def get_test_arguments():
-    return 't mieć pl -m es uk'.split(' ')
+    return 't zondany pl en'.split(' ')
 
 
 def get_translations(argumentParser: IntelligentArgumentParser):

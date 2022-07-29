@@ -14,3 +14,9 @@ class PageCodeMessages:
     STATUS: str = 'Status'
     SAVING_IN_LOGS: str = 'Saving the necessary data in logs.'
     PLEASE_REPORT: str = 'Please, report the case'
+
+
+@dataclass(frozen=True)
+class LogMessages:
+    NO_TRANSLATION: str = 'No translation has been found. Either the arguments were invalid or the requested translation does not exist so far'
+    UNKNOWN_PAGE_STATUS: str = 'Unknown page status: {}'

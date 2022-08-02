@@ -37,7 +37,7 @@ class IntelligentArgumentParser:
         if not self._modesManager.validate_modes():
             raise ValueError(self._modesManager)  # TODO: expand type
 
-        if not self._modesManager.is_any_display_mode_on():
+        if len(self._args):
             self._parse_by_mode()
 
     def _parse_by_mode(self):

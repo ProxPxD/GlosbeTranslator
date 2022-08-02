@@ -52,9 +52,8 @@ class ModesManager:
     def __init__(self):
         self._modes: dict[str, list] = {}
 
-    @property
-    def configurational(self):
-        return [mode for mode in self._modes if mode in _configurational_modes]
+    def get_config_args(self, config: str):
+        return self._modes[config] if config in self._modes else []
 
     def get_max_arity(self, mode: str) -> int:
         return functools.reduce(lambda m1, m2: m1 if m1 > m2 else m2,
@@ -116,11 +115,11 @@ class ModesManager:
     def _is_display_mode_on(self, mode: str):
         return mode in _display_modes and len(self._modes[mode]) == 0
 
-    def is_any_configurational_mode_on(self):
-        return any(self.get_display_modes_turned_on())
+    def is_any_configurational_mode_on(self) -> bool:
+        return any(self.get_configurational_modes_turned_on())
 
     def get_configurational_modes_turned_on(self):
         return (mode for mode in self._modes if self._is_configurational_mode_on(mode))
 
-    def _is_configurational_mode_on(self, mode: str):
+    def _is_configurational_mode_on(self, mode: str) -> bool:
         return len(self._modes[mode]) > 0 and mode in _configurational_modes

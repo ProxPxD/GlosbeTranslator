@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from argumentParsing.modeManager import FullModes
 
@@ -68,7 +69,7 @@ class Configurations:
         Configurations._configs[conf] = value
 
     @staticmethod
-    def get_conf(name: str):
+    def get_conf(name: str) -> Any:
         return Configurations._configs[name]
 
     @staticmethod
@@ -82,7 +83,7 @@ class Configurations:
     @staticmethod
     def load_config_languages(to_skip: str = None):
         langs: list = Configurations.get_conf(Configs.SAVED_LANGS)
-        limit: int = Configurations.get_conf(Configs.LANG_LIMIT)
+        limit: int = int(Configurations.get_conf(Configs.LANG_LIMIT))
         if to_skip:
             langs.remove(to_skip)
         if limit is not None and len(langs) > limit:

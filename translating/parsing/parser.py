@@ -19,7 +19,8 @@ class Parser:
     def parse(self):
         translations = []
         for translation_element in self._soup.findAll('li', {'data-element': 'translation'}):
-            translations.append(self._parse_single_translation_tag(translation_element))
+            if translation_element.select_one('span[data-element="phrase"]'):
+                translations.append(self._parse_single_translation_tag(translation_element))
         return translations
 
     def _parse_single_translation_tag(self, translation_tag: Tag):

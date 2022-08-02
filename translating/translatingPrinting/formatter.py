@@ -35,7 +35,7 @@ class Formatter:
     def format_translation_into_string(self, translation: list[dict, ...]):
         string = ""
         for i, elem in enumerate(translation):
-            string += elem[TranslationParts.TRANSLATION]
+            string += self._format_translation_element_into_string(elem)
             if i + 1 < len(translation):
                 string += ', '
         return string

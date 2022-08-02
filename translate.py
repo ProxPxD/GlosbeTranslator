@@ -226,16 +226,15 @@ def main():
         if argument_parser.is_translation_mode_on():
             translate(argument_parser)
 
-        if not argument_parser.modes.is_any_display_mode_on()
+        if not argument_parser.modes.is_any_display_mode_on():
             Configurations.save()
-        # Configurations.
 
     except WrongStatusCodeException as err:
         pass
 
 
 def get_test_arguments():
-    return 't mieć pl -m'.split(' ')# 't zondany pl en'.split(' ')
+    return 't Stiefvater de pl'.split(' ')# 't zondany pl en'.split(' ')
 
 
 def translate(argument_parser: IntelligentArgumentParser):

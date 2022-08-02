@@ -93,7 +93,7 @@ class Configurations:
     @staticmethod
     def change_last_used_languages(*langs):
         languages: list[str] = Configurations.get_conf(Configs.SAVED_LANGS)
-        for lang in langs:
+        for lang in reversed(langs):
             if lang in languages:
                 languages.remove(lang)
                 languages.insert(0, lang)

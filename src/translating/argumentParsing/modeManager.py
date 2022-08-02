@@ -11,6 +11,7 @@ class Modes:
     SAVED_LANGS: str = '-ll'
     LAST: str = '-1'
     DEFAULT_TRANSLATIONAL_MODE: str = '-dm'
+    SETTINGS: str = '-ss'
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,7 @@ class FullModes:
     SAVED_LANGS: str = '--langs'
     LAST: str = '--last'
     DEFAULT_TRANSLATIONAL_MODE: str = '--default_mode'
+    SETTINGS: str = '--settings'
 
 
 _modes_map = {
@@ -31,20 +33,21 @@ _modes_map = {
     Modes.LANG_LIMIT: FullModes.LANG_LIMIT,
     Modes.SAVED_LANGS: FullModes.SAVED_LANGS,
     Modes.LAST: FullModes.LAST,
-    Modes.DEFAULT_TRANSLATIONAL_MODE: FullModes.DEFAULT_TRANSLATIONAL_MODE
+    Modes.DEFAULT_TRANSLATIONAL_MODE: FullModes.DEFAULT_TRANSLATIONAL_MODE,
+    Modes.SETTINGS: FullModes.SETTINGS
 }
 
 _modes_to_arity_map = {
     (FullModes.MULTI_LANG, FullModes.MULTI_WORD): -1,
-    (FullModes.SINGLE, FullModes.SAVED_LANGS, FullModes.LANG_LIMIT, FullModes.LAST): 0,
-    (FullModes.LANG_LIMIT, FullModes.LAST): 1
+    (FullModes.SINGLE, FullModes.SAVED_LANGS, FullModes.LANG_LIMIT, FullModes.LAST, FullModes.SETTINGS): 0,
+    (FullModes.LANG_LIMIT, FullModes.LAST, FullModes.DEFAULT_TRANSLATIONAL_MODE): 1
 }
 
 _translational_modes = {FullModes.SINGLE, FullModes.MULTI_WORD, FullModes.MULTI_LANG}
 
-_display_modes = {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST}
+_display_modes = {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.SETTINGS}
 
-_configurational_modes = {FullModes.LANG_LIMIT}
+_configurational_modes = {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE}
 
 
 class ModesManager:

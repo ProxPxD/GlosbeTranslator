@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from translating.argumentParsing import configurations
 from translating.argumentParsing.configurations import Configurations
 from translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from translating.argumentParsing.modeManager import FullModes
 from translating.constants import LogMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
@@ -192,15 +193,7 @@ def translation_loop():
 
 
 def set_instructions():
-    if get_arg(1) == '-help' or '-h' in sys.argv:
-        print_help()
-    elif get_arg(1) == '-last':
-        display_to_user('last')
-    elif get_arg(1) == '-ss':
-        print_settings()
-    elif get_arg(1) == '-show' or get_arg(1) == '-s':
-        display_to_user()
-    elif get_arg(1) == '-loop':
+    if get_arg(1) == '-loop':
         translation_loop()
 
 
@@ -235,7 +228,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't zondany pl en'.split(' ')# 't zondany pl en'.split(' ')
+    return 't zondany pl en'.split(' ')
 
 
 def translate(argument_parser: IntelligentArgumentParser):
@@ -261,8 +254,22 @@ def get_translations(argument_parser: IntelligentArgumentParser):
 
 def display_information(argument_parser: IntelligentArgumentParser):
     for to_display in argument_parser.modes.get_display_modes_turned_on():
-        conf_to_display = Configurations.get_conf(to_display)
-        print(f'{to_display[2:]}: {conf_to_display}')
+        if to_display == FullModes.SETTINGS:
+            display_configs(FullModes.DEFAULT_TRANSLATIONAL_MODE, FullModes.LANG_LIMIT, FullModes.SAVED_LANGS)
+            break
+        display_config(to_display)
+
+
+def display_configs(*config_names: str):
+    for to_display in config_names:
+        display_config(to_display)
+
+
+def display_config(config_name: str):
+    conf_to_display = Configurations.get_conf(config_name)
+    if isinstance(conf_to_display, list):
+        conf_to_display = str(conf_to_display)[1:-1].replace("'", '')
+    print(f'{config_name[2:]}: {conf_to_display}')
 
 
 def set_config(argument_parser: IntelligentArgumentParser):

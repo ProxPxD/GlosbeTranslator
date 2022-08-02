@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from argumentParsing import configurations
 from argumentParsing.configurations import Configurations
 from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from translating.constants import LogMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
 # start show
@@ -230,7 +231,8 @@ def main():
             Configurations.save()
 
     except WrongStatusCodeException as err:
-        pass
+        logging.error(f'{err.page.status_code}: {err.page.text}')
+        print(LogMessages.UNKNOWN_PAGE_STATUS.format(err.page.status_code))
 
 
 def get_test_arguments():

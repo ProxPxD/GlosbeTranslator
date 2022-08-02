@@ -25,12 +25,10 @@ class Formatter:
         return gender
 
     def _format_part_of_speech(self, part_of_speech: str) -> str:
-        if 'rzecz' in part_of_speech:
-            part_of_speech = 'noun'
-        if 'czas' in part_of_speech:
-            part_of_speech = 'verb'
-        if 'przym' in part_of_speech:
+        if part_of_speech == 'adverb':
             part_of_speech = 'adv.'
+        if part_of_speech == 'adjective':
+            part_of_speech = 'adj.'
         return part_of_speech
 
     def format_translation_into_string(self, translation: list[dict, ...]):

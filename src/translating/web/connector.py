@@ -10,7 +10,7 @@ from ..constants import LogMessages, PageCodeMessages
 
 @dataclass(frozen=True)
 class WebConstants:
-    MAIN_URL = "glosbe.com"
+    MAIN_URL = "pl.glosbe.com"
 
 
 class Connector:

@@ -13,11 +13,14 @@ class Formatter:
         return translation
 
     def _format_gender(self, gender: str) -> str:
-        if 'ż' in gender:
+        if not gender:
+            return gender
+
+        if gender == 'feminine':
             gender = 'fem'
-        elif 'ę' in gender:
+        elif gender == 'masculine':
             gender = 'masc'
-        elif 'nijaki' in gender:
+        elif gender == 'neuter':
             gender = 'neut'
         return gender
 

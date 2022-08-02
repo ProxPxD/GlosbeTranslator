@@ -7,13 +7,12 @@ from dataclasses import dataclass
 import requests
 from bs4 import BeautifulSoup
 
-from argumentParsing import configurations
-from argumentParsing.configurations import Configurations
-from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from translating.argumentParsing import configurations
+from translating.argumentParsing.configurations import Configurations
+from translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
 from translating.constants import LogMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
-# start show
 from translating.web.wrongStatusCodeException import WrongStatusCodeException
 
 

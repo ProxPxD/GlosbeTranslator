@@ -1,8 +1,8 @@
 import logging
 
-from argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
-from translating.constants import LogMessages
-from translating.translatingPrinting.formatter import Formatter
+from .formatter import Formatter
+from ..argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from ..constants import LogMessages
 
 
 class TranslationPrinter:

@@ -3,12 +3,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from argumentParsing.modeManager import FullModes
+from .modeManager import FullModes
 
 
 @dataclass(frozen=True)
 class Paths:
-    WORKING_DIR = Path(__file__).parent.parent  # Path("/home/proxpxd/Desktop/moje_programy/systemowe/glosbeTranslations")
+    WORKING_DIR = Path(__file__).parent.parent.parent  # Path("/home/proxpxd/Desktop/moje_programy/systemowe/glosbeTranslations")
     RESOURCES_DIR = WORKING_DIR / 'resources'
     CONFIG_FILE = RESOURCES_DIR / 'configurations.txt'
 

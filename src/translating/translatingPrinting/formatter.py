@@ -1,5 +1,3 @@
-from typing import Generator
-
 from ..constants import TranslationParts
 
 

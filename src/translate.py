@@ -260,7 +260,7 @@ def display_information(argument_parser: IntelligentArgumentParser):
         display_config(to_display)
 
 
-def display_configs(*config_names: str):
+def display_configs(*config_names: str):  # TODO, not here: implement help and input modes validation
     for to_display in config_names:
         display_config(to_display)
 

@@ -226,7 +226,7 @@ def main():
         if argument_parser.is_translation_mode_on():
             translate(argument_parser)
 
-        if not argument_parser.is_translation_mode_on():
+        if not argument_parser.modes.is_any_display_mode_on()
             Configurations.save()
         # Configurations.
 

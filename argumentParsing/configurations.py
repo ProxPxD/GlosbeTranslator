@@ -2,6 +2,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from argumentParsing.modeManager import FullModes
+
 
 @dataclass(frozen=True)
 class Paths:
@@ -11,9 +13,9 @@ class Paths:
 
 
 class Configs:
-    MODE: str = 'mode'
-    LANG_LIMIT: str = 'lang_limit'
-    SAVED_LANGS: str = 'saved_langs'
+    DEFAULT_TRANSLATIONAL_MODE: str = FullModes.DEFAULT_TRANSLATIONAL_MODE
+    LANG_LIMIT: str = FullModes.LANG_LIMIT
+    SAVED_LANGS: str = FullModes.SAVED_LANGS
 
 
 class Configurations:
@@ -54,7 +56,7 @@ class Configurations:
     @staticmethod
     def __get_default_config():
         return {
-            Configs.MODE: '-s',
+            Configs.DEFAULT_TRANSLATIONAL_MODE: '-s',
             Configs.LANG_LIMIT: 6,
             Configs.SAVED_LANGS: ['pl', 'en', 'es', 'ru', 'de', 'zh', 'fr']
         }

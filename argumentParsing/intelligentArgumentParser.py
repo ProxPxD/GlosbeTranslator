@@ -29,12 +29,16 @@ class IntelligentArgumentParser:
     def modes(self) -> ModesManager:
         return self._modesManager
 
+    def is_translation_mode_on(self):
+        return self.from_lang is not None
+
     def parse(self):
         self._args = self._modesManager.filter_modes_out_of_args(self._args)
         if not self._modesManager.validate_modes():
             raise ValueError(self._modesManager)  # TODO: expand type
 
-        self._parse_by_mode()
+        if not self._modesManager.is_any_display_mode_on():
+            self._parse_by_mode()
 
     def _parse_by_mode(self):
         if self._modesManager.is_single_mode_on():

@@ -261,17 +261,27 @@ def main():
         Configurations.init()
         argumentParser = IntelligentArgumentParser(sys.argv)
         argumentParser.parse()
-        translations = get_translations(argumentParser)
-        translation_printer = TranslationPrinter()
-        translation_printer.print_translations(translations, argumentParser)
+        if argumentParser.modes.is_any_display_mode_on():
+            display_information(argumentParser)
+        if argumentParser.modes.is_any_configurational_mode_on():
+            pass
+        if argumentParser.is_translation_mode_on():
+            translate(argumentParser)
 
-        Configurations.save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
     except WrongStatusCodeException as err:
         pass
 
 
 def get_test_arguments():
-    return 't zondany pl en'.split(' ')
+    return 't pl de -w mieć widzieć'.split(' ')# 't zondany pl en'.split(' ')
+
+
+def translate(argumentParser: IntelligentArgumentParser):
+    translations = get_translations(argumentParser)
+    translation_printer = TranslationPrinter()
+    translation_printer.print_translations(translations, argumentParser)
+
+    Configurations.save_last_used_languages(argumentParser.from_lang, *argumentParser.to_langs)
 
 
 def get_translations(argumentParser: IntelligentArgumentParser):
@@ -286,6 +296,16 @@ def get_translations(argumentParser: IntelligentArgumentParser):
         translations = translator.single_translate(argumentParser.words[0], argumentParser.to_langs[0])
 
     return translations
+
+
+def display_information(argumentParser: IntelligentArgumentParser):
+    for to_display in argumentParser.modes.get_display_modes_turned_on():
+        conf_to_display = Configurations.get_conf(to_display)
+        print(f'{to_display[2:]}: {conf_to_display}')
+
+
+def set_config(argumentParser: IntelligentArgumentParser):
+    pass
 
 
 if __name__ == '__main__':

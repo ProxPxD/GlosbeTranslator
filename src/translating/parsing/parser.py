@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
@@ -6,19 +9,22 @@ from ..constants import TranslationParts
 
 class Parser:
 
-    def __init__(self, text=""):
-        self._soup = None
-        self._init_soup(text)
+    def __init__(self, page: requests.Response = None):
+        self._page = page
 
-    def set_page_text(self, text: str):
-        self._init_soup(text)
-
-    def _init_soup(self, text: str):
-        self._soup = BeautifulSoup(text, features="html.parser")
+    def set_page(self, page: requests.Response):
+        self._page = page
 
     def parse(self):
+        if self._page.status_code == 200:
+            return self._parse_translation()
+        else:
+            return [self._create_translation_part(self._page.status_code)]
+
+    def _parse_translation(self):
         translations = []
-        for translation_element in self._soup.findAll('li', {'data-element': 'translation'}):
+        soup = BeautifulSoup(self._page.text, features="html.parser")
+        for translation_element in soup.findAll('li', {'data-element': 'translation'}):
             if translation_element.select_one('span[data-element="phrase"]'):
                 translations.append(self._parse_single_translation_tag(translation_element))
         return translations
@@ -28,6 +34,10 @@ class Parser:
         spans = self._get_spans(translation_tag)
         part_of_speech = self._get_part_of_speech(spans)
         gender = self._get_gender(spans)
+        return self._create_translation_part(translation, part_of_speech, gender)
+
+    @staticmethod
+    def _create_translation_part(translation: str | int, part_of_speech: str = '', gender: str = ''):
         return {
             TranslationParts.TRANSLATION: translation,
             TranslationParts.PART_OF_SPEECH: part_of_speech,

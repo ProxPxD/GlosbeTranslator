@@ -12,8 +12,9 @@ class TranslationParts:
 class PageCodeMessages:
     UNHANDLED_PAGE_CODE: str = 'Unhandled page code'
     STATUS: str = 'Status'
-    SAVING_IN_LOGS: str = 'Saving the necessary data in logs.'
     PLEASE_REPORT: str = 'Please, report the case'
+    UNHANDLED_PAGE_FULL_MESSAGE: str = f'{STATUS}: {{}} {UNHANDLED_PAGE_CODE}! {PLEASE_REPORT}'
+    PAGE_NOT_FOUND_404: str = 'Page has been not found. Please, check if the entered word is correct for a given language.'
 
 
 @dataclass(frozen=True)

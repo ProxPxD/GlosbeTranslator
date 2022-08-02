@@ -34,17 +34,6 @@ class Connector:
         self._word = word
 
     def get_page(self):
-        page: requests.Response = self._request_page()
-        if page.status_code != 200:
-            if page.status_code == 404:
-                logging.warning(LogMessages.NO_TRANSLATION)
-                return None
-            logging.error(LogMessages.UNKNOWN_PAGE_STATUS.format(page.status_code))
-            print(PageCodeMessages.PLEASE_REPORT)
-            raise WrongStatusCodeException(page)
-        return page
-
-    def _request_page(self) -> requests.Response:
         url: str = self._create_target_url()
         return Connector._request_page_from_url(url)
 

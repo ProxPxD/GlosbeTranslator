@@ -1,4 +1,8 @@
-from ..constants import TranslationParts
+from __future__ import annotations
+
+from typing import Any
+
+from ..constants import TranslationParts, PageCodeMessages
 
 
 class Formatter:
@@ -31,7 +35,7 @@ class Formatter:
             part_of_speech = 'adj.'
         return part_of_speech
 
-    def format_translation_into_string(self, translation: list[dict, ...]):
+    def format_translation_into_string(self, translation: list[dict, Any]):
         string = ""
         for i, elem in enumerate(translation):
             string += self._format_translation_element_into_string(elem)
@@ -39,10 +43,20 @@ class Formatter:
                 string += ', '
         return string
 
-    def _format_translation_element_into_string(self, elem: dict[str, ...]):
-        string = elem[TranslationParts.TRANSLATION]
+    def _format_translation_element_into_string(self, elem: dict[str, Any]):
+        string = self._format_raw_translation(elem[TranslationParts.TRANSLATION])
         if elem[TranslationParts.GENDER]:
             string += f' [{elem[TranslationParts.GENDER]}]'
         if elem[TranslationParts.PART_OF_SPEECH]:
             string += f' ({elem[TranslationParts.PART_OF_SPEECH]})'
         return string
+
+    def _format_raw_translation(self, translation: str | int):
+        if isinstance(translation, str):
+            return translation
+        return self._get_page_code_messages(translation)
+
+    def _get_page_code_messages(self, code: int):
+        if code == 404:
+            return PageCodeMessages.PAGE_NOT_FOUND_404
+        return PageCodeMessages.UNHANDLED_PAGE_FULL_MESSAGE.format(code)

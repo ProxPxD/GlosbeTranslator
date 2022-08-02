@@ -119,20 +119,6 @@ def parse_pronunciation(soup):
             pronunciations.append(summary.text.replace(' ', '')[1:-1])
     return pronunciations
 
-# start config
-def configure():
-    if get_arg(2) == 'limit':
-        new_limit = get_arg(3)
-        save_conf('language_limit', int(new_limit))
-    elif get_arg(2) == 'mode':
-        new_mode = get_arg(3)
-        if new_mode in ['multi', '-1', '0']:
-            save_conf('mode', 'multi')
-        elif new_mode in ['single', '1']:
-            save_conf('mode', 'single')
-
-# end config
-
 #start printing
 
 
@@ -145,20 +131,6 @@ def print_settings():
 def display_to_user(to_show=None):
     if to_show is None:
         to_show = get_arg(2)
-    if to_show == 'settings':
-        print_settings()
-    elif to_show == 'last':
-        lang1, lang2 = tuple(get_last_languages())
-        print(lang1, '=>', lang2)
-    elif to_show == 'languages':
-        langs = get_all_languages()
-        for lang in langs:
-            print(lang, end='')
-            if lang != langs[-1]:
-                print(', ', end='')
-        print()
-    elif to_show == 'mode':
-        print(f'mode = {get_configurations()["mode"]}')
 
 
 def print_help():
@@ -222,20 +194,6 @@ def translation_loop():
 def set_instructions():
     if get_arg(1) == '-help' or '-h' in sys.argv:
         print_help()
-    elif get_arg(1) == '-l':
-        new_limit = get_arg(2)
-        if new_limit is None:
-            print('The limit has to be entered')
-            return
-        save_conf('language_limit', int(new_limit))
-    elif get_arg(1) == '-m':
-        new_mode = get_arg(2)
-        if new_mode in ['multi', '-1', '0']:
-            save_conf('mode', 'multi')
-        elif new_mode in ['single', '1']:
-            save_conf('mode', 'single')
-    elif get_arg(1) == '-ll':
-        display_to_user('languages')
     elif get_arg(1) == '-last':
         display_to_user('last')
     elif get_arg(1) == '-ss':
@@ -284,8 +242,7 @@ def translate(argument_parser: IntelligentArgumentParser):
     translations = get_translations(argument_parser)
     translation_printer = TranslationPrinter()
     translation_printer.print_translations(translations, argument_parser)
-
-    Configurations.save_last_used_languages(argument_parser.from_lang, *argument_parser.to_langs)
+    Configurations.change_last_used_languages(argument_parser.from_lang, *argument_parser.to_langs)
 
 
 def get_translations(argument_parser: IntelligentArgumentParser):

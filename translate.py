@@ -234,7 +234,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't Stiefvater de pl'.split(' ')# 't zondany pl en'.split(' ')
+    return 't znikać pl en'.split(' ')# 't zondany pl en'.split(' ')
 
 
 def translate(argument_parser: IntelligentArgumentParser):

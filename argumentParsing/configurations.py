@@ -82,9 +82,9 @@ class Configurations:
 
     @staticmethod
     def load_config_languages(to_skip: str = None):
-        langs: list = Configurations.get_conf(Configs.SAVED_LANGS)
+        langs: list = Configurations.get_conf(Configs.SAVED_LANGS)[:]
         limit: int = int(Configurations.get_conf(Configs.LANG_LIMIT))
-        if to_skip:
+        if to_skip and to_skip in langs:
             langs.remove(to_skip)
         if limit is not None and len(langs) > limit:
             langs = langs[:limit]

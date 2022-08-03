@@ -12,6 +12,7 @@ class Modes:
     LAST: str = '-1'
     DEFAULT_TRANSLATIONAL_MODE: str = '-dm'
     SETTINGS: str = '-ss'
+    HELP: str = '-h'
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,7 @@ class FullModes:
     LAST: str = '--last'
     DEFAULT_TRANSLATIONAL_MODE: str = '--default_mode'
     SETTINGS: str = '--settings'
+    HELP: str = '--help'
 
 
 _modes_map = {
@@ -34,23 +36,48 @@ _modes_map = {
     Modes.SAVED_LANGS: FullModes.SAVED_LANGS,
     Modes.LAST: FullModes.LAST,
     Modes.DEFAULT_TRANSLATIONAL_MODE: FullModes.DEFAULT_TRANSLATIONAL_MODE,
-    Modes.SETTINGS: FullModes.SETTINGS
+    Modes.SETTINGS: FullModes.SETTINGS,
+    Modes.HELP: FullModes.HELP
+
 }
 
 _modes_to_arity_map = {
     (FullModes.MULTI_LANG, FullModes.MULTI_WORD): -1,
-    (FullModes.SINGLE, FullModes.SAVED_LANGS, FullModes.LANG_LIMIT, FullModes.LAST, FullModes.SETTINGS): 0,
+    (FullModes.SINGLE, FullModes.SAVED_LANGS, FullModes.LANG_LIMIT, FullModes.LAST, FullModes.SETTINGS, FullModes.HELP): 0,
     (FullModes.LANG_LIMIT, FullModes.LAST, FullModes.DEFAULT_TRANSLATIONAL_MODE): 1
 }
 
 _translational_modes = {FullModes.SINGLE, FullModes.MULTI_WORD, FullModes.MULTI_LANG}
 
-_display_modes = {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.SETTINGS}
+_display_modes = {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.SETTINGS, FullModes.HELP}
 
 _configurational_modes = {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE}
 
 
 class ModesManager:
+
+    @staticmethod
+    def show_help():
+        ModesManager._show_syntax()
+        ModesManager._show_modes()
+
+    @staticmethod
+    def _show_syntax():
+        print('Single mode     (-s):    trans <word> [from_language] [to_language]')
+        print('Multi lang mode (-m):    trans <word> [from_language] [to_languages...]')
+        print('Multi word mode (-w):    trans <from_language> [to_language] [words...]')
+        print()
+
+    @staticmethod
+    def _show_modes():
+        space_1 = 5
+        space_2 = 25
+        for name, full_mode in {name: full_mode for name, full_mode in Modes.__dict__.items() if
+                                name[0] != '_'}.items():
+            first = f'{full_mode},'
+            second = first + ' ' * (space_1 - len(first)) + _modes_map[full_mode]
+            third = second + ' ' * (space_2 - len(second)) + name
+            print(third)
 
     def __init__(self):
         self._modes: dict[str, list] = {}

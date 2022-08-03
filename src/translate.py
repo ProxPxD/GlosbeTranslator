@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from translating.argumentParsing import configurations
 from translating.argumentParsing.configurations import Configurations
 from translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
-from translating.argumentParsing.modeManager import FullModes
+from translating.argumentParsing.modeManager import FullModes, ModesManager
 from translating.constants import LogMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
@@ -228,7 +228,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't zondany pl en'.split(' ')
+    return 't -h'.split(' ')
 
 
 def translate(argument_parser: IntelligentArgumentParser):
@@ -256,7 +256,10 @@ def display_information(argument_parser: IntelligentArgumentParser):
     for to_display in argument_parser.modes.get_display_modes_turned_on():
         if to_display == FullModes.SETTINGS:
             display_configs(FullModes.DEFAULT_TRANSLATIONAL_MODE, FullModes.LANG_LIMIT, FullModes.SAVED_LANGS)
-            break
+            continue
+        if to_display == FullModes.HELP:
+            ModesManager.show_help()
+            continue
         display_config(to_display)
 
 

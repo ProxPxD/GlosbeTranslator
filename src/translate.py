@@ -21,18 +21,6 @@ from translating.web.wrongStatusCodeException import WrongStatusCodeException
 #     pronunciations = parse_pronunciation(soup)
 
 
-def show_translations(translations):
-    if translations is None:
-        print()
-        return
-    for trans in translations:
-        text = show_translation(trans)
-        if trans != translations[-1]:
-            print(text, end=', ')
-        else:
-            print(text)
-
-
 def show_pronunciations(word, pronunciations):
     if pronunciations is None:
         return None
@@ -99,10 +87,6 @@ def start_multitranslation(word, lang1, with_pronunciation):
 
 
 def find_pronunciation(lang1, word):
-    lang2 = 'en' if lang1 != 'en' else 'es'
-    global status
-    url = create_proper_url(main_url, lang1, lang2, word)
-    page = requests.get(url)
     pronunciations = None
 
     if page.status_code == 200:
@@ -120,38 +104,6 @@ def parse_pronunciation(soup):
             pronunciations.append(summary.text.replace(' ', '')[1:-1])
     return pronunciations
 
-#start printing
-
-
-def print_settings():
-    confs = get_configurations()
-    for conf in confs:
-        print(f'{conf} = {confs[conf]}')
-
-
-def display_to_user(to_show=None):
-    if to_show is None:
-        to_show = get_arg(2)
-
-
-def print_help():
-    print_instruction()
-
-
-def print_instruction():
-    print('Składnia programu:')
-    print('trans <word> [[language of word] [target language]] [-r]')
-    print('trans cześć pl en')
-
-    print()
-    print('-l    : sets multitranslation language limit')
-    print('-m    : sets mode (multitranslation or single)')
-    print('-ll   : show all displaying languages')
-    print('-last : show last used languages')
-    print('-ss   : shows settings')
-    print('trans -s settings/last/languages')
-
-#end printing
 
 def translation_loop():
     langs = get_last_languages()
@@ -190,11 +142,6 @@ def translation_loop():
                 else:
                     start_translation(lang1, lang2, word)
                 print('—' * 30)
-
-
-def set_instructions():
-    if get_arg(1) == '-loop':
-        translation_loop()
 
 
 @dataclass(frozen=True)

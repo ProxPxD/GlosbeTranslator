@@ -72,8 +72,7 @@ class ModesManager:
     def _show_modes():
         space_1 = 5
         space_2 = 25
-        for name, full_mode in {name: full_mode for name, full_mode in Modes.__dict__.items() if
-                                name[0] != '_'}.items():
+        for name, full_mode in {name: Modes.__dict__[name] for name in Modes.__dict__ if name[0] != '_'}.items():
             first = f'{full_mode},'
             second = first + ' ' * (space_1 - len(first)) + _modes_map[full_mode]
             third = second + ' ' * (space_2 - len(second)) + name

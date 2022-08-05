@@ -13,6 +13,7 @@ class Paths:
     CONFIG_FILE = RESOURCES_DIR / 'configurations.txt'
 
 
+@dataclass(frozen=True)
 class Configs:
     DEFAULT_TRANSLATIONAL_MODE: str = FullModes.DEFAULT_TRANSLATIONAL_MODE
     LANG_LIMIT: str = FullModes.LANG_LIMIT

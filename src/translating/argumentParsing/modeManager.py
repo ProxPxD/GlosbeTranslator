@@ -115,10 +115,8 @@ class ModesManager:
     def _is_mode(self, arg: str):
         return arg.startswith('-')
 
-    def validate_modes(self):  # TODO: check how to do a good validation
-        is_valid = True
-        is_valid = is_valid and self._valid_translational_mode()
-        return is_valid
+    def validate_modes(self):
+        return self._valid_translational_mode()
 
     def _valid_translational_mode(self):
         return sum(1 for mode in self._modes if mode in _translational_modes) <= 1

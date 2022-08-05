@@ -45,7 +45,7 @@ class Parser:
         }
 
     def _get_translation(self, translation_tag: Tag) -> str:
-        return translation_tag.select_one('span[data-element="phrase"]').text[1:-1]  # TODO check if and why the try except block is needed
+        return translation_tag.select_one('span[data-element="phrase"]').text[1:-1]
 
     def _get_spans(self, translation_tag: Tag) -> list[str, ...]:
         spans = translation_tag.findAll('span', {'class': 'phrase__summary__field'})

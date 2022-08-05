@@ -4,7 +4,6 @@ import socket
 import sys
 from dataclasses import dataclass
 
-import requests
 from bs4 import BeautifulSoup
 
 from translating.argumentParsing import configurations
@@ -16,9 +15,6 @@ from translating.translatingPrinting.translationPrinter import TranslationPrinte
 from translating.translator import Translator
 from translating.web.wrongStatusCodeException import WrongStatusCodeException
 
-
-# def get_translations(lang1, lang2, word, first_exec=True, with_pronunciation=False):
-#     pronunciations = parse_pronunciation(soup)
 
 
 def show_pronunciations(word, pronunciations):
@@ -84,16 +80,6 @@ def start_multitranslation(word, lang1, with_pronunciation):
             print()
     update_languages(languages, lang1)
 ###Pronunciation
-
-
-def find_pronunciation(lang1, word):
-    pronunciations = None
-
-    if page.status_code == 200:
-        soup = BeautifulSoup(page.text, "lxml")
-        pronunciations = parse_pronunciation(soup)
-        status = page.status_code
-    return pronunciations
 
 
 def parse_pronunciation(soup):

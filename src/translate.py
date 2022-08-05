@@ -161,7 +161,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't -h'.split(' ')
+    return 't think en pl'.split(' ')
 
 
 def translate(argument_parser: IntelligentArgumentParser):

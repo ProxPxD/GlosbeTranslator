@@ -59,4 +59,6 @@ class Formatter:
     def _get_page_code_messages(self, code: int):
         if code == 404:
             return PageCodeMessages.PAGE_NOT_FOUND_404
+        if code == 303:
+            return PageCodeMessages.PAGE_NOT_FOUND_303
         return PageCodeMessages.UNHANDLED_PAGE_FULL_MESSAGE.format(code)

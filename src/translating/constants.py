@@ -15,6 +15,7 @@ class PageCodeMessages:
     PLEASE_REPORT: str = 'Please, report the case'
     UNHANDLED_PAGE_FULL_MESSAGE: str = f'{STATUS}: {{}} {UNHANDLED_PAGE_CODE}! {PLEASE_REPORT}'
     PAGE_NOT_FOUND_404: str = 'Page has not been found. Please, check if the entered word is correct for a given language.'
+    PAGE_NOT_FOUND_303: str = 'The page has to be redirected - to be implemented.'
 
 
 @dataclass(frozen=True)

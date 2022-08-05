@@ -14,9 +14,7 @@ from translating.translator import Translator
 from translating.web.wrongStatusCodeException import WrongStatusCodeException
 
 
-# Implementation
-
-# start connect
+# TODO: implement one constant connection throughout the whole translation process
 
 def is_connection(hostname):
     try:
@@ -29,48 +27,6 @@ def is_connection(hostname):
     return False
 
 # end connect
-
-
-
-
-
-def translation_loop():
-    langs = get_last_languages()
-    lang1 = langs[0]
-    lang2 = langs[1]
-    mode = get_conf('mode')
-    in_loop = True
-    print('Please enter a word')
-    if mode == 'single':
-        print(f'trans ? {lang1} {lang2}')
-    else:
-        print(f'trans ? {lang1}')
-    while in_loop:
-        word = input()
-        if word[:2] in ['l1', '-l1']:
-            lang1 = word[3:]
-            print(f'trans ? {lang1} {lang2}')
-        elif word[:2] in ['l2', '-l2']:
-            lang2 = word[3:]
-            print(f'trans ? {lang1} {lang2}')
-        elif word[:2] in ['-m', '-0', 'm', '0']:
-            mode = 'multi'
-            print(f'trans ? {lang1}')
-        elif word[:2] in ['-1', '1']:
-            mode = 'single'
-            print(f'trans ? {lang1} {lang2}')
-        elif word[:2] in ['-r', 'r']:
-            lang1, lang2 = lang2, lang1
-            print(f'trans ? {lang1} {lang2}')
-        elif word[:2] in ['-q', 'q']:
-            in_loop = False
-        else:
-            if len(word) > 0:
-                if mode == 'multi':
-                    start_multitranslation(word, lang1, True)
-                else:
-                    start_translation(lang1, lang2, word)
-                print('—' * 30)
 
 
 @dataclass(frozen=True)

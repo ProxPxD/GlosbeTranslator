@@ -4,6 +4,7 @@ from .parsing.parser import Parser
 from .web.connector import Connector
 
 
+
 def _no_nones(func):
     def wrap(*args):
         return (elem for elem in func(*args) if elem and elem[1] is not None)
@@ -22,15 +23,23 @@ class Translator:
 
     @_no_nones
     def multi_lang_translate(self, word: str, to_langs: list[str, ...]):
-        return ((to_lang, self._generate_translation(word, to_lang)) for to_lang in to_langs)
+        self._connector.establish_session()
+        for to_lang in to_langs:
+            yield to_lang, self._generate_translation(word, to_lang)
+        self._connector.close_session()
 
     @_no_nones
     def multi_word_translate(self, to_lang, words: list[str, ...]):
-        return ((word, self._generate_translation(word, to_lang)) for word in words)
+        self._connector.establish_session()
+        for word in words:
+            yield word, self._generate_translation(word, to_lang)
+        self._connector.close_session()
 
     @_no_nones
     def single_translate(self, word: str, to_lang: str = None):
-        return ((to_lang, self._generate_translation(word, to_lang)) for _ in [0])
+        self._connector.establish_session()
+        yield word, self._generate_translation(word, to_lang)
+        self._connector.close_session()
 
     def _generate_translation(self, word: str, to_lang: str = None):
         self._connector.set_word(word)

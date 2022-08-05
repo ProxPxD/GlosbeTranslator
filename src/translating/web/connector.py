@@ -1,11 +1,10 @@
-import logging
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 import requests
 
 from . import utils
-from .wrongStatusCodeException import WrongStatusCodeException
-from ..constants import LogMessages, PageCodeMessages
 
 
 @dataclass(frozen=True)
@@ -19,6 +18,7 @@ class Connector:
         self._from_lang: str = from_lang
         self._to_lang: str = to_lang
         self._word: str = word
+        self._session: requests.Session | None = None
 
     def set_langs(self, from_lang, to_lang):
         self.set_from_lang(from_lang)
@@ -33,19 +33,19 @@ class Connector:
     def set_word(self, word: str):
         self._word = word
 
-    def get_page(self):
+    def establish_session(self):
+        self._session = requests.Session()
+        self._session.headers.update(Connector._get_default_headers())
+
+    def close_session(self):
+        self._session.close()
+
+    def get_page(self) -> requests.Response:
         url: str = self._create_target_url()
-        return Connector._request_page_from_url(url)
+        return self._session.get(url, allow_redirects=True)
 
     def _create_target_url(self):
         return utils.join_url_with_slashes(WebConstants.MAIN_URL, self._from_lang, self._to_lang, self._word)
-
-    @staticmethod
-    def _request_page_from_url(url: str):
-        with requests.Session() as session:
-            session.headers.update(Connector._get_default_headers())
-            page = session.get(url, allow_redirects=False)
-        return page
 
     @staticmethod
     def _get_default_headers() -> dict:

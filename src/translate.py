@@ -16,17 +16,6 @@ from translating.web.wrongStatusCodeException import WrongStatusCodeException
 
 # TODO: implement one constant connection throughout the whole translation process
 
-def is_connection(hostname):
-    try:
-        host = socket.gethostbyname(hostname)
-        s = socket.create_connection((host, 80))
-        s.close()
-        return True
-    except:
-        pass
-    return False
-
-# end connect
 
 
 @dataclass(frozen=True)

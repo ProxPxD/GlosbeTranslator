@@ -4,8 +4,6 @@ import socket
 import sys
 from dataclasses import dataclass
 
-from bs4 import BeautifulSoup
-
 from translating.argumentParsing import configurations
 from translating.argumentParsing.configurations import Configurations
 from translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
@@ -14,20 +12,6 @@ from translating.constants import LogMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
 from translating.web.wrongStatusCodeException import WrongStatusCodeException
-
-
-
-def show_pronunciations(word, pronunciations):
-    if pronunciations is None:
-        return None
-    text = f'{word} '
-    for pron in pronunciations:
-        text += f'/{pron}/'
-        if pron != pronunciations[-1]:
-            text += ', '
-    print(text)
-
-# end show
 
 
 # Implementation
@@ -47,48 +31,7 @@ def is_connection(hostname):
 # end connect
 
 
-def check_and_translate(lang1, lang2, word, with_pronunciation=False):
-    if is_connection(main_url):
-        return get_translations(lang1, lang2, word, first_exec=False,
-                                with_pronunciation=with_pronunciation)
-    else:
-        print("Brak dostępu do strony")
 
-
-def get_pronunciation(lang, word):
-    if is_connection(main_url):
-        return find_pronunciation(lang, word)
-    else:
-        print("Brak dostępu do strony")
-
-
-def start_multitranslation(word, lang1, with_pronunciation):
-    language_limit = get_conf('language_limit')
-    languages = get_all_languages()
-    for lang in languages[:language_limit+1]:
-        if lang == lang1:
-            continue
-        result = check_and_translate(lang1, lang, word, with_pronunciation)
-        if with_pronunciation and result[1] is not None:
-            with_pronunciation = False
-            show_pronunciations(word, result[1])  # Pronunciations
-
-        print(f'{lang}:', end=' ')
-        if result[0] is not None and len(result[0]) != 0:
-            show_translations(result[0])  # Translations
-        else:
-            print()
-    update_languages(languages, lang1)
-###Pronunciation
-
-
-def parse_pronunciation(soup):
-    pronunciations = []
-    summaries = soup.findAll('span', {'class': 'phrase__summary__field'})
-    for summary in summaries:
-        if summary.text[-1] in ']/':
-            pronunciations.append(summary.text.replace(' ', '')[1:-1])
-    return pronunciations
 
 
 def translation_loop():

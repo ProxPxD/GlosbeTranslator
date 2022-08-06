@@ -1,4 +1,0 @@
-{
-    "language_limit": 5,
-    "mode": "single"
-}

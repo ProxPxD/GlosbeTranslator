@@ -1,6 +1,6 @@
 import functools
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Generator
 
 from .constants import ValidationErrors, Messages
 
@@ -69,19 +69,19 @@ _mode_types_to_modes = {
 class ModesManager:
 
     @staticmethod
-    def show_help():
+    def show_help() -> None:
         ModesManager._show_syntax()
         ModesManager._show_modes()
 
     @staticmethod
-    def _show_syntax():
+    def _show_syntax() -> None:
         print('Single mode     (-s):    trans <word> [from_language] [to_language]')
         print('Multi lang mode (-m):    trans <word> [from_language] [to_languages...]')
         print('Multi word mode (-w):    trans <from_language> [to_language] [words...]')
         print()
 
     @staticmethod
-    def _show_modes():
+    def _show_modes() -> None:
         space_1 = 5
         space_2 = 25
         for name, full_mode in {name: Modes.__dict__[name] for name in Modes.__dict__ if name[0] != '_'}.items():
@@ -93,14 +93,14 @@ class ModesManager:
     def __init__(self):
         self._modes: dict[str, list] = {}
 
-    def get_config_args(self, config: str):
+    def get_config_args(self, config: str) -> list[str]:
         return self._modes[config] if config in self._modes else []
 
     def get_max_arity(self, mode: str) -> int:
         return functools.reduce(lambda m1, m2: m1 if m1 > m2 else m2,
                                 (_modes_to_arity_map[modes] for modes in _modes_to_arity_map if mode in modes))
 
-    def filter_modes_out_of_args(self, args: list):  # TODO: look for a clean-code refactor
+    def filter_modes_out_of_args(self, args: list[str]) -> list[str]:  # TODO: look for a clean-code refactor
         i = 0
         while 0 <= i < len(args):
             arg = args[i]
@@ -134,25 +134,25 @@ class ModesManager:
             error_messages.append(msg)
         return error_messages
 
-    def _valid_translational_mode(self):
+    def _valid_translational_mode(self) -> bool:
         return sum(1 for mode in self._modes if mode in self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL)) <= 1
 
-    def is_mode_on(self, mode: str):
+    def is_mode_on(self, mode: str) -> bool:
         return mode in self._modes
 
-    def is_multi_lang_mode_on(self):
+    def is_multi_lang_mode_on(self) -> bool:
         return self.is_mode_on(FullModes.MULTI_LANG)
 
-    def is_multi_word_mode_on(self):
+    def is_multi_word_mode_on(self) -> bool:
         return self.is_mode_on(FullModes.MULTI_WORD)
 
-    def is_single_mode_on(self):
+    def is_single_mode_on(self) -> bool:
         return not (self.is_multi_lang_mode_on() or self.is_multi_word_mode_on()) or self.is_mode_on(FullModes.SINGLE)
 
     def is_any_mode_turned_on_by_type(self, type: str) -> bool:
         return any(self.get_modes_turned_on_by_type(type))
 
-    def get_modes_turned_on_by_type(self, type: str):
+    def get_modes_turned_on_by_type(self, type: str) -> Generator[str, None, None]:
         if type not in _mode_types_to_modes:
             raise ValueError(Messages.WRONG_MODE_TYPE.format(type))
         is_mode_condition_satisfied = self._get_mode_turn_on_condition_by_type(type)

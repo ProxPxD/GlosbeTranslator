@@ -15,7 +15,7 @@ class Parser:
     def set_page(self, page: requests.Response):
         self._page = page
 
-    def parse(self):
+    def parse(self) -> list[dict[str, str]]:
         if self._page.status_code == 200:
             return self._parse_translation()
         else:

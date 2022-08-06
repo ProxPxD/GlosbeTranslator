@@ -1,10 +1,10 @@
 from .configurations import Configurations
 from .intelligentArgumentParser import IntelligentArgumentParser
-from .modeManager import FullModes, ModesManager
+from .modeManager import FullModes, ModesManager, ModeTypes
 
 
 def display_information(argument_parser: IntelligentArgumentParser):
-    for to_display in argument_parser.modes.get_display_modes_turned_on():
+    for to_display in argument_parser.modes.get_modes_turned_on_by_type(ModeTypes.DISPLAYAVBLE):
         if to_display == FullModes.SETTINGS:
             display_configs(FullModes.DEFAULT_TRANSLATIONAL_MODE, FullModes.LANG_LIMIT, FullModes.SAVED_LANGS)
             continue

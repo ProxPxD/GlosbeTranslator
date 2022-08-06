@@ -7,6 +7,8 @@ from translating.argumentParsing import configDisplayer
 from translating.argumentParsing import configurations
 from translating.argumentParsing.configurations import Configurations
 from translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from translating.argumentParsing.modeManager import ModeTypes
+from translating.argumentParsing.parsingException import ParsingException
 from translating.constants import LogMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
@@ -28,23 +30,26 @@ def main():
         Configurations.init()
         argument_parser = IntelligentArgumentParser(sys.argv)
         argument_parser.parse()
-        if argument_parser.modes.is_any_display_mode_on():
+        if argument_parser.modes.is_any_mode_turned_on_by_type(ModeTypes.DISPLAYAVBLE):
              configDisplayer.display_information(argument_parser)
-        if argument_parser.modes.is_any_configurational_mode_on():
+        if argument_parser.modes.is_any_mode_turned_on_by_type(ModeTypes.CONFIGURATIONAL):
             set_config(argument_parser)
         if argument_parser.is_translation_mode_on():
             translate_and_print(argument_parser)
 
-        if not argument_parser.modes.is_any_display_mode_on():
+        if not argument_parser.modes.is_any_mode_turned_on_by_type(ModeTypes.DISPLAYAVBLE):
             Configurations.save()
 
     except WrongStatusCodeException as err:
         logging.error(f'{err.page.status_code}: {err.page.text}')
         print(LogMessages.UNKNOWN_PAGE_STATUS.format(err.page.status_code))
+    except ParsingException as err:
+        for msg in err.validation_messages:
+            print(msg)
 
 
 def get_test_arguments():
-    return 't think en pl'.split(' ')
+    return 't -s -m'.split(' ')
 
 
 def translate_and_print(argument_parser: IntelligentArgumentParser):
@@ -69,7 +74,7 @@ def get_translations(argument_parser: IntelligentArgumentParser):
 
 
 def set_config(argument_parser: IntelligentArgumentParser):
-    for config_name in argument_parser.modes.get_configurational_modes_turned_on():
+    for config_name in argument_parser.modes.get_modes_turned_on_by_type(ModeTypes.CONFIGURATIONAL):
         arguments = argument_parser.modes.get_config_args(config_name)
         Configurations.change_conf(config_name, arguments[0])
 

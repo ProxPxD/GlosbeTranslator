@@ -1,5 +1,8 @@
 import functools
 from dataclasses import dataclass
+from typing import Callable
+
+from .constants import ValidationErrors, Messages
 
 
 @dataclass(frozen=True)
@@ -28,6 +31,14 @@ class FullModes:
     HELP: str = '--help'
 
 
+@dataclass(frozen=True)
+class ModeTypes:
+    TRANSLATIONAL: str = 'translational'
+    CONFIGURATIONAL: str = 'configurational'
+    DISPLAYAVBLE: str = 'displayable'
+
+
+
 _modes_map = {
     Modes.MULTI_LANG: FullModes.MULTI_LANG,
     Modes.MULTI_WORD: FullModes.MULTI_WORD,
@@ -47,11 +58,12 @@ _modes_to_arity_map = {
     (FullModes.LANG_LIMIT, FullModes.LAST, FullModes.DEFAULT_TRANSLATIONAL_MODE): 1
 }
 
-_translational_modes = {FullModes.SINGLE, FullModes.MULTI_WORD, FullModes.MULTI_LANG}
 
-_display_modes = {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.SETTINGS, FullModes.HELP}
-
-_configurational_modes = {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE}
+_mode_types_to_modes = {
+    ModeTypes.TRANSLATIONAL: {FullModes.SINGLE, FullModes.MULTI_WORD, FullModes.MULTI_LANG},
+    ModeTypes.CONFIGURATIONAL: {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.SETTINGS, FullModes.HELP},
+    ModeTypes.DISPLAYAVBLE: {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE},
+}
 
 
 class ModesManager:
@@ -115,11 +127,15 @@ class ModesManager:
     def _is_mode(self, arg: str):
         return arg.startswith('-')
 
-    def validate_modes(self):
-        return self._valid_translational_mode()
+    def validate_modes(self) -> list[str]:
+        error_messages = []
+        if not self._valid_translational_mode():
+            msg = ValidationErrors.MULTI_TRANSLATION_MODES_ON.format()
+            error_messages.append(msg)
+        return error_messages
 
     def _valid_translational_mode(self):
-        return sum(1 for mode in self._modes if mode in _translational_modes) <= 1
+        return sum(1 for mode in self._modes if mode in self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL)) <= 1
 
     def is_mode_on(self, mode: str):
         return mode in self._modes
@@ -133,20 +149,18 @@ class ModesManager:
     def is_single_mode_on(self):
         return not (self.is_multi_lang_mode_on() or self.is_multi_word_mode_on()) or self.is_mode_on(FullModes.SINGLE)
 
-    def is_any_display_mode_on(self):
-        return any(self.get_display_modes_turned_on())
+    def is_any_mode_turned_on_by_type(self, type: str) -> bool:
+        return any(self.get_modes_turned_on_by_type(type))
 
-    def get_display_modes_turned_on(self):
-        return (mode for mode in self._modes if self._is_display_mode_on(mode))
+    def get_modes_turned_on_by_type(self, type: str):
+        if type not in _mode_types_to_modes:
+            raise ValueError(Messages.WRONG_MODE_TYPE.format(type))
+        is_mode_condition_satisfied = self._get_mode_turn_on_condition_by_type(type)
+        return (mode for mode in self._modes if mode in _mode_types_to_modes[type] and is_mode_condition_satisfied(mode))
 
-    def _is_display_mode_on(self, mode: str):
-        return mode in _display_modes and len(self._modes[mode]) == 0
-
-    def is_any_configurational_mode_on(self) -> bool:
-        return any(self.get_configurational_modes_turned_on())
-
-    def get_configurational_modes_turned_on(self):
-        return (mode for mode in self._modes if self._is_configurational_mode_on(mode))
-
-    def _is_configurational_mode_on(self, mode: str) -> bool:
-        return len(self._modes[mode]) > 0 and mode in _configurational_modes
+    def _get_mode_turn_on_condition_by_type(self, type: str) -> Callable[[str], bool]:
+        if type == ModeTypes.DISPLAYAVBLE:
+            return lambda mode: len(self._modes[mode]) == 0
+        if type == ModeTypes.CONFIGURATIONAL:
+            return lambda mode: len(self._modes[mode]) > 0
+        return lambda mode: True

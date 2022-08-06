@@ -2,6 +2,7 @@
 from .configurations import Configurations
 
 from .modeManager import ModesManager
+from .parsingException import ParsingException
 
 
 class IntelligentArgumentParser:
@@ -34,8 +35,9 @@ class IntelligentArgumentParser:
 
     def parse(self):
         self._args = self._modesManager.filter_modes_out_of_args(self._args)
-        if not self._modesManager.validate_modes():
-            raise ValueError(self._modesManager)  # TODO: expand type
+        error_messages = self._modesManager.validate_modes()
+        if error_messages:
+            raise ParsingException(error_messages)
 
         if len(self._args):
             self._parse_by_mode()

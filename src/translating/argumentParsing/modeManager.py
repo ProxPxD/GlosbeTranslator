@@ -100,6 +100,8 @@ class ModesManager:
         i = 0
         while 0 <= i < len(args):
             i = self._find_index_of_next_arg(i, args)
+            if i == len(args):
+                break
             arg = self._get_key_for_arg(args[i])
             del args[i]
             self._initialize_modes_dictionary_if_needed(arg)
@@ -111,9 +113,12 @@ class ModesManager:
         return args
 
     def _find_index_of_next_arg(self, i: int, args: list[str]) -> int:
-        while not self._is_mode(args[i]):
+        while len(args) > i and not self._is_mode(args[i]):
             i += 1
         return i
+
+    def _is_mode(self, arg: str) -> bool:
+        return arg.startswith('-')
 
     def _get_key_for_arg(self, arg: str) -> str:
         if arg in _modes_map:
@@ -132,6 +137,8 @@ class ModesManager:
         arity: int = self.get_max_arity(arg)
         if len(args) < i + arity:
             arity = len(args) - i
+        # if arity < 0:
+        #     return len(args)
         return i + arity
 
     def validate_modes(self) -> list[str]:

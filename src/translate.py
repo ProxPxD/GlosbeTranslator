@@ -49,7 +49,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't -s -m'.split(' ')
+    return 't pl de -w mieć widzieć iść biec myśleć spacerować'.split(' ')
 
 
 def translate_and_print(argument_parser: IntelligentArgumentParser):

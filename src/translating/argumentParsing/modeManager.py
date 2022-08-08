@@ -60,7 +60,7 @@ _modes_to_arity_map = {
 _mode_types_to_modes = {
     ModeTypes.TRANSLATIONAL: {FullModes.SINGLE, FullModes.MULTI_WORD, FullModes.MULTI_LANG},
     ModeTypes.CONFIGURATIONAL: {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.SETTINGS, FullModes.HELP},
-    ModeTypes.DISPLAYAVBLE: {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE},
+    ModeTypes.DISPLAYAVBLE: {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE, FullModes.HELP},
 }
 
 

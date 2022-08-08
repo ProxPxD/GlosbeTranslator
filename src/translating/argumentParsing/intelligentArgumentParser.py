@@ -60,8 +60,10 @@ class IntelligentArgumentParser:
 
     def _parse_multi_lang(self):
         self._words.append(self._args[0])
-        self._from_lang = self._args[1]
+        self._from_lang = self._get_arg_or_else(1)
         self._to_langs = self._args[2:]
+        if not self._from_lang:
+            self._from_lang = Configurations.get_nth_saved_language(0)
         if not self._to_langs:
             self._to_langs = Configurations.load_config_languages(to_skip=self._from_lang)
 
@@ -69,3 +71,6 @@ class IntelligentArgumentParser:
         self._from_lang = self._args[0]
         self._to_langs.append(self._args[1])
         self._words = self._args[2:]
+
+    def _get_arg_or_else(self, i: int, otherwise: str = None):
+        return self._args[i] if i < len(self._args) else otherwise

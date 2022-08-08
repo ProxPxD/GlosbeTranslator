@@ -10,7 +10,7 @@ from .modeManager import FullModes
 class Paths:
     WORKING_DIR = Path(__file__).parent.parent.parent  # Path("/home/proxpxd/Desktop/moje_programy/systemowe/glosbeTranslations")
     RESOURCES_DIR = WORKING_DIR / 'resources'
-    CONFIG_FILE = RESOURCES_DIR / 'configurations.txt'
+    CONFIG_FILE = RESOURCES_DIR / 'configurations.json'
 
 
 @dataclass(frozen=True)

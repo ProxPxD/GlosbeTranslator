@@ -1,4 +1,4 @@
 venv
-configurations.txt
+src/resources/configurations.json
 .idea
 src/resources

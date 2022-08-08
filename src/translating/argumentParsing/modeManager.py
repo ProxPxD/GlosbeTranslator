@@ -38,7 +38,6 @@ class ModeTypes:
     DISPLAYAVBLE: str = 'displayable'
 
 
-
 _modes_map = {
     Modes.MULTI_LANG: FullModes.MULTI_LANG,
     Modes.MULTI_WORD: FullModes.MULTI_WORD,
@@ -49,7 +48,6 @@ _modes_map = {
     Modes.DEFAULT_TRANSLATIONAL_MODE: FullModes.DEFAULT_TRANSLATIONAL_MODE,
     Modes.SETTINGS: FullModes.SETTINGS,
     Modes.HELP: FullModes.HELP
-
 }
 
 _modes_to_arity_map = {
@@ -66,7 +64,7 @@ _mode_types_to_modes = {
 }
 
 
-class ModesManager:
+class ModesManager:  # TODO: create a mode filter class. Consider creating a subpackage
 
     @staticmethod
     def show_help() -> None:

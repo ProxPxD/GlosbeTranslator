@@ -16,6 +16,8 @@ class Modes:
     DEFAULT_TRANSLATIONAL_MODE: str = '-dm'
     SETTINGS: str = '-ss'
     HELP: str = '-h'
+    ADD_LANG: str = '-al'
+    REMOVE_LANG: str = '-rl'
 
 
 @dataclass(frozen=True)
@@ -29,6 +31,8 @@ class FullModes:
     DEFAULT_TRANSLATIONAL_MODE: str = '--default_mode'
     SETTINGS: str = '--settings'
     HELP: str = '--help'
+    ADD_LANG: str = '--add_lang'
+    REMOVE_LANG: str = '--remove_lang'
 
 
 @dataclass(frozen=True)
@@ -47,11 +51,13 @@ _modes_map = {
     Modes.LAST: FullModes.LAST,
     Modes.DEFAULT_TRANSLATIONAL_MODE: FullModes.DEFAULT_TRANSLATIONAL_MODE,
     Modes.SETTINGS: FullModes.SETTINGS,
-    Modes.HELP: FullModes.HELP
+    Modes.HELP: FullModes.HELP,
+    Modes.ADD_LANG: FullModes.ADD_LANG,
+    Modes.REMOVE_LANG: FullModes.REMOVE_LANG
 }
 
 _modes_to_arity_map = {
-    (FullModes.MULTI_LANG, FullModes.MULTI_WORD): -1,
+    (FullModes.MULTI_LANG, FullModes.MULTI_WORD, FullModes.ADD_LANG, FullModes.REMOVE_LANG): -1,
     (FullModes.SINGLE, FullModes.SAVED_LANGS, FullModes.LANG_LIMIT, FullModes.LAST, FullModes.SETTINGS, FullModes.HELP): 0,
     (FullModes.LANG_LIMIT, FullModes.LAST, FullModes.DEFAULT_TRANSLATIONAL_MODE): 1
 }
@@ -59,8 +65,8 @@ _modes_to_arity_map = {
 
 _mode_types_to_modes = {
     ModeTypes.TRANSLATIONAL: {FullModes.SINGLE, FullModes.MULTI_WORD, FullModes.MULTI_LANG},
-    ModeTypes.CONFIGURATIONAL: {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.SETTINGS, FullModes.HELP},
-    ModeTypes.DISPLAYAVBLE: {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE, FullModes.HELP},
+    ModeTypes.CONFIGURATIONAL: {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.ADD_LANG, FullModes.REMOVE_LANG},
+    ModeTypes.DISPLAYAVBLE: {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE, FullModes.SETTINGS, FullModes.HELP},
 }
 
 
@@ -80,12 +86,12 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
 
     @staticmethod
     def _show_modes() -> None:
-        space_1 = 5
-        space_2 = 25
-        for name, full_mode in {name: Modes.__dict__[name] for name in Modes.__dict__ if name[0] != '_'}.items():
-            first = f'{full_mode},'
-            second = first + ' ' * (space_1 - len(first)) + _modes_map[full_mode]
-            third = second + ' ' * (space_2 - len(second)) + name
+        space_1 = 18
+        space_2 = 24
+        for name, mode in {name: Modes.__dict__[name] for name in Modes.__dict__ if name[0] != '_'}.items():
+            first = f'{_modes_map[mode]},'
+            second = first + ' ' * (space_1 - len(first)) + mode
+            third = second + ' ' * (space_2 - len(second)) + f':{name}'
             print(third)
 
     def __init__(self):
@@ -135,8 +141,10 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         arity: int = self.get_max_arity(arg)
         if len(args) < i + arity:
             arity = len(args) - i
-        # if arity < 0:
-        #     return len(args)
+        if arity < 0:
+            if arg in (FullModes.MULTI_WORD, FullModes.MULTI_LANG):
+                return i
+            return len(args)
         return i + arity
 
     def validate_modes(self) -> list[str]:

@@ -3,6 +3,7 @@ import logging
 import sys
 from dataclasses import dataclass
 
+from translating.argumentParsing import configChanger
 from translating.argumentParsing import configDisplayer
 from translating.argumentParsing import configurations
 from translating.argumentParsing.configurations import Configurations
@@ -33,7 +34,7 @@ def main():
         if argument_parser.modes.is_any_mode_turned_on_by_type(ModeTypes.DISPLAYAVBLE):
              configDisplayer.display_information(argument_parser)
         if argument_parser.modes.is_any_mode_turned_on_by_type(ModeTypes.CONFIGURATIONAL):
-            set_config(argument_parser)
+            configChanger.set_configs(argument_parser)
         if argument_parser.is_translation_mode_on():
             translate_and_print(argument_parser)
 
@@ -49,7 +50,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't pl de -w mieć widzieć iść biec myśleć spacerować'.split(' ')
+    return 't -al uk'.split(' ')
 
 
 def translate_and_print(argument_parser: IntelligentArgumentParser):
@@ -71,12 +72,6 @@ def get_translations(argument_parser: IntelligentArgumentParser):
         translations = translator.single_translate(argument_parser.words[0], argument_parser.to_langs[0])
 
     return translations
-
-
-def set_config(argument_parser: IntelligentArgumentParser):
-    for config_name in argument_parser.modes.get_modes_turned_on_by_type(ModeTypes.CONFIGURATIONAL):
-        arguments = argument_parser.modes.get_config_args(config_name)
-        Configurations.change_conf(config_name, arguments[0])
 
 
 if __name__ == '__main__':

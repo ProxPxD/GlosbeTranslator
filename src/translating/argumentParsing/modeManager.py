@@ -39,7 +39,7 @@ class FullModes:
 class ModeTypes:
     TRANSLATIONAL: str = 'translational'
     CONFIGURATIONAL: str = 'configurational'
-    DISPLAYAVBLE: str = 'displayable'
+    DISPLAYABLE: str = 'displayable'
 
 
 _modes_map = {
@@ -66,7 +66,7 @@ _modes_to_arity_map = {
 _mode_types_to_modes = {
     ModeTypes.TRANSLATIONAL: {FullModes.SINGLE, FullModes.MULTI_WORD, FullModes.MULTI_LANG},
     ModeTypes.CONFIGURATIONAL: {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.ADD_LANG, FullModes.REMOVE_LANG},
-    ModeTypes.DISPLAYAVBLE: {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE, FullModes.SETTINGS, FullModes.HELP, FullModes.SAVED_LANGS},
+    ModeTypes.DISPLAYABLE: {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE, FullModes.SETTINGS, FullModes.HELP, FullModes.SAVED_LANGS},
 }
 
 
@@ -167,7 +167,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         return self.is_mode_on(FullModes.MULTI_WORD)
 
     def is_single_mode_on(self) -> bool:
-        return not (self.is_multi_lang_mode_on() or self.is_multi_word_mode_on()) or self.is_mode_on(FullModes.SINGLE)
+        return self.is_mode_on(FullModes.SINGLE)
 
     def is_any_mode_turned_on_by_type(self, type: str) -> bool:
         return any(self.get_modes_turned_on_by_type(type))
@@ -179,7 +179,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         return (mode for mode in self._modes if mode in _mode_types_to_modes[type] and is_mode_condition_satisfied(mode))
 
     def _get_mode_turn_on_condition_by_type(self, type: str) -> Callable[[str], bool]:
-        if type == ModeTypes.DISPLAYAVBLE:
+        if type == ModeTypes.DISPLAYABLE:
             return lambda mode: len(self._modes[mode]) == 0
         if type == ModeTypes.CONFIGURATIONAL:
             return lambda mode: len(self._modes[mode]) > 0

@@ -31,14 +31,14 @@ def main():
         Configurations.init()
         argument_parser = IntelligentArgumentParser(sys.argv)
         argument_parser.parse()
-        if argument_parser.modes.is_any_mode_turned_on_by_type(ModeTypes.DISPLAYAVBLE):
+        if argument_parser.modes.is_any_mode_turned_on_by_type(ModeTypes.DISPLAYABLE):
              configDisplayer.display_information(argument_parser)
         if argument_parser.modes.is_any_mode_turned_on_by_type(ModeTypes.CONFIGURATIONAL):
             configChanger.set_configs(argument_parser)
         if argument_parser.is_translation_mode_on():
             translate_and_print(argument_parser)
 
-        if not argument_parser.modes.is_any_mode_turned_on_by_type(ModeTypes.DISPLAYAVBLE):
+        if not argument_parser.modes.is_any_mode_turned_on_by_type(ModeTypes.DISPLAYABLE):
             Configurations.save()
 
     except WrongStatusCodeException as err:

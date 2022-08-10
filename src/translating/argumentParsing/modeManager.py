@@ -184,3 +184,12 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         if type == ModeTypes.CONFIGURATIONAL:
             return lambda mode: len(self._modes[mode]) > 0
         return lambda mode: True
+
+    def is_any_translational_mode_on(self) -> bool:
+        return self.is_any_mode_turned_on_by_type(ModeTypes.TRANSLATIONAL)
+
+    def is_any_displayable_mode_on(self) -> bool:
+        return self.is_any_mode_turned_on_by_type(ModeTypes.DISPLAYABLE)
+
+    def is_any_configurational_mode_on(self) -> bool:
+        return self.is_any_mode_turned_on_by_type(ModeTypes.CONFIGURATIONAL)

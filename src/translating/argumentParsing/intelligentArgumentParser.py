@@ -1,7 +1,7 @@
 
-from .configurations import Configurations
+from .configurations import Configurations, Configs
 
-from .modeManager import ModesManager
+from .modeManager import ModesManager, ModeTypes, Modes
 from .parsingException import ParsingException
 
 
@@ -40,15 +40,22 @@ class IntelligentArgumentParser:
             raise ParsingException(error_messages)
 
         if len(self._args):
-            self._parse_by_mode()
+            mode: str = self._get_current_mode()
+            self._parse_by_mode(mode)
 
-    def _parse_by_mode(self):
-        if self._modesManager.is_single_mode_on():
+    def _get_current_mode(self) -> str:
+        mode = next(self._modesManager.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL), None)
+        if not mode:
+            mode = Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE)
+        return mode
+
+    def _parse_by_mode(self, mode: str):
+        if mode == Modes.SINGLE:
             self._parse_normal()
-        elif self._modesManager.is_multi_lang_mode_on():
-            self._parse_multi_lang()
-        elif self._modesManager.is_multi_word_mode_on():
+        elif mode == Modes.MULTI_WORD:
             self._parse_multi_word()
+        elif mode == Modes.MULTI_LANG:
+            self._parse_multi_lang()
 
     def _parse_normal(self):
         self._words.append(self._args[0])

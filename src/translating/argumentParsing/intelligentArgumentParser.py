@@ -71,14 +71,20 @@ class IntelligentArgumentParser:
 
     def _parse_multi_word(self):
         if self._modesManager.is_mode_explicitly_on(FullModes.MULTI_WORD):
-            mode_index: int = self.modes.get_mode_position(FullModes.MULTI_WORD)
-            self._from_lang = self._get_arg_before_mode_else_from_config(0, mode_index)
-            self._to_langs.append(self._get_arg_before_mode_else_from_config(1, mode_index))
-            self._words = self._modesManager.get_mode_args(FullModes.MULTI_WORD)[1:]
+            self._parse_multi_word_explicitly()
         else:
-            self._from_lang = self._get_arg_or_else(0)
-            self._to_langs.append(self._get_arg_or_else(1))
+            self._parse_multi_word_implicitly()
 
+    def _parse_multi_word_implicitly(self):
+        self._from_lang = self._get_arg_or_else(0)
+        self._to_langs.append(self._get_arg_or_else(1))
+        self._words = self._args[2:]
+
+    def _parse_multi_word_explicitly(self):
+        mode_index: int = self.modes.get_mode_position(FullModes.MULTI_WORD)
+        self._from_lang = self._get_arg_before_mode_else_from_config(0, mode_index)
+        self._to_langs.append(self._get_arg_before_mode_else_from_config(1, mode_index))
+        self._words = self._modesManager.get_mode_args(FullModes.MULTI_WORD)[1:]
         if not self._words:
             self._words = self._args[2:]
 

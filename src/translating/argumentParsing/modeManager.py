@@ -139,7 +139,8 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
 
     def get_max_arity(self, mode: str) -> int:
         return functools.reduce(lambda m1, m2: m1 if m1 > m2 else m2,
-                                (_modes_to_arity_map[modes] for modes in _modes_to_arity_map if mode in modes))
+                                (_modes_to_arity_map[modes] for modes in _modes_to_arity_map if mode in modes),
+                                0)
 
     def _get_last_index_of_mode_argument(self, i: int, arg: str, args: list[str]):
         arity: int = self.get_max_arity(arg)

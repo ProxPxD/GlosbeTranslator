@@ -8,7 +8,6 @@ from translating.argumentParsing import configDisplayer
 from translating.argumentParsing import configurations
 from translating.argumentParsing.configurations import Configurations
 from translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
-from translating.argumentParsing.modeManager import ModeTypes
 from translating.argumentParsing.parsingException import ParsingException
 from translating.constants import LogMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter

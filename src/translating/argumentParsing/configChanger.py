@@ -1,13 +1,12 @@
 from . import modeManager
 from .configurations import Configurations, Configs
-from .constants import Messages
+from .constants import Messages, ModeTypes, FullModes
 from .intelligentArgumentParser import IntelligentArgumentParser
-from .modeManager import FullModes, ModeTypes
 
 
 def set_configs(argument_parser: IntelligentArgumentParser):
     for config_name in argument_parser.modes.get_modes_turned_on_by_type(ModeTypes.CONFIGURATIONAL):
-        arguments = argument_parser.modes.get_config_args(config_name)
+        arguments = argument_parser.modes.get_mode_args(config_name)
         set_config(config_name, arguments)
 
 

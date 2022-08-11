@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .modeManager import FullModes
+from .constants import FullModes
 
 
 @dataclass(frozen=True)

@@ -1,74 +1,9 @@
 import functools
-from dataclasses import dataclass
-from typing import Callable, Generator
+from typing import Callable, Generator, Any
 
-from .constants import ValidationErrors, Messages
-
-
-@dataclass(frozen=True)
-class Modes:
-    MULTI_LANG: str = '-m'
-    MULTI_WORD: str = '-w'
-    SINGLE: str = '-s'
-    LANG_LIMIT: str = '-l'
-    SAVED_LANGS: str = '-ll'
-    LAST: str = '-1'
-    DEFAULT_TRANSLATIONAL_MODE: str = '-dm'
-    SETTINGS: str = '-ss'
-    HELP: str = '-h'
-    ADD_LANG: str = '-al'
-    REMOVE_LANG: str = '-rl'
-
-
-@dataclass(frozen=True)
-class FullModes:
-    MULTI_LANG: str = '--multi'
-    MULTI_WORD: str = '--word'
-    SINGLE: str = '--single'
-    LANG_LIMIT: str = '--limit'
-    SAVED_LANGS: str = '--langs'
-    LAST: str = '--last'
-    DEFAULT_TRANSLATIONAL_MODE: str = '--default_mode'
-    SETTINGS: str = '--settings'
-    HELP: str = '--help'
-    ADD_LANG: str = '--add_lang'
-    REMOVE_LANG: str = '--remove_lang'
-
-
-@dataclass(frozen=True)
-class ModeTypes:
-    TRANSLATIONAL: str = 'translational'
-    CONFIGURATIONAL: str = 'configurational'
-    DISPLAYABLE: str = 'displayable'
-
-
-modes_map = {
-    Modes.MULTI_LANG: FullModes.MULTI_LANG,
-    Modes.MULTI_WORD: FullModes.MULTI_WORD,
-    Modes.SINGLE: FullModes.SINGLE,
-    Modes.LANG_LIMIT: FullModes.LANG_LIMIT,
-    Modes.SAVED_LANGS: FullModes.SAVED_LANGS,
-    Modes.LAST: FullModes.LAST,
-    Modes.DEFAULT_TRANSLATIONAL_MODE: FullModes.DEFAULT_TRANSLATIONAL_MODE,
-    Modes.SETTINGS: FullModes.SETTINGS,
-    Modes.HELP: FullModes.HELP,
-    Modes.ADD_LANG: FullModes.ADD_LANG,
-    Modes.REMOVE_LANG: FullModes.REMOVE_LANG
-}
-
-
-_modes_to_arity_map = {
-    (FullModes.MULTI_LANG, FullModes.MULTI_WORD, FullModes.ADD_LANG, FullModes.REMOVE_LANG): -1,
-    (FullModes.SINGLE, FullModes.SAVED_LANGS, FullModes.LANG_LIMIT, FullModes.LAST, FullModes.SETTINGS, FullModes.HELP, FullModes.DEFAULT_TRANSLATIONAL_MODE): 0,
-    (FullModes.LANG_LIMIT, FullModes.LAST, FullModes.DEFAULT_TRANSLATIONAL_MODE): 1
-}
-
-
-_mode_types_to_modes = {
-    ModeTypes.TRANSLATIONAL: {FullModes.SINGLE, FullModes.MULTI_WORD, FullModes.MULTI_LANG},
-    ModeTypes.CONFIGURATIONAL: {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.ADD_LANG, FullModes.REMOVE_LANG, FullModes.DEFAULT_TRANSLATIONAL_MODE},
-    ModeTypes.DISPLAYABLE: {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE, FullModes.SETTINGS, FullModes.HELP, FullModes.SAVED_LANGS},
-}
+from .configurations import Configurations, Configs
+from .constants import ValidationErrors, Messages, Modes, modes_map, FullModes, ModeTypes, mode_types_to_modes, \
+    modes_to_arity_map
 
 
 class ModesManager:  # TODO: create a mode filter class. Consider creating a subpackage
@@ -98,8 +33,8 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
     def __init__(self):
         self._modes: dict[str, list] = {}
 
-    def get_config_args(self, config: str) -> list[str]:
-        return self._modes[config] if config in self._modes else []
+    def get_mode_args(self, mode: str) -> list[str | Any]:
+        return self._modes[mode] if mode in self._modes else []
 
     def add_default_mode(self, mode: str, args=None):
         self._modes[mode] = args or []
@@ -117,7 +52,6 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
             last_mode_argument_index = self._get_last_index_of_mode_argument(i, arg, args)
             self._modes[arg].extend(args[i:last_mode_argument_index])
             del args[i:last_mode_argument_index]
-            i = last_mode_argument_index
         return args
 
     def _find_index_of_next_arg(self, i: int, args: list[str]) -> int:
@@ -139,15 +73,19 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
 
     def get_max_arity(self, mode: str) -> int:
         return functools.reduce(lambda m1, m2: m1 if m1 > m2 else m2,
-                                (_modes_to_arity_map[modes] for modes in _modes_to_arity_map if mode in modes),
-                                0)
+                                (modes_to_arity_map[modes] for modes in modes_to_arity_map if mode in modes)) \
+               or 0
 
-    def _get_last_index_of_mode_argument(self, i: int, arg: str, args: list[str]):
+    def _get_last_index_of_mode_argument(self, i: int, arg: str, args: list[str]):  # TODO: think of refactor
         arity: int = self.get_max_arity(arg)
         if len(args) < i + arity:
             arity = len(args) - i
+
+        if arity <= 0:
+            self._modes[arg].append(i)
+
         if arity < 0:
-            if arg in (FullModes.MULTI_WORD, FullModes.MULTI_LANG):
+            if arg in (FullModes.MULTI_LANG):
                 return i
             return len(args)
         return i + arity
@@ -162,26 +100,35 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
     def _valid_translational_mode(self) -> bool:
         return sum(1 for mode in self._modes if mode in self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL)) <= 1
 
-    def is_mode_on(self, mode: str) -> bool:
+    def is_mode_explicitly_on(self, mode: str) -> bool:
         return mode in self._modes
 
+    def is_translational_mode_on(self, mode: str):
+        return self.is_mode_explicitly_on(mode) or Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE) == mode
+
     def is_multi_lang_mode_on(self) -> bool:
-        return self.is_mode_on(FullModes.MULTI_LANG)
+        return self.is_translational_mode_on(FullModes.MULTI_LANG)
 
     def is_multi_word_mode_on(self) -> bool:
-        return self.is_mode_on(FullModes.MULTI_WORD)
+        return self.is_translational_mode_on(FullModes.MULTI_WORD)
 
     def is_single_mode_on(self) -> bool:
-        return self.is_mode_on(FullModes.SINGLE)
+        return self.is_translational_mode_on(FullModes.SINGLE)
 
     def is_any_mode_turned_on_by_type(self, type: str) -> bool:
         return any(self.get_modes_turned_on_by_type(type))
 
+    def get_translational_mode(self):
+        mode = next(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL), None)
+        if not mode:
+            mode = Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE)
+        return mode
+
     def get_modes_turned_on_by_type(self, type: str) -> Generator[str, None, None]:
-        if type not in _mode_types_to_modes:
+        if type not in mode_types_to_modes:
             raise ValueError(Messages.WRONG_MODE_TYPE.format(type))
         is_mode_condition_satisfied = self._get_mode_turn_on_condition_by_type(type)
-        return (mode for mode in self._modes if mode in _mode_types_to_modes[type] and is_mode_condition_satisfied(mode))
+        return (mode for mode in self._modes if mode in mode_types_to_modes[type] and is_mode_condition_satisfied(mode))
 
     def _get_mode_turn_on_condition_by_type(self, type: str) -> Callable[[str], bool]:
         if type == ModeTypes.DISPLAYABLE:

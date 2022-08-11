@@ -1,6 +1,7 @@
 from .configurations import Configurations
+from .constants import FullModes, ModeTypes
 from .intelligentArgumentParser import IntelligentArgumentParser
-from .modeManager import FullModes, ModesManager, ModeTypes
+from .modeManager import ModesManager
 
 
 def display_information(argument_parser: IntelligentArgumentParser):

@@ -42,7 +42,7 @@ class ModeTypes:
     DISPLAYABLE: str = 'displayable'
 
 
-_modes_map = {
+modes_map = {
     Modes.MULTI_LANG: FullModes.MULTI_LANG,
     Modes.MULTI_WORD: FullModes.MULTI_WORD,
     Modes.SINGLE: FullModes.SINGLE,
@@ -56,16 +56,17 @@ _modes_map = {
     Modes.REMOVE_LANG: FullModes.REMOVE_LANG
 }
 
+
 _modes_to_arity_map = {
     (FullModes.MULTI_LANG, FullModes.MULTI_WORD, FullModes.ADD_LANG, FullModes.REMOVE_LANG): -1,
-    (FullModes.SINGLE, FullModes.SAVED_LANGS, FullModes.LANG_LIMIT, FullModes.LAST, FullModes.SETTINGS, FullModes.HELP): 0,
+    (FullModes.SINGLE, FullModes.SAVED_LANGS, FullModes.LANG_LIMIT, FullModes.LAST, FullModes.SETTINGS, FullModes.HELP, FullModes.DEFAULT_TRANSLATIONAL_MODE): 0,
     (FullModes.LANG_LIMIT, FullModes.LAST, FullModes.DEFAULT_TRANSLATIONAL_MODE): 1
 }
 
 
 _mode_types_to_modes = {
     ModeTypes.TRANSLATIONAL: {FullModes.SINGLE, FullModes.MULTI_WORD, FullModes.MULTI_LANG},
-    ModeTypes.CONFIGURATIONAL: {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.ADD_LANG, FullModes.REMOVE_LANG},
+    ModeTypes.CONFIGURATIONAL: {FullModes.LANG_LIMIT, FullModes.SAVED_LANGS, FullModes.LAST, FullModes.ADD_LANG, FullModes.REMOVE_LANG, FullModes.DEFAULT_TRANSLATIONAL_MODE},
     ModeTypes.DISPLAYABLE: {FullModes.LANG_LIMIT, FullModes.DEFAULT_TRANSLATIONAL_MODE, FullModes.SETTINGS, FullModes.HELP, FullModes.SAVED_LANGS},
 }
 
@@ -89,7 +90,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         space_1 = 18
         space_2 = 24
         for name, mode in {name: Modes.__dict__[name] for name in Modes.__dict__ if name[0] != '_'}.items():
-            first = f'{_modes_map[mode]},'
+            first = f'{modes_map[mode]},'
             second = first + ' ' * (space_1 - len(first)) + mode
             third = second + ' ' * (space_2 - len(second)) + f':{name}'
             print(third)
@@ -99,6 +100,9 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
 
     def get_config_args(self, config: str) -> list[str]:
         return self._modes[config] if config in self._modes else []
+
+    def add_default_mode(self, mode: str, args=None):
+        self._modes[mode] = args or []
 
     def filter_modes_out_of_args(self, args: list[str]) -> list[str]:
         i = 0
@@ -125,8 +129,8 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         return arg.startswith('-')
 
     def _get_key_for_arg(self, arg: str) -> str:
-        if arg in _modes_map:
-            arg = _modes_map[arg]
+        if arg in modes_map:
+            arg = modes_map[arg]
         return arg
 
     def _initialize_modes_dictionary_if_needed(self, arg: str):

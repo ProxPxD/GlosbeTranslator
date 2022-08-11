@@ -50,7 +50,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't -al uk'.split(' ')
+    return 't en pl have'.split(' ') #TODO error: t -en pl have
 
 
 def translate_and_print(argument_parser: IntelligentArgumentParser):

@@ -34,7 +34,10 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         self._modes: dict[str, list] = {}
 
     def get_mode_args(self, mode: str) -> list[str | Any]:
-        return self._modes[mode] if mode in self._modes else []
+        return self._modes[mode][1:] if mode in self._modes else []
+
+    def get_mode_position(self, mode):
+        return self._modes[mode][0]
 
     def add_default_mode(self, mode: str, args=None):
         self._modes[mode] = args or []
@@ -81,8 +84,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         if len(args) < i + arity:
             arity = len(args) - i
 
-        if arity <= 0:
-            self._modes[arg].append(i)
+        self._modes[arg].append(i)
 
         if arity < 0:
             if arg in (FullModes.MULTI_LANG):
@@ -132,7 +134,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
 
     def _get_mode_turn_on_condition_by_type(self, type: str) -> Callable[[str], bool]:
         if type == ModeTypes.DISPLAYABLE:
-            return lambda mode: len(self._modes[mode]) == 0
+            return lambda mode: len(self._modes[mode]) == 1
         if type == ModeTypes.CONFIGURATIONAL:
             return lambda mode: len(self._modes[mode]) > 0
         return lambda mode: True

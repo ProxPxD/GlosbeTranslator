@@ -49,7 +49,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't -w mieć'.split(' ')
+    return 't -h'.split(' ')
 
 
 def translate_and_print(argument_parser: IntelligentArgumentParser):

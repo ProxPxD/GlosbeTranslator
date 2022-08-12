@@ -61,8 +61,8 @@ class Configurations:
     def __get_default_config() -> dict[str, Any]:
         return {
             Configs.DEFAULT_TRANSLATIONAL_MODE: '-s',
-            Configs.LANG_LIMIT: 6,
-            Configs.SAVED_LANGS: ['pl', 'en', 'es', 'ru', 'de', 'zh', 'fr']
+            Configs.LANG_LIMIT: 3,
+            Configs.SAVED_LANGS: ['pl', 'en', 'de']
         }
 
     @staticmethod

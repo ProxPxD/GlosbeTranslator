@@ -21,13 +21,13 @@ class Data:
 
 
 def main():
-    logging.basicConfig(filename=Data.LOG_PATH, encoding='utf-8', level=logging.WARNING,
-                        format='%(levelname)s: %(message)s ')
     if len(sys.argv) == 1:
         sys.argv = get_test_arguments()
 
     try:
         Configurations.init()
+        logging.basicConfig(filename=Data.LOG_PATH, encoding='utf-8', level=logging.WARNING,
+                            format='%(levelname)s: %(message)s ')
         argument_parser = IntelligentArgumentParser(sys.argv)
         argument_parser.parse()
         if argument_parser.modes.is_any_displayable_mode_on():

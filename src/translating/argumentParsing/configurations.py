@@ -27,6 +27,8 @@ class Configurations:
     @staticmethod
     def init() -> None:
         if not Configurations._configs:
+            if not Paths.RESOURCES_DIR.exists():
+                Paths.RESOURCES_DIR.mkdir()
             if not Paths.CONFIG_FILE.exists():
                 Configurations.init_default()
             Configurations._configs = Configurations._get_configurations()

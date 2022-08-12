@@ -136,7 +136,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         if type == ModeTypes.DISPLAYABLE:
             return lambda mode: len(self._modes[mode]) == 1
         if type == ModeTypes.CONFIGURATIONAL:
-            return lambda mode: len(self._modes[mode]) > 0
+            return lambda mode: len(self._modes[mode]) > 1
         return lambda mode: True
 
     def is_any_translational_mode_on(self) -> bool:

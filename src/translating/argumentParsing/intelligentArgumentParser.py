@@ -33,7 +33,7 @@ class IntelligentArgumentParser:
         return self._modesManager
 
     def is_translation_mode_on(self):
-        return self.from_lang is not None
+        return self.from_lang and self._to_langs and self._words
 
     def parse(self):
         self._args = self._modesManager.filter_modes_out_of_args(self._args)
@@ -52,8 +52,10 @@ class IntelligentArgumentParser:
         elif mode == FullModes.MULTI_LANG:
             self._parse_multi_lang()
 
+        self._remove_nones()
+
     def _parse_normal(self):  # TODO: add excception if no args
-        self._words.append(self._args[0])
+        self._words.append(self._get_arg_or_else(0))
         self._from_lang = self._get_arg_else_from_config(1)
         self._to_langs.append(self._get_arg_else_from_config(2))
 
@@ -94,4 +96,7 @@ class IntelligentArgumentParser:
     def _get_arg_before_mode_else_from_config(self, arg_index: int, mode_index: int):
         return self._args[arg_index] if arg_index < mode_index else Configurations.get_nth_saved_language(arg_index)
 
+    def _remove_nones(self):
+        self._to_langs = list(filter(None, self._to_langs))
+        self._words = list(filter(None, self._words))
 

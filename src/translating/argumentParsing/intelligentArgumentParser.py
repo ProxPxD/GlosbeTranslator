@@ -84,7 +84,7 @@ class IntelligentArgumentParser:
         mode_index: int = self.modes.get_mode_position(FullModes.MULTI_WORD)
         self._from_lang = self._get_arg_before_mode_else_from_config(0, mode_index)
         self._to_langs.append(self._get_arg_before_mode_else_from_config(1, mode_index))
-        self._words = self._modesManager.get_mode_args(FullModes.MULTI_WORD)[1:]
+        self._words = self._modesManager.get_mode_args(FullModes.MULTI_WORD)
         if not self._words:
             self._words = self._args[2:]
 

@@ -1,8 +1,7 @@
-from typing import Callable, Any
+from typing import Any
 
-from .configurations import Configurations, Configs
+from .configurations import Configurations
 from .constants import FullModes
-
 from .modeManager import ModesManager
 from .parsingException import ParsingException
 

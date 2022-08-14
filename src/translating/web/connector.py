@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import requests
 
 from . import utils
+from .translatorArgumentException import TranslatorArgumentException
 
 
 @dataclass(frozen=True)
@@ -41,6 +42,8 @@ class Connector:
         self._session.close()
 
     def get_page(self) -> requests.Response:
+        if not self._from_lang or not self._to_lang or not self._word:
+            raise TranslatorArgumentException(self._from_lang, self._to_lang, self._word)  # TODO exception type
         url: str = self._create_target_url()
         return self._session.get(url, allow_redirects=True)
 

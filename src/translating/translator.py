@@ -14,30 +14,39 @@ def _no_nones(func):
 
 class Translator:
 
-    def __init__(self, from_lang: str, to_lang: str = None, word: str = None):
+    def __init__(self, from_lang: str = None, to_lang: str = None, word: str = None):
         self._connector: Connector = Connector(from_lang, to_lang, word)
         self._parser: Parser = Parser()
         self._html: str = ""
+
+    def set_from_lang(self, from_lang: str) -> None:
+        self._connector.set_from_lang(from_lang)
 
     def set_to_lang(self, to_lang: str) -> None:
         self._connector.set_to_lang(to_lang)
 
     @_no_nones
-    def multi_lang_translate(self, word: str, to_langs: list[str, ...]) -> Generator[tuple[str, list], None, None]:
+    def multi_lang_translate(self, word: str, to_langs: list[str, ...], from_lang: str = None) -> Generator[tuple[str, list], None, None]:
+        if from_lang:
+            self.set_from_lang(from_lang)
         self._connector.establish_session()
         for to_lang in to_langs:
             yield to_lang, self._generate_translation(word, to_lang)
         self._connector.close_session()
 
     @_no_nones
-    def multi_word_translate(self, to_lang, words: list[str, ...]) -> Generator[tuple[str, list], None, None]:
+    def multi_word_translate(self, to_lang, words: list[str, ...], from_lang: str = None) -> Generator[tuple[str, list], None, None]:
+        if from_lang:
+            self.set_from_lang(from_lang)
         self._connector.establish_session()
         for word in words:
             yield word, self._generate_translation(word, to_lang)
         self._connector.close_session()
 
     @_no_nones
-    def single_translate(self, word: str, to_lang: str = None) -> Generator[tuple[str, list], None, None]:
+    def single_translate(self, word: str, to_lang: str = None, from_lang: str = None) -> Generator[tuple[str, list], None, None]:
+        if from_lang:
+            self.set_from_lang(from_lang)
         self._connector.establish_session()
         yield word, self._generate_translation(word, to_lang)
         self._connector.close_session()

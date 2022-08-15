@@ -87,8 +87,6 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         self._modes[arg].append(i)
 
         if arity < 0:
-            if arg in (FullModes.MULTI_LANG):
-                return i
             return len(args)
         return i + arity
 

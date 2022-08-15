@@ -106,7 +106,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         return mode in self._modes
 
     def is_translational_mode_on(self, mode: str):
-        return self.is_mode_explicitly_on(mode) or Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE) == mode
+        return self.is_mode_explicitly_on(mode) or (not self.is_any_translational_mode_on() and Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE) == mode)
 
     def is_multi_lang_mode_on(self) -> bool:
         return self.is_translational_mode_on(FullModes.MULTI_LANG)

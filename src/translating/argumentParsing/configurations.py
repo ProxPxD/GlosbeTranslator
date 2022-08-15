@@ -62,7 +62,7 @@ class Configurations:
         return {
             Configs.DEFAULT_TRANSLATIONAL_MODE: '-s',
             Configs.LANG_LIMIT: 3,
-            Configs.SAVED_LANGS: ['pl', 'en', 'de']
+            Configs.SAVED_LANGS: ['pl', 'en', 'de', 'es']
         }
 
     @staticmethod

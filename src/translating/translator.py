@@ -4,6 +4,7 @@ import requests
 
 from .parsing.parser import Parser
 from .web.connector import Connector
+from .web.translatorArgumentException import TranslatorArgumentException
 
 
 def _no_nones(func):
@@ -27,6 +28,8 @@ class Translator:
 
     @_no_nones
     def multi_lang_translate(self, word: str, to_langs: list[str, ...], from_lang: str = None) -> Generator[tuple[str, list], None, None]:
+        if not word:
+            raise TranslatorArgumentException(word)  # TODO add exception if no word
         if from_lang:
             self.set_from_lang(from_lang)
         self._connector.establish_session()

@@ -23,9 +23,14 @@ class MultiLangTranslationTest(AbstractTranslationTest):
 
         translations = self.translate()
 
-        self.assertEqual(len(translations), 3)
+        correct_translated_words = ['Szwajcaria', 'Suiza', '瑞士']
+        self.assertEqual(len(translations), len(to_langs))
         for i, lang in enumerate(to_langs):
-            self.assertEqual(lang, self.get_constant_part(translations[i]))
+            translation = translations[i]
+            batch = self.get_nth_translation_batch(0, translation)
+            translation_word = self.get_word_from_batch(batch)
+            self.assertEqual(lang, self.get_constant_part(translation))
+            self.assertEqual(translation_word, correct_translated_words[i])
 
     def test_no_from_language_arg_set(self):
         word, from_lang = '女人', 'zh'

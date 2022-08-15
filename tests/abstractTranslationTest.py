@@ -20,9 +20,8 @@ class AbstractTranslationTest(unittest.TestCase, abc.ABC):
         Configurations.change_conf(Configs.DEFAULT_TRANSLATIONAL_MODE, cls._get_mode())
         print('*' * cls.class_sep_size + f' Starting {cls._get_mode()} mode tests! ' + '*' * cls.class_sep_size)
 
-    @classmethod
     @abc.abstractmethod
-    def _perform_translation(cls):
+    def _perform_translation(self):
         pass
 
     @classmethod

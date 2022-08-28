@@ -4,6 +4,7 @@ from typing import Callable, Generator, Any
 from .configurations import Configurations, Configs
 from .constants import ValidationErrors, Messages, SHORT_FLAGS, modes_map, FLAGS, ModeTypes, mode_types_to_modes, \
     modes_to_arity_map
+from .layoutAdjusting import layoutAdjusterFactory
 
 
 class ModesManager:  # TODO: create a mode filter class. Consider creating a subpackage
@@ -32,6 +33,8 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
 
     def __init__(self):
         self._modes: dict[str, list] = {}
+        lang_adjustment_type = Configurations.get_conf(Configs.LANG_SPEC_ADJUSTMENT)
+        self._layout_adjuster = layoutAdjusterFactory.get_layout_adjuster(lang_adjustment_type)
 
     def get_mode_args(self, mode: str) -> list[str | Any]:
         return self._modes[mode][1:] if mode in self._modes else []
@@ -66,6 +69,8 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         return arg.startswith('-')
 
     def _get_key_for_arg(self, arg: str) -> str:
+        if self._layout_adjuster:
+            arg = self._layout_adjuster.adjust_word(arg)
         if arg in modes_map:
             arg = modes_map[arg]
         return arg

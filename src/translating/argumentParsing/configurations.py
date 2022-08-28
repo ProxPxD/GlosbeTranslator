@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .constants import FLAGS
+from .constants import FLAGS, LanguageSpecificAdjustmentValues, SHORT_FLAGS
 
 
 @dataclass(frozen=True)
@@ -20,6 +20,15 @@ class Configs:
     SAVED_LANGS: str = FLAGS.SAVED_LANGS
     LANG_SPEC_ADJUSTMENT: str = FLAGS.LANG_SPEC_ADJUSTMENT
 
+
+_possible_config_values = {
+    Configs.DEFAULT_TRANSLATIONAL_MODE: [SHORT_FLAGS.SINGLE, SHORT_FLAGS.MULTI_LANG, SHORT_FLAGS.MULTI_WORD,
+                                         FLAGS.SINGLE, FLAGS.MULTI_LANG, FLAGS.MULTI_WORD],
+    Configs.LANG_SPEC_ADJUSTMENT: [LanguageSpecificAdjustmentValues.NONE,
+                                   LanguageSpecificAdjustmentValues.NATIVE,
+                                   LanguageSpecificAdjustmentValues.KEYBOARD],
+    Configs.LANG_LIMIT: 'Any positive number or 0 to cancel the limit out',
+}
 
 class Configurations:
 
@@ -66,6 +75,12 @@ class Configurations:
             Configs.SAVED_LANGS: ['pl', 'en', 'de', 'es'],
             Configs.LANG_SPEC_ADJUSTMENT: '',
         }
+
+    @staticmethod
+    def get_possible_values_for(name: str):
+        if name in _possible_config_values:
+            return _possible_config_values[name]
+        return None
 
     @staticmethod
     def change_conf(conf: str, value) -> None:

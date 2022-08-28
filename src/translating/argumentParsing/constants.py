@@ -54,6 +54,13 @@ class ModeTypes:
     DISPLAYABLE: str = 'displayable'
 
 
+@dataclass(frozen=True)
+class LanguageSpecificAdjustmentValues:
+    NONE: str = 'none'
+    NATIVE: str = 'native'
+    KEYBOARD: str = 'keyboard'
+
+
 modes_map = {
     SHORT_FLAGS.MULTI_LANG: FLAGS.MULTI_LANG,
     SHORT_FLAGS.MULTI_WORD: FLAGS.MULTI_WORD,

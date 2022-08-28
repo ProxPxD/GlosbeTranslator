@@ -22,6 +22,24 @@ def display_configs(*config_names: str):  # TODO: implement help and input modes
 
 def display_config(config_name: str):
     conf_to_display = Configurations.get_conf(config_name)
-    if isinstance(conf_to_display, list):
-        conf_to_display = str(conf_to_display)[1:-1].replace("'", '')
+    conf_to_display = format_config(conf_to_display)
     print(f'{config_name[2:]}: {conf_to_display}')
+
+    possible_values = Configurations.get_possible_values_for(config_name)
+    if possible_values:
+        display_possible_values(possible_values)
+
+
+def format_config(config: list | str):
+    if isinstance(config, list):
+        return list_to_comma_string(config)
+    return str(config)
+
+
+def list_to_comma_string(list_to_transform: list | str):
+    return str(list_to_transform)[1:-1].replace("'", '')
+
+
+def display_possible_values(possible_values: list | str):
+    possible_values = format_config(possible_values)
+    print(f'Possible values: {possible_values}')

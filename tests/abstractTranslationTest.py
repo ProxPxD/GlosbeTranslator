@@ -4,6 +4,7 @@ from src.translating.argumentParsing.configurations import Configurations, Confi
 from src.translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
 from src.translating.constants import TranslationParts
 from src.translating.translator import Translator
+
 import abc
 
 
@@ -11,14 +12,31 @@ class AbstractTranslationTest(unittest.TestCase, abc.ABC):
 
     argumentParser: IntelligentArgumentParser = None
     translator: Translator = Translator()
-    class_sep_size = 20
+    half_sep_length = 40
+
+    @classmethod
+    def print_sep_with_text(cls, text: str) -> None:
+        with_sep_lines = '*' * cls.half_sep_length + f' {text} ' + '*' * cls.half_sep_length
+        over_length = len(with_sep_lines) - cls.half_sep_length*2
+        to_print = with_sep_lines[over_length//2 : -over_length//2]
+        print(to_print)
 
     @classmethod
     def setUpClass(cls) -> None:
         Configurations.init()
         Configurations.change_conf(Configs.SAVED_LANGS, ['pl', 'en', 'de', 'es', 'uk', 'zh'])
         Configurations.change_conf(Configs.DEFAULT_TRANSLATIONAL_MODE, cls._get_mode())
-        print('*' * cls.class_sep_size + f' Starting {cls._get_mode()} mode tests! ' + '*' * cls.class_sep_size)
+        cls.print_sep_with_text(f'Starting {cls._get_mode()} mode tests!')
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.print_sep_with_text(f'Ending {cls._get_mode()} mode tests!')
+
+    def setUp(self) -> None:
+        super().setUp()
+
+    def tearDown(self) -> None:
+        super().tearDown()
 
     @abc.abstractmethod
     def _perform_translation(self):
@@ -26,7 +44,7 @@ class AbstractTranslationTest(unittest.TestCase, abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def _get_mode(cls) -> str:
+    def _get_mode(cls) -> str | None:
         return None
 
     def set_input_string(self, input_string: str):

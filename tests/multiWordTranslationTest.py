@@ -1,5 +1,5 @@
 from src.translating.argumentParsing.configurations import Configurations
-from src.translating.argumentParsing.constants import FullModes
+from src.translating.argumentParsing.constants import FLAGS
 from tests.abstractTranslationTest import AbstractTranslationTest
 
 
@@ -13,7 +13,7 @@ class MultiWordTranslationTest(AbstractTranslationTest):
 
     @classmethod
     def _get_mode(cls) -> str:
-        return FullModes.MULTI_WORD
+        return FLAGS.MULTI_WORD
 
     def test_all_args_set(self):
         from_lang, to_lang = 'pl', 'de'

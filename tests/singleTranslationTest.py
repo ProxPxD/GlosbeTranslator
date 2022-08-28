@@ -1,5 +1,5 @@
 from src.translating.argumentParsing.configurations import Configurations
-from src.translating.argumentParsing.constants import FullModes
+from src.translating.argumentParsing.constants import FLAGS
 from src.translating.web.translatorArgumentException import TranslatorArgumentException
 from tests.abstractTranslationTest import AbstractTranslationTest
 
@@ -8,7 +8,7 @@ class SingleTranslationTest(AbstractTranslationTest):
 
     @classmethod
     def _get_mode(cls):
-        return FullModes.SINGLE
+        return FLAGS.SINGLE
 
     def _perform_translation(self):
         from_lang = self.argumentParser.from_lang

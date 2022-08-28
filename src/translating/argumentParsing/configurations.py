@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .constants import FullModes
+from .constants import FLAGS
 
 
 @dataclass(frozen=True)
@@ -15,9 +15,10 @@ class Paths:
 
 @dataclass(frozen=True)
 class Configs:
-    DEFAULT_TRANSLATIONAL_MODE: str = FullModes.DEFAULT_TRANSLATIONAL_MODE
-    LANG_LIMIT: str = FullModes.LANG_LIMIT
-    SAVED_LANGS: str = FullModes.SAVED_LANGS
+    DEFAULT_TRANSLATIONAL_MODE: str = FLAGS.DEFAULT_TRANSLATIONAL_MODE
+    LANG_LIMIT: str = FLAGS.LANG_LIMIT
+    SAVED_LANGS: str = FLAGS.SAVED_LANGS
+    LANG_SPEC: str = FLAGS.
 
 
 class Configurations:

@@ -1,6 +1,6 @@
 from . import modeManager
 from .configurations import Configurations, Configs
-from .constants import Messages, ModeTypes, FullModes
+from .constants import Messages, ModeTypes, FLAGS
 from .intelligentArgumentParser import IntelligentArgumentParser
 
 
@@ -11,9 +11,9 @@ def set_configs(argument_parser: IntelligentArgumentParser):
 
 
 def set_config(config_name: str, arguments: list[str]):
-    if config_name == FullModes.ADD_LANG:
+    if config_name == FLAGS.ADD_LANG:
         _add_langs(arguments)
-    elif config_name == FullModes.REMOVE_LANG:
+    elif config_name == FLAGS.REMOVE_LANG:
         _remove_langs(arguments)
     elif config_name == Configs.DEFAULT_TRANSLATIONAL_MODE:
         mode: str = arguments[0]

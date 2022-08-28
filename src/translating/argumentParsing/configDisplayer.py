@@ -1,15 +1,15 @@
 from .configurations import Configurations
-from .constants import FullModes, ModeTypes
+from .constants import FLAGS, ModeTypes
 from .intelligentArgumentParser import IntelligentArgumentParser
 from .modeManager import ModesManager
 
 
 def display_information(argument_parser: IntelligentArgumentParser):
     for to_display in argument_parser.modes.get_modes_turned_on_by_type(ModeTypes.DISPLAYABLE):
-        if to_display == FullModes.SETTINGS:
-            display_configs(FullModes.DEFAULT_TRANSLATIONAL_MODE, FullModes.LANG_LIMIT, FullModes.SAVED_LANGS)
+        if to_display == FLAGS.SETTINGS:
+            display_configs(FLAGS.DEFAULT_TRANSLATIONAL_MODE, FLAGS.LANG_LIMIT, FLAGS.SAVED_LANGS)
             continue
-        if to_display == FullModes.HELP:
+        if to_display == FLAGS.HELP:
             ModesManager.show_help()
             continue
         display_config(to_display)

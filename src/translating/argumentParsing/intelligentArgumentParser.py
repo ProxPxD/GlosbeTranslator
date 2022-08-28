@@ -1,7 +1,7 @@
 from typing import Any, Callable
 
 from .configurations import Configurations
-from .constants import FullModes
+from .constants import FLAGS
 from .modeManager import ModesManager
 from .parsingException import ParsingException
 
@@ -46,14 +46,14 @@ class IntelligentArgumentParser:
     def _parse_by_mode(self, modes: str):
         if len(modes) == 1:
             mode = modes[0]
-            if mode == FullModes.SINGLE:
+            if mode == FLAGS.SINGLE:
                 self._parse_normal()
-            elif mode == FullModes.MULTI_WORD:
+            elif mode == FLAGS.MULTI_WORD:
                 self._parse_multi_word()
-            elif mode == FullModes.MULTI_LANG:
+            elif mode == FLAGS.MULTI_LANG:
                 self._parse_multi_lang()
         else:
-            if FullModes.MULTI_WORD in modes and FullModes.MULTI_LANG in modes:
+            if FLAGS.MULTI_WORD in modes and FLAGS.MULTI_LANG in modes:
                 self._parse_double_multi()
 
         self._remove_nones()
@@ -67,17 +67,17 @@ class IntelligentArgumentParser:
         self._from_lang = self._get_arg_else_previous_index_from_config(1)
         self._to_langs = self._args[2:]
         if not self._to_langs:
-            self._to_langs = self.modes.get_mode_args(FullModes.MULTI_LANG)
+            self._to_langs = self.modes.get_mode_args(FLAGS.MULTI_LANG)
         if not self._to_langs:
             self._to_langs = Configurations.load_config_languages(to_skip=self._from_lang)
 
     def _parse_double_multi(self):
         self._from_lang = self._get_arg_else_same_from_config(0)
-        self._to_langs = self.modes.get_mode_args(FullModes.MULTI_LANG)
-        self._words = self.modes.get_mode_args(FullModes.MULTI_WORD)
+        self._to_langs = self.modes.get_mode_args(FLAGS.MULTI_LANG)
+        self._words = self.modes.get_mode_args(FLAGS.MULTI_WORD)
 
     def _parse_multi_word(self):
-        if self._modesManager.is_mode_explicitly_on(FullModes.MULTI_WORD):
+        if self._modesManager.is_mode_explicitly_on(FLAGS.MULTI_WORD):
             self._parse_multi_word_explicitly()
         else:
             self._parse_multi_word_implicitly()
@@ -91,7 +91,7 @@ class IntelligentArgumentParser:
         self._parse_langs_else_get_both_from_configs()
 
         self._words = self._args[2:]
-        self._words.extend(self._modesManager.get_mode_args(FullModes.MULTI_WORD))
+        self._words.extend(self._modesManager.get_mode_args(FLAGS.MULTI_WORD))
 
     def _parse_langs_else_get_both_from_configs(self, offset=0):
         first = self._get_arg_or_else(0 + offset)

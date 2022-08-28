@@ -1,5 +1,5 @@
 from src.translating.argumentParsing.configurations import Configurations
-from src.translating.argumentParsing.constants import FullModes
+from src.translating.argumentParsing.constants import FLAGS
 from src.translating.web.translatorArgumentException import TranslatorArgumentException
 from tests.abstractTranslationTest import AbstractTranslationTest
 
@@ -8,7 +8,7 @@ class MultiLangTranslationTest(AbstractTranslationTest):
 
     @classmethod
     def _get_mode(cls):
-        return FullModes.MULTI_LANG
+        return FLAGS.MULTI_LANG
 
     def _perform_translation(self):
         word = self.argumentParser.words[0] if self.argumentParser.words else None

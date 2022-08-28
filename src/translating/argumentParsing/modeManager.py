@@ -2,7 +2,7 @@ import functools
 from typing import Callable, Generator, Any
 
 from .configurations import Configurations, Configs
-from .constants import ValidationErrors, Messages, Modes, modes_map, FullModes, ModeTypes, mode_types_to_modes, \
+from .constants import ValidationErrors, Messages, SHORT_FLAGS, modes_map, FLAGS, ModeTypes, mode_types_to_modes, \
     modes_to_arity_map
 
 
@@ -24,7 +24,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
     def _show_modes() -> None:
         space_1 = 18
         space_2 = 24
-        for name, mode in {name: Modes.__dict__[name] for name in Modes.__dict__ if name[0] != '_'}.items():
+        for name, mode in {name: SHORT_FLAGS.__dict__[name] for name in SHORT_FLAGS.__dict__ if name[0] != '_'}.items():
             first = f'{modes_map[mode]},'
             second = first + ' ' * (space_1 - len(first)) + mode
             third = second + ' ' * (space_2 - len(second)) + f':{name}'
@@ -102,7 +102,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
 
     def _valid_translational_mode(self) -> bool:
         num_modes_tuened_on = sum(1 for mode in self._modes if mode in self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))
-        return num_modes_tuened_on < 2 or FullModes.SINGLE not in self._modes
+        return num_modes_tuened_on < 2 or FLAGS.SINGLE not in self._modes
 
     def is_mode_explicitly_on(self, mode: str) -> bool:
         return mode in self._modes
@@ -111,16 +111,16 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         return self.is_mode_explicitly_on(mode) or (not self.is_any_translational_mode_on() and Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE) == mode)
 
     def is_multi_lang_mode_on(self) -> bool:
-        return self.is_translational_mode_on(FullModes.MULTI_LANG) and len(list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))) == 1
+        return self.is_translational_mode_on(FLAGS.MULTI_LANG) and len(list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))) == 1
 
     def is_multi_word_mode_on(self) -> bool:
-        return self.is_translational_mode_on(FullModes.MULTI_WORD) and len(list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))) == 1
+        return self.is_translational_mode_on(FLAGS.MULTI_WORD) and len(list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))) == 1
 
     def is_double_multi_mode_on(self) -> bool:
-        return self.is_translational_mode_on(FullModes.MULTI_WORD) and self.is_translational_mode_on(FullModes.MULTI_LANG)
+        return self.is_translational_mode_on(FLAGS.MULTI_WORD) and self.is_translational_mode_on(FLAGS.MULTI_LANG)
 
     def is_single_mode_on(self) -> bool:
-        return self.is_translational_mode_on(FullModes.SINGLE)
+        return self.is_translational_mode_on(FLAGS.SINGLE)
 
     def is_any_mode_turned_on_by_type(self, type: str) -> bool:
         return any(self.get_modes_turned_on_by_type(type))

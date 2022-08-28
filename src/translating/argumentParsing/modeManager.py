@@ -50,7 +50,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
                 break
             arg = self._get_key_for_arg(args[i])
             del args[i]
-            self._initialize_modes_dictionary_if_needed(arg)
+            self._add_mode_with_index(arg, i)
 
             last_mode_argument_index = self._get_last_index_of_mode_argument(i, arg, args)
             self._modes[arg].extend(args[i:last_mode_argument_index])
@@ -70,9 +70,11 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
             arg = modes_map[arg]
         return arg
 
-    def _initialize_modes_dictionary_if_needed(self, arg: str):
+    def _add_mode_with_index(self, arg: str, index: int):
         if arg not in self._modes:
-            self._modes[arg] = []
+            self._modes[arg] = [index]
+        else:
+            self._modes[arg].append(index)
 
     def get_max_arity(self, mode: str) -> int:
         return functools.reduce(lambda m1, m2: m1 if m1 > m2 else m2,
@@ -84,11 +86,12 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         if len(args) < i + arity:
             arity = len(args) - i
 
-        self._modes[arg].append(i)
+        last = i + arity if arity >= 0 else len(args)
+        j = self._find_index_of_next_arg(i, args)
 
-        if arity < 0:
-            return len(args)
-        return i + arity
+        if last > j:
+            last = j
+        return last
 
     def validate_modes(self) -> list[str]:
         error_messages = []
@@ -98,7 +101,8 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         return error_messages
 
     def _valid_translational_mode(self) -> bool:
-        return sum(1 for mode in self._modes if mode in self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL)) <= 1
+        num_modes_tuened_on = sum(1 for mode in self._modes if mode in self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))
+        return num_modes_tuened_on < 2 or FullModes.SINGLE not in self._modes
 
     def is_mode_explicitly_on(self, mode: str) -> bool:
         return mode in self._modes
@@ -107,10 +111,13 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         return self.is_mode_explicitly_on(mode) or (not self.is_any_translational_mode_on() and Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE) == mode)
 
     def is_multi_lang_mode_on(self) -> bool:
-        return self.is_translational_mode_on(FullModes.MULTI_LANG)
+        return self.is_translational_mode_on(FullModes.MULTI_LANG) and len(list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))) == 1
 
     def is_multi_word_mode_on(self) -> bool:
-        return self.is_translational_mode_on(FullModes.MULTI_WORD)
+        return self.is_translational_mode_on(FullModes.MULTI_WORD) and len(list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))) == 1
+
+    def is_double_multi_mode_on(self) -> bool:
+        return self.is_translational_mode_on(FullModes.MULTI_WORD) and self.is_translational_mode_on(FullModes.MULTI_LANG)
 
     def is_single_mode_on(self) -> bool:
         return self.is_translational_mode_on(FullModes.SINGLE)
@@ -118,11 +125,11 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
     def is_any_mode_turned_on_by_type(self, type: str) -> bool:
         return any(self.get_modes_turned_on_by_type(type))
 
-    def get_translational_mode(self):
-        mode = next(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL), None)
-        if not mode:
-            mode = Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE)
-        return mode
+    def get_active_translational_modes(self):
+        modes = list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))
+        if not modes:
+            modes = [Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE)]
+        return modes
 
     def get_modes_turned_on_by_type(self, type: str) -> Generator[str, None, None]:
         if type not in mode_types_to_modes:

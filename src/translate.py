@@ -49,7 +49,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't mieć pl de'.split(' ')  # t laborious en uk
+    return 't pl -w stać stanąć zostać -m en de zh'.split(' ')  # t laborious en uk
 
 
 def translate_and_print(argument_parser: IntelligentArgumentParser):
@@ -69,6 +69,8 @@ def get_translations(argument_parser: IntelligentArgumentParser):
         translations = translator.multi_word_translate(argument_parser.to_langs[0], argument_parser.words)
     elif modes.is_single_mode_on():
         translations = translator.single_translate(argument_parser.words[0], argument_parser.to_langs[0])
+    elif modes.is_double_multi_mode_on():
+        translations = translator.double_multi_translate(argument_parser.to_langs, argument_parser.words)
 
     return translations
 

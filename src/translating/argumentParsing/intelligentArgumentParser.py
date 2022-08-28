@@ -40,16 +40,21 @@ class IntelligentArgumentParser:
         if error_messages:
             raise ParsingException(error_messages)
 
-        mode: str = self._modesManager.get_translational_mode()
-        self._parse_by_mode(mode)
+        modes: str = self._modesManager.get_active_translational_modes()
+        self._parse_by_mode(modes)
 
-    def _parse_by_mode(self, mode: str):
-        if mode == FullModes.SINGLE:
-            self._parse_normal()
-        elif mode == FullModes.MULTI_WORD:
-            self._parse_multi_word()
-        elif mode == FullModes.MULTI_LANG:
-            self._parse_multi_lang()
+    def _parse_by_mode(self, modes: str):
+        if len(modes) == 1:
+            mode = modes[0]
+            if mode == FullModes.SINGLE:
+                self._parse_normal()
+            elif mode == FullModes.MULTI_WORD:
+                self._parse_multi_word()
+            elif mode == FullModes.MULTI_LANG:
+                self._parse_multi_lang()
+        else:
+            if FullModes.MULTI_WORD in modes and FullModes.MULTI_LANG in modes:
+                self._parse_double_multi()
 
         self._remove_nones()
 
@@ -65,6 +70,11 @@ class IntelligentArgumentParser:
             self._to_langs = self.modes.get_mode_args(FullModes.MULTI_LANG)
         if not self._to_langs:
             self._to_langs = Configurations.load_config_languages(to_skip=self._from_lang)
+
+    def _parse_double_multi(self):
+        self._from_lang = self._get_arg_else_same_from_config(0)
+        self._to_langs = self.modes.get_mode_args(FullModes.MULTI_LANG)
+        self._words = self.modes.get_mode_args(FullModes.MULTI_WORD)
 
     def _parse_multi_word(self):
         if self._modesManager.is_mode_explicitly_on(FullModes.MULTI_WORD):

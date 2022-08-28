@@ -54,6 +54,18 @@ class Translator:
         yield word, self._generate_translation(word, to_lang)
         self._connector.close_session()
 
+    @_no_nones
+    def double_multi_translate(self, to_langs, words: list[str, ...], from_lang: str = None) -> Generator[tuple[str, list], None, None]:
+        if from_lang:
+            self.set_from_lang(from_lang)
+
+        self._connector.establish_session()
+        for to_lang in to_langs:
+            for word in words:
+                yield (to_lang, word), self._generate_translation(word, to_lang)
+
+        self._connector.close_session()
+
     def _generate_translation(self, word: str, to_lang: str = None) -> list:
         self._connector.set_word(word)
         if to_lang:

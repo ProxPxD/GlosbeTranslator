@@ -7,7 +7,7 @@ from ..constants import LogMessages
 
 class TranslationPrinter:
 
-    _sep_half_length = 20
+    _sep_half_length = 30
 
     def __init__(self):
         self._formatter = Formatter()
@@ -27,8 +27,9 @@ class TranslationPrinter:
 
     def _print_multi_translation_mode(self, translations, argument_parser: IntelligentArgumentParser):
         constant_elem: str = self._get_constant_translation_element(argument_parser)
+        starting_msg: str = f'{argument_parser.from_lang} -- {constant_elem}:' if constant_elem else f'{argument_parser.from_lang}:'
 
-        print(f'{argument_parser.from_lang} -- {constant_elem}:')
+        print(starting_msg)
         for marker, translation in translations:
             translation_msg = self._get_message_for_translation(translation)
             section = self._get_section(marker)

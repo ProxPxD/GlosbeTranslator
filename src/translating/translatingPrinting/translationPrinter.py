@@ -7,7 +7,7 @@ from ..constants import LogMessages
 
 class TranslationPrinter:
 
-    _sep_half_length = 30
+    _sep_half_length = 50
 
     def __init__(self):
         self._formatter = Formatter()

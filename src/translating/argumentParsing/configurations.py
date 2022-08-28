@@ -18,7 +18,7 @@ class Configs:
     DEFAULT_TRANSLATIONAL_MODE: str = FLAGS.DEFAULT_TRANSLATIONAL_MODE
     LANG_LIMIT: str = FLAGS.LANG_LIMIT
     SAVED_LANGS: str = FLAGS.SAVED_LANGS
-    LANG_SPEC: str = FLAGS.
+    LANG_SPEC_ADJUSTMENT: str = FLAGS.LANG_SPEC_ADJUSTMENT
 
 
 class Configurations:
@@ -63,7 +63,8 @@ class Configurations:
         return {
             Configs.DEFAULT_TRANSLATIONAL_MODE: '-s',
             Configs.LANG_LIMIT: 3,
-            Configs.SAVED_LANGS: ['pl', 'en', 'de', 'es']
+            Configs.SAVED_LANGS: ['pl', 'en', 'de', 'es'],
+            Configs.LANG_SPEC_ADJUSTMENT: '',
         }
 
     @staticmethod
@@ -74,7 +75,15 @@ class Configurations:
 
     @staticmethod
     def get_conf(name: str) -> Any:
+        if name not in Configurations._configs:
+            Configurations.add_default_config(name)
         return Configurations._configs[name]
+
+    @staticmethod
+    def add_default_config(name: str):
+        default = Configurations.__get_default_config()
+        Configurations._configs[name] = default[name]
+        Configurations.save()
 
     @staticmethod
     def get_saved_languages() -> list[str]:

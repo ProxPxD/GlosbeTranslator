@@ -7,7 +7,8 @@ from ..constants import LogMessages
 
 class TranslationPrinter:
 
-    _sep_half_length = 50
+    _post_sep_length = 64
+    _pre_sep_length = 4
 
     def __init__(self):
         self._formatter = Formatter()
@@ -36,7 +37,7 @@ class TranslationPrinter:
             variable_elem = self._get_variable_elem(marker)
 
             if section:
-                print('-' * self._sep_half_length, section, '-' * self._sep_half_length)
+                print('-' * self._pre_sep_length, section, '-' * self._post_sep_length)
             print(f'{variable_elem}: {translation_msg}')
 
     def _get_message_for_translation(self, translation):

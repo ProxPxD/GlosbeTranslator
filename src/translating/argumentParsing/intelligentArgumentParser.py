@@ -13,7 +13,7 @@ class IntelligentArgumentParser:
         self._args: list[str] = args[1:]
         self._modesManager = ModesManager()
         lang_adjustment_type = Configurations.get_conf(Configs.LANG_SPEC_ADJUSTMENT)
-        self._scriptAdjuster = scriptAdjusterFactory.get_layout_adjuster(lang_adjustment_type)
+        self._scriptAdjuster = layoutAdjusterFactory.get_layout_adjuster(lang_adjustment_type)
         self._words = []
         self._from_lang = None
         self._to_langs = []

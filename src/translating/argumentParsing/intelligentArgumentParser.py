@@ -1,7 +1,8 @@
 from typing import Any, Callable
 
-from .configurations import Configurations
+from .configurations import Configurations, Configs
 from .constants import FLAGS
+from .langAdjusting import scriptAdjusterFactory
 from .modeManager import ModesManager
 from .parsingException import ParsingException
 
@@ -11,6 +12,8 @@ class IntelligentArgumentParser:
     def __init__(self, args: list[str]):
         self._args: list[str] = args[1:]
         self._modesManager = ModesManager()
+        lang_adjustment_type = Configurations.get_conf(Configs.LANG_SPEC_ADJUSTMENT)
+        self._scriptAdjuster = scriptAdjusterFactory.get_script_adjuster(lang_adjustment_type)
         self._words = []
         self._from_lang = None
         self._to_langs = []
@@ -56,6 +59,8 @@ class IntelligentArgumentParser:
             if FLAGS.MULTI_WORD in modes and FLAGS.MULTI_LANG in modes:
                 self._parse_double_multi()
 
+        if self._scriptAdjuster is not None:
+            self._adjust_to_script()
         self._remove_nones()
 
     def _parse_normal(self):  # TODO: add excception if no args
@@ -121,6 +126,10 @@ class IntelligentArgumentParser:
 
     def _get_arg_or_else(self, index: int, otherwise: Any = None) -> Any:
         return self._args[index] if index < len(self._args) else otherwise
+
+    def _adjust_to_script(self):
+        self._from_lang = self._scriptAdjuster.adjust_word(self._from_lang)
+        self._to_langs = list(map(self._scriptAdjuster.adjust_word, self.to_langs))
 
     def _remove_nones(self):
         self._to_langs = list(filter(None, self._to_langs))

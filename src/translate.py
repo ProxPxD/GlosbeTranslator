@@ -49,7 +49,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't pl -w stać stanąć zostać -m en de zh'.split(' ')  # t laborious en uk
+    return 't -s mieć пл ен'.split(' ')  # t laborious en uk
 
 
 def translate_and_print(argument_parser: IntelligentArgumentParser):

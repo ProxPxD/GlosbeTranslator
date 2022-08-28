@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 
 
-class AbstractScriptAdjuster(abc.ABC):
+class AbstractLayoutAdjuster(abc.ABC):
 
     def __init__(self, adjustment_lang: str = None):
         self._adjustment_lang = None

@@ -1,7 +1,7 @@
-from .abstractScriptAdjuster import AbstractScriptAdjuster
+from .abstractLayoutAdjuster import AbstractLayoutAdjuster
 
 
-class NativeScriptAdjuster(AbstractScriptAdjuster):
+class NativeLayoutAdjuster(AbstractLayoutAdjuster):
 
     def _get_dictionary(self) -> dict[str, dict[str, str]]:
         return {

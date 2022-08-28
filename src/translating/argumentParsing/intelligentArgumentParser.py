@@ -2,7 +2,7 @@ from typing import Any, Callable
 
 from .configurations import Configurations, Configs
 from .constants import FLAGS
-from .langAdjusting import scriptAdjusterFactory
+from .layoutAdjusting import layoutAdjusterFactory
 from .modeManager import ModesManager
 from .parsingException import ParsingException
 
@@ -13,7 +13,7 @@ class IntelligentArgumentParser:
         self._args: list[str] = args[1:]
         self._modesManager = ModesManager()
         lang_adjustment_type = Configurations.get_conf(Configs.LANG_SPEC_ADJUSTMENT)
-        self._scriptAdjuster = scriptAdjusterFactory.get_script_adjuster(lang_adjustment_type)
+        self._scriptAdjuster = scriptAdjusterFactory.get_layout_adjuster(lang_adjustment_type)
         self._words = []
         self._from_lang = None
         self._to_langs = []

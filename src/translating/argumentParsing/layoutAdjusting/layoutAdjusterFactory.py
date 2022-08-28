@@ -1,14 +1,14 @@
-from .abstractScriptAdjuster import AbstractScriptAdjuster
-from .nativeScriptAdjuster import NativeScriptAdjuster
+from .abstractLayoutAdjuster import AbstractLayoutAdjuster
+from .nativeLayoutAdjuster import NativeLayoutAdjuster
 from ..configurations import Configurations, Configs
 from ..constants import LanguageSpecificAdjustmentValues
 
 _adjusters = {
-        LanguageSpecificAdjustmentValues.NATIVE: NativeScriptAdjuster,
+        LanguageSpecificAdjustmentValues.NATIVE: NativeLayoutAdjuster,
     }
 
 
-def get_script_adjuster(type: str, lang: str = None) -> AbstractScriptAdjuster:
+def get_layout_adjuster(type: str, lang: str = None) -> AbstractLayoutAdjuster:
     if not lang:
         lang: str = Configurations.get_conf(Configs.ADJUSTMENT_LANG)
     return _adjusters[type](lang) if type in _adjusters else None

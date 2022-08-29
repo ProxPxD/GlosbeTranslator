@@ -33,7 +33,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         print('Single mode     (-s):          trans <word> [from_language]1 [to_language]2')
         print('Multi lang mode (-m):          trans <word> [from_language] (-m) [to_languages...]')
         print(
-            '      --||--                   --translates to many languages. If no language after "-m" flag given, the limit-amount of languages are taken' \
+            '      --||--                   --translates to many languages. If no language after "-m" flag given, the limit-amount of languages are taken ' \
             'from the memory.')
         print('Multi word mode (-w):          trans [from_language]1 [to_language]2 (-w) <words...>')
         print('      --||--                   --translates many words.')
@@ -43,8 +43,8 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
 
     @staticmethod
     def _show_modes() -> None:
-        space_1 = 18
-        space_2 = 24
+        space_1 = 28
+        space_2 = space_1 + 6
         for name, mode in {name: SHORT_FLAGS.__dict__[name] for name in SHORT_FLAGS.__dict__ if name[0] != '_'}.items():
             first = f'{modes_map[mode]},'
             second = first + ' ' * (space_1 - len(first)) + mode

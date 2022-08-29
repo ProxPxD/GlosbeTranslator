@@ -2,8 +2,9 @@ import functools
 from typing import Callable, Generator, Any
 
 from .configurations import Configurations, Configs
-from .constants import ValidationErrors, Messages, SHORT_FLAGS, modes_map, FLAGS, ModeTypes, mode_types_to_modes, \
-    modes_to_arity_map
+from .constants import ValidationErrors, Messages, SHORT_FLAGS, short_to_usual_flags_dict, FLAGS, ModeTypes, \
+    mode_types_to_modes, \
+    modes_to_arity_dict, flag_to_description_dict
 from .layoutAdjusting import layoutAdjusterFactory
 
 
@@ -33,23 +34,48 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         print('Single mode     (-s):          trans <word> [from_language]1 [to_language]2')
         print('Multi lang mode (-m):          trans <word> [from_language] (-m) [to_languages...]')
         print(
-            '      --||--                   --translates to many languages. If no language after "-m" flag given, the limit-amount of languages are taken ' \
+            '                                 --translates to many languages. If no language after "-m" flag given, the limit-amount of languages are taken ' \
             'from the memory.')
         print('Multi word mode (-w):          trans [from_language]1 [to_language]2 (-w) <words...>')
-        print('      --||--                   --translates many words.')
+        print('                               --translates many words.')
         print('double multi mode (-m, -w):    trans [from_language] -m <to_languages...> -w <words...>')
-        print('      --||--                   trans [from_language] -w <words...> -m <to_languages...>')
-        print('      --||--                   --joins functionalities of -m and -w modes')
+        print('                               trans [from_language] -w <words...> -m <to_languages...>')
+        print('                               --joins functionalities of -m and -w modes')
 
     @staticmethod
     def _show_modes() -> None:
         space_1 = 28
         space_2 = space_1 + 6
-        for name, mode in {name: SHORT_FLAGS.__dict__[name] for name in SHORT_FLAGS.__dict__ if name[0] != '_'}.items():
-            first = f'{modes_map[mode]},'
-            second = first + ' ' * (space_1 - len(first)) + mode
-            third = second + ' ' * (space_2 - len(second)) + f':{name}'
-            print(third)
+        space_3 = space_2 + space_1 + 6
+        max_text_len = 60
+
+        for name in (name for name in SHORT_FLAGS.__dict__ if name[0] != '_'):
+            short_flag = SHORT_FLAGS.__dict__[name]
+            flag = short_to_usual_flags_dict[short_flag]
+            description = flag_to_description_dict[flag]
+
+            mode_string = f'{flag},'
+            mode_string += ' ' * (space_1 - len(mode_string)) + short_flag
+            mode_string += ' ' * (space_2 - len(mode_string)) + f':{name}'
+            if description:
+                indented_description = ModesManager._separate_with_indentation(description, indent_length=space_3+3, max_text_len=max_text_len)
+                mode_string += ' ' * (space_3 - len(mode_string)) + f':- {indented_description}'
+            print(mode_string)
+
+    @staticmethod
+    def _separate_with_indentation(text: str, max_text_len: int, indent_length: int, sep=' '):
+        indented = ''
+        line = ''
+        tab = ' ' * indent_length
+
+        for word in text.split(' '):
+            if len(line.removeprefix(tab)) + len(word) < max_text_len:
+                line += word + ' '
+            else:
+                indented += line + '\n'
+                line = tab + word + ' '
+
+        return indented + line
 
     def __init__(self):
         self._modes: dict[str, list] = {}
@@ -91,8 +117,8 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
     def _get_key_for_arg(self, arg: str) -> str:
         if self._layout_adjuster:
             arg = self._layout_adjuster.adjust_word(arg)
-        if arg in modes_map:
-            arg = modes_map[arg]
+        if arg in short_to_usual_flags_dict:
+            arg = short_to_usual_flags_dict[arg]
         return arg
 
     def _add_mode_with_index(self, arg: str, index: int):
@@ -103,7 +129,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
 
     def get_max_arity(self, mode: str) -> int:
         return functools.reduce(lambda m1, m2: m1 if m1 > m2 else m2,
-                                (modes_to_arity_map[modes] for modes in modes_to_arity_map if mode in modes)) \
+                                (modes_to_arity_dict[modes] for modes in modes_to_arity_dict if mode in modes)) \
                or 0
 
     def _get_last_index_of_mode_argument(self, i: int, arg: str, args: list[str]):  # TODO: think of refactor

@@ -64,7 +64,7 @@ class LanguageSpecificAdjustmentValues:
     KEYBOARD: str = 'keyboard'
 
 
-modes_map = {
+short_to_usual_flags_dict = {
     SHORT_FLAGS.MULTI_LANG: FLAGS.MULTI_LANG,
     SHORT_FLAGS.MULTI_WORD: FLAGS.MULTI_WORD,
     SHORT_FLAGS.SINGLE: FLAGS.SINGLE,
@@ -78,11 +78,27 @@ modes_map = {
     SHORT_FLAGS.HELP: FLAGS.HELP,
     SHORT_FLAGS.ADD_LANG: FLAGS.ADD_LANG,
     SHORT_FLAGS.REMOVE_LANG: FLAGS.REMOVE_LANG,
+}
 
+flag_to_description_dict = {
+    FLAGS.MULTI_LANG: '',
+    FLAGS.MULTI_WORD: '',
+    FLAGS.SINGLE: '',
+    FLAGS.LANG_LIMIT: '',
+    FLAGS.SAVED_LANGS: '',
+    FLAGS.LAST: '',
+    FLAGS.DEFAULT_TRANSLATIONAL_MODE: '',
+    FLAGS.LAYOUT_ADJUSTMENT_MODE: "Replaces language-specific characters with corresponding characters of latin alphabet. 'keyboard' option replaces characters with those of the same placement at default English layout."\
+                                  " 'native' option replaces characters to those of a corresponding pronunciation (or meaning in case of Chinese).",
+    FLAGS.ADJUSTMENT_LANG: 'Language to work with the script adjustment',
+    FLAGS.SETTINGS: '',
+    FLAGS.HELP: '',
+    FLAGS.ADD_LANG: '',
+    FLAGS.REMOVE_LANG: '',
 }
 
 
-modes_to_arity_map = {
+modes_to_arity_dict = {
     (FLAGS.MULTI_LANG, FLAGS.MULTI_WORD, FLAGS.ADD_LANG, FLAGS.REMOVE_LANG): -1,
     (FLAGS.SINGLE, FLAGS.SAVED_LANGS, FLAGS.LANG_LIMIT, FLAGS.LAST, FLAGS.SETTINGS, FLAGS.HELP, FLAGS.DEFAULT_TRANSLATIONAL_MODE): 0,
     (FLAGS.LANG_LIMIT, FLAGS.LAST, FLAGS.DEFAULT_TRANSLATIONAL_MODE, FLAGS.LAYOUT_ADJUSTMENT_MODE, FLAGS.ADJUSTMENT_LANG): 1

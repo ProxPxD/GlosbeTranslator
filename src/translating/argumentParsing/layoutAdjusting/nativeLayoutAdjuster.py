@@ -21,7 +21,7 @@ class NativeLayoutAdjuster(AbstractLayoutAdjuster):
                 '-сс': '-ss',
                 '-л': '-l',
                 '-лл': '-ll',
-                '-х': '-х',
+                '-х': '-h',
             },
             'ru': {
                 'ен': 'en',

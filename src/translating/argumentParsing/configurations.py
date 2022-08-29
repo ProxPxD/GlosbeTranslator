@@ -18,11 +18,12 @@ class Configs:
     DEFAULT_TRANSLATIONAL_MODE: str = FLAGS.DEFAULT_TRANSLATIONAL_MODE
     LANG_LIMIT: str = FLAGS.LANG_LIMIT
     SAVED_LANGS: str = FLAGS.SAVED_LANGS
-    LANG_SPEC_ADJUSTMENT: str = FLAGS.LANG_ADJUSTMENT_MODE
+    LANG_SPEC_ADJUSTMENT: str = FLAGS.LAYOUT_ADJUSTMENT_MODE
     ADJUSTMENT_LANG: str = FLAGS.ADJUSTMENT_LANG
 
 
 lang_examples = '(np. en, pl, de, es)'
+layout_examples = '(np. de, uk, ru, zh)'
 _possible_config_values = {
     Configs.DEFAULT_TRANSLATIONAL_MODE: [SHORT_FLAGS.SINGLE, SHORT_FLAGS.MULTI_LANG, SHORT_FLAGS.MULTI_WORD,
                                          FLAGS.SINGLE, FLAGS.MULTI_LANG, FLAGS.MULTI_WORD],
@@ -30,7 +31,7 @@ _possible_config_values = {
                                    LanguageSpecificAdjustmentValues.NATIVE,
                                    LanguageSpecificAdjustmentValues.KEYBOARD],
     Configs.LANG_LIMIT: 'Any positive number or 0 to cancel the limit out',
-    Configs.ADJUSTMENT_LANG: f'Any language or nothing {lang_examples}',
+    Configs.ADJUSTMENT_LANG: f'Any language of a different default layout than English or nothing {layout_examples}',
     Configs.SAVED_LANGS: f'Any language {lang_examples}',
 }
 

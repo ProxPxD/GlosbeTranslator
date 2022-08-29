@@ -8,7 +8,7 @@ def display_information(argument_parser: IntelligentArgumentParser):
     for to_display in argument_parser.modes.get_modes_turned_on_by_type(ModeTypes.DISPLAYABLE):
         if to_display == FLAGS.SETTINGS:
             display_configs(FLAGS.DEFAULT_TRANSLATIONAL_MODE, FLAGS.LANG_LIMIT,
-                            FLAGS.SAVED_LANGS, FLAGS.ADJUSTMENT_LANG, FLAGS.LANG_ADJUSTMENT_MODE)
+                            FLAGS.SAVED_LANGS, FLAGS.ADJUSTMENT_LANG, FLAGS.LAYOUT_ADJUSTMENT_MODE)
             continue
         if to_display == FLAGS.HELP:
             ModesManager.show_help()

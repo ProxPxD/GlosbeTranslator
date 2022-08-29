@@ -16,15 +16,25 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
 
     @staticmethod
     def _show_syntax() -> None:
+        ModesManager._print_syntax_instruction()
+        print()
+        ModesManager._print_modes_description()
+        print()
+
+    @staticmethod
+    def _print_syntax_instruction():
         print('(X) - obligatory if not default')
         print('<X> - obligatory variable given by the user')
         print('[X] - optional - taken from memory/config if not given')
         print('[X]N - optional - the number indicates the order of disappearing')
 
+    @staticmethod
+    def _print_modes_description():
         print('Single mode     (-s):          trans <word> [from_language]1 [to_language]2')
         print('Multi lang mode (-m):          trans <word> [from_language] (-m) [to_languages...]')
-        print('      --||--                   --translates to many languages. If no language after "-m" flag given, the limit-amount of languages are taken'\
-                                              'from the memory.')
+        print(
+            '      --||--                   --translates to many languages. If no language after "-m" flag given, the limit-amount of languages are taken' \
+            'from the memory.')
         print('Multi word mode (-w):          trans [from_language]1 [to_language]2 (-w) <words...>')
         print('      --||--                   --translates many words.')
         print('double multi mode (-m, -w):    trans [from_language] -m <to_languages...> -w <words...>')

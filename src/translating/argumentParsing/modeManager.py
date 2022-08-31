@@ -161,9 +161,6 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
     def is_mode_explicitly_on(self, mode: str) -> bool:
         return mode in self._modes
 
-    def is_translational_mode_on(self, mode: str):
-        return self.is_mode_explicitly_on(mode) or (not self.is_any_translational_mode_on() and Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE) == mode)
-
     def is_multi_lang_mode_on(self) -> bool:
         return self.is_translational_mode_on(FLAGS.MULTI_LANG) and len(list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))) == 1
 
@@ -175,6 +172,9 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
 
     def is_single_mode_on(self) -> bool:
         return self.is_translational_mode_on(FLAGS.SINGLE)
+
+    def is_translational_mode_on(self, mode: str):
+        return self.is_mode_explicitly_on(mode) or (not self.is_any_translational_mode_on() and Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE) == mode)
 
     def _is_mode_of_translational(self, mode: str) -> bool:
         return self._is_mode_of_type(mode, ModeTypes.TRANSLATIONAL)

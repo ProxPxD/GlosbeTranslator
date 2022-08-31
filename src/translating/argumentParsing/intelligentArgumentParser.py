@@ -1,5 +1,6 @@
 from typing import Any, Callable
 
+from . import constants
 from .configurations import Configurations, Configs
 from .constants import FLAGS
 from .layoutAdjusting import layoutAdjusterFactory
@@ -43,25 +44,21 @@ class IntelligentArgumentParser:
         if error_messages:
             raise ParsingException(error_messages)
 
-        modes: str = self._modesManager.get_active_translational_modes()
-        self._parse_by_mode(modes)
+        self._parse_by_mode()
 
-    def _parse_by_mode(self, modes: str):
-        if len(modes) == 1:
-            mode = modes[0]
-            if mode == FLAGS.SINGLE:
-                self._parse_normal()
-            elif mode == FLAGS.MULTI_WORD:
-                self._parse_multi_word()
-            elif mode == FLAGS.MULTI_LANG:
-                self._parse_multi_lang()
-        else:
-            if FLAGS.MULTI_WORD in modes and FLAGS.MULTI_LANG in modes:
-                self._parse_double_multi()
+    def _parse_by_mode(self):
+        if self.modes.is_single_mode_on():
+            self._parse_normal()
+        elif self.modes.is_multi_word_mode_on():
+            self._parse_multi_word()
+        elif self.modes.is_multi_lang_mode_on():
+            self._parse_multi_lang()
+        elif self.modes.is_double_multi_mode_on():
+            self._parse_double_multi()
+        self._remove_nones()
 
         if self._scriptAdjuster is not None:
             self._adjust_to_script()
-        self._remove_nones()
 
     def _parse_normal(self):  # TODO: add excception if no args
         self._words.append(self._get_arg_or_else(0))
@@ -69,15 +66,18 @@ class IntelligentArgumentParser:
 
     def _parse_multi_lang(self):
         self._words.append(self._get_arg_or_else(0))
-        self._from_lang = self._get_arg_else_previous_index_from_config(1)
+        from_langs = self._filter_misplaced_langs_to_words(self._get_arg_or_else(1))
+        self._from_lang = from_langs[0] if from_langs else Configurations.get_nth_saved_language(0)
         self._to_langs = self._args[2:]
+
         if not self._to_langs:
             self._to_langs = self.modes.get_mode_args(FLAGS.MULTI_LANG)
         if not self._to_langs:
             self._to_langs = Configurations.load_config_languages(to_skip=self._from_lang)
 
     def _parse_double_multi(self):
-        self._from_lang = self._get_arg_else_same_from_config(0)
+        from_langs = self._filter_misplaced_langs_to_words(self._get_arg_or_else(0))
+        self._from_lang = from_langs[0] if from_langs else Configurations.get_nth_saved_language(0)
         self._to_langs = self.modes.get_mode_args(FLAGS.MULTI_LANG)
         self._words = self.modes.get_mode_args(FLAGS.MULTI_WORD)
 
@@ -130,6 +130,16 @@ class IntelligentArgumentParser:
     def _adjust_to_script(self):
         self._from_lang = self._scriptAdjuster.adjust_word(self._from_lang)
         self._to_langs = list(map(self._scriptAdjuster.adjust_word, self.to_langs))
+
+    def _filter_misplaced_langs_to_words(self, *langs: list):
+        criterium = lambda lang: \
+                        len(lang) > 3\
+                        or any(char not in constants.alphabet for char in lang)
+        sorter: tuple[list, list] = ([], self._words)
+        for lang in langs:
+            sorter[1 if criterium(lang) else 0].append(lang)
+
+        return sorter[0]
 
     def _remove_nones(self):
         self._to_langs = list(filter(None, self._to_langs))

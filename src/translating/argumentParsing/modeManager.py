@@ -138,11 +138,14 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
             arity = len(args) - i
 
         last = i + arity if arity >= 0 else len(args)
-        j = self._find_index_of_next_arg(i, args) if not self._is_mode_of_configurational(arg) and not self._is_mode_of_configurational(args[i]) else last
+        j = self._find_index_of_next_arg(i, args) if not self._is_mode_setter(arg, i, args) else last
 
         if last > j:
             last = j
         return last
+
+    def _is_mode_setter(self, mode: str, arg_index: int, args: list[str]):
+        return self._is_mode_of_configurational(mode) and arg_index < len(args) and self._is_mode_of_configurational(args[arg_index])
 
     def validate_modes(self) -> list[str]:
         error_messages = []

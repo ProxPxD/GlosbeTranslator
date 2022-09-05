@@ -92,6 +92,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         self._modes[mode] = args or []
 
     def filter_modes_out_of_args(self, args: list[str]) -> list[str]:
+        args = [self._get_key_for_arg(arg) for arg in args if self._is_mode(arg)]
         i = 0
         while 0 <= i < len(args):
             i = self._find_index_of_next_arg(i, args)
@@ -128,8 +129,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
             self._modes[arg].append(index)
 
     def get_max_arity(self, mode: str) -> int:
-        return functools.reduce(lambda m1, m2: m1 if m1 > m2 else m2,
-                                (modes_to_arity_dict[modes] for modes in modes_to_arity_dict if mode in modes)) \
+        return functools.reduce(max, (modes_to_arity_dict[modes] for modes in modes_to_arity_dict if mode in modes)) \
                or 0
 
     def _get_last_index_of_mode_argument(self, i: int, arg: str, args: list[str]):  # TODO: think of refactor

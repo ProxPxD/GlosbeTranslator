@@ -145,7 +145,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         return last
 
     def _is_mode_setter(self, mode: str, arg_index: int, args: list[str]):
-        return self._is_mode_of_configurational(mode) and arg_index < len(args) and self._is_mode_of_configurational(args[arg_index])
+        return self._is_mode_of_configurational(mode) and arg_index < len(args) and self._is_mode_of_translational(args[arg_index])
 
     def validate_modes(self) -> list[str]:
         error_messages = []

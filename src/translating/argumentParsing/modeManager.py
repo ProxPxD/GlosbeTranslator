@@ -138,7 +138,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
             arity = len(args) - i
 
         last = i + arity if arity >= 0 else len(args)
-        j = self._find_index_of_next_arg(i, args)
+        j = self._find_index_of_next_arg(i, args) if not self._is_mode_of_configurational(arg) and not self._is_mode_of_configurational(args[i]) else last
 
         if last > j:
             last = j
@@ -173,6 +173,20 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
     def is_single_mode_on(self) -> bool:
         return self.is_translational_mode_on(FLAGS.SINGLE)
 
+    def _is_mode_of_translational(self, mode: str) -> bool:
+        return self._is_mode_of_type(mode, ModeTypes.TRANSLATIONAL)
+
+    def _is_mode_of_displayable(self, mode: str) -> bool:
+        return self._is_mode_of_type(mode, ModeTypes.DISPLAYABLE)
+
+    def _is_mode_of_configurational(self, mode: str) -> bool:
+        return self._is_mode_of_type(mode, ModeTypes.CONFIGURATIONAL)
+
+    def _is_mode_of_type(self, mode: str, type: str) -> bool:
+        if type not in mode_types_to_modes:
+            raise ValueError(Messages.WRONG_MODE_TYPE.format(type))
+        return mode in mode_types_to_modes[type]
+
     def is_any_mode_turned_on_by_type(self, type: str) -> bool:
         return any(self.get_modes_turned_on_by_type(type))
 
@@ -183,10 +197,8 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         return modes
 
     def get_modes_turned_on_by_type(self, type: str) -> Generator[str, None, None]:
-        if type not in mode_types_to_modes:
-            raise ValueError(Messages.WRONG_MODE_TYPE.format(type))
         is_mode_condition_satisfied = self._get_mode_turn_on_condition_by_type(type)
-        return (mode for mode in self._modes if mode in mode_types_to_modes[type] and is_mode_condition_satisfied(mode))
+        return (mode for mode in self._modes if self._is_mode_of_type(mode, type) and is_mode_condition_satisfied(mode))
 
     def _get_mode_turn_on_condition_by_type(self, type: str) -> Callable[[str], bool]:
         if type == ModeTypes.DISPLAYABLE:

@@ -3,6 +3,7 @@ import logging
 import sys
 from dataclasses import dataclass
 
+from testing_utils import get_test_arguments
 from translating.argumentParsing import configChanger
 from translating.argumentParsing import configDisplayer
 from translating.argumentParsing import configurations
@@ -46,10 +47,6 @@ def main():
     except ParsingException as err:
         for msg in err.validation_messages:
             print(msg)
-
-
-def get_test_arguments():
-    return 't -la'.split(' ')  # t laborious en uk
 
 
 def translate_and_print(argument_parser: IntelligentArgumentParser):

@@ -92,7 +92,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         self._modes[mode] = args or []
 
     def filter_modes_out_of_args(self, args: list[str]) -> list[str]:
-        args = [self._get_key_for_arg(arg) for arg in args if self._is_mode(arg)]
+        args = [self._get_key_for_arg(arg) if self._is_mode(arg) else arg for arg in args]
         i = 0
         while 0 <= i < len(args):
             i = self._find_index_of_next_arg(i, args)

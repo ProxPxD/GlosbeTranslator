@@ -98,7 +98,7 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
             i = self._find_index_of_next_arg(i, args)
             if i == len(args):
                 break
-            arg = self._get_key_for_arg(args[i])
+            arg = args[i]
             del args[i]
             self._add_mode_with_index(arg, i)
 

@@ -12,10 +12,9 @@ tests = [
 
 
 def main():
-    for test_class in tests:
-        test = test_class()
-        unittest.main(module=test, exit=False)
+    unittest.main(exit=False, verbosity=0)
 
+# python -m unittest discover -s tests -p *Test.py
 
 if __name__ == '__main__':
     main()

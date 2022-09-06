@@ -132,14 +132,14 @@ class IntelligentArgumentParser:
         self._to_langs = list(map(self._scriptAdjuster.adjust_word, self.to_langs))
 
     def _filter_misplaced_langs_to_words(self, *langs: list):
-        criterium = lambda lang: \
-                        len(lang) > 3\
-                        or any(char not in constants.alphabet for char in lang)
-        sorter: tuple[list, list] = ([], self._words)
-        for lang in langs:
-            sorter[1 if criterium(lang) else 0].append(lang)
+        criterium = lambda lang: len(lang) > 3 or any(char not in constants.alphabet for char in lang)
+        membership = lambda lang: 1 if criterium(lang) else 0
 
-        return sorter[0]
+        langs_words: tuple[list, list] = ([], self._words)
+        for lang in langs:
+            langs_words[membership(lang)].append(lang)
+
+        return langs_words[0]
 
     def _remove_nones(self):
         self._to_langs = list(filter(None, self._to_langs))

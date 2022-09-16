@@ -1,11 +1,11 @@
 from typing import Any, Callable
 
-from . import constants
 from .configurations import Configurations, Configs
 from .constants import FLAGS
 from .layoutAdjusting import layoutAdjusterFactory
 from .modeManager import ModesManager
 from .parsingException import ParsingException
+from .wordDetector import WordDetector
 
 
 class IntelligentArgumentParser:
@@ -15,6 +15,7 @@ class IntelligentArgumentParser:
         self._modesManager = ModesManager()
         lang_adjustment_type = Configurations.get_conf(Configs.LANG_SPEC_ADJUSTMENT)
         self._scriptAdjuster = layoutAdjusterFactory.get_layout_adjuster(lang_adjustment_type)
+        self._word_detector = WordDetector()
         self._words = []
         self._from_lang = None
         self._to_langs = []
@@ -109,6 +110,7 @@ class IntelligentArgumentParser:
     def _parse_langs_else_get_both_from_configs_depending_on_second(self, first: str, offset=0):
         second = self._get_arg_or_else(1 + offset)
         if second:
+            self._word_detector.put_in_right_list(first)
             self._from_lang = first
             self._to_langs.append(second)
         else:
@@ -130,16 +132,6 @@ class IntelligentArgumentParser:
     def _adjust_to_script(self):
         self._from_lang = self._scriptAdjuster.adjust_word(self._from_lang)
         self._to_langs = list(map(self._scriptAdjuster.adjust_word, self.to_langs))
-
-    def _filter_misplaced_langs_to_words(self, *langs: list):
-        criterium = lambda lang: len(lang) > 3 or any(char not in constants.alphabet for char in lang)
-        membership = lambda lang: 1 if criterium(lang) else 0
-
-        langs_words: tuple[list, list] = ([], self._words)
-        for lang in langs:
-            langs_words[membership(lang)].append(lang)
-
-        return langs_words[0]
 
     def _remove_nones(self):
         self._to_langs = list(filter(None, self._to_langs))

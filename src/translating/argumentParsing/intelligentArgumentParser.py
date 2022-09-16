@@ -137,3 +137,11 @@ class IntelligentArgumentParser:
         self._to_langs = list(filter(None, self._to_langs))
         self._words = list(filter(None, self._words))
 
+    def _correct_misplaced(self):
+        pass
+
+    def _move_from_from_lang_to_to_langs(self):
+        pass
+
+    def _move_from_words_to_from_langs(self):
+        pass

@@ -1,3 +1,4 @@
+import abc
 import time
 import unittest
 
@@ -5,8 +6,6 @@ from src.translating.argumentParsing.configurations import Configurations, Confi
 from src.translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
 from src.translating.constants import TranslationParts
 from src.translating.translator import Translator
-
-import abc
 
 
 class AbstractTranslationTest(unittest.TestCase, abc.ABC):

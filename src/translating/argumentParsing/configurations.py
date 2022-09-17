@@ -126,7 +126,7 @@ class Configurations:
         return langs
 
     @staticmethod
-    def change_last_used_languages(*langs) -> None:
+    def change_last_used_languages(*langs: str) -> None:
         languages: list[str] = Configurations.get_conf(Configs.SAVED_LANGS)
         for lang in reversed(langs):
             if lang in languages:

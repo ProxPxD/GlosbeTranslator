@@ -1,3 +1,4 @@
+from src.translating.argumentParsing.configurations import Configurations
 from tests.abstractTranslationTest import AbstractTranslationTest
 
 
@@ -25,14 +26,85 @@ class MisplacedTest(AbstractTranslationTest):
     def _get_mode(cls) -> str | None:
         return 'misplaced'
 
-    test_single_misplaced_once
+    def test_single_misplaced_once(self):
+        word, from_lang, to_lang = 'suchen', 'de', 'pl'
+        self.set_input_string(f't {from_lang} {word} {to_lang} -s')
 
-    test_single_misplaced_twice
+        translations = self.translate()
 
-    test_single_misplaced_one_arg
+        self.assertTrue(len(translations))
+        self.assertEqual(from_lang, self.argumentParser.from_lang)
+        self.assertIn(to_lang, self.argumentParser.to_langs)
+        self.assertIn(word, self.argumentParser.words)
 
-    test_multi_langs_misplaced
+    def test_single_misplaced_twice(self):
+        word, from_lang, to_lang = 'suchen', 'de', 'pl'
+        self.set_input_string(f't {from_lang} {to_lang} {word} -s')
 
-    test_multi_word_misplaced_one_word
+        translations = self.translate()
 
-    test_multi_word_misplaced_two_words
+        self.assertTrue(len(translations))
+        self.assertEqual(from_lang, self.argumentParser.from_lang)
+        self.assertIn(to_lang, self.argumentParser.to_langs)
+        self.assertIn(word, self.argumentParser.words)
+
+    def test_single_misplaced_one_arg(self):
+        word, from_lang, to_lang = 'suchen', 'de', 'pl'
+        Configurations.change_last_used_languages(from_lang)
+        self.set_input_string(f't {to_lang} {word} -s')
+
+        translations = self.translate()
+
+        self.assertTrue(len(translations))
+        self.assertEqual(from_lang, self.argumentParser.from_lang)
+        self.assertIn(to_lang, self.argumentParser.to_langs)
+        self.assertIn(word, self.argumentParser.words)
+
+    def test_multi_langs_misplaced_before(self):
+        word, from_lang, to_langs = 'suchen', 'de', ['pl', 'fr']
+        self.set_input_string(f't {from_lang} {word} -m {" ".join(to_langs)}')
+
+        translations = self.translate()
+
+        self.assertTrue(len(translations))
+        self.assertEqual(from_lang, self.argumentParser.from_lang)
+        self.assertEqual(to_langs, self.argumentParser.to_langs)
+        self.assertIn(word, self.argumentParser.words)
+
+    def test_multi_langs_misplaced_after(self):
+        word, from_lang, to_langs = 'suchen', 'de', ['pl', 'fr']
+        Configurations.change_last_used_languages(from_lang)
+        self.set_input_string(f't -m {word} {" ".join(to_langs)}')
+
+        translations = self.translate()
+
+        self.assertTrue(len(translations))
+        self.assertEqual(from_lang, self.argumentParser.from_lang)
+        self.assertEqual(to_langs, self.argumentParser.to_langs)
+        self.assertIn(word, self.argumentParser.words)
+
+    def test_multi_word_misplaced_one_word(self):
+        words, from_lang, to_lang = ['suchen', 'nehmen', 'krank', 'Weib'], 'de', 'pl'
+        words_1, words_2 = words[:2], words[2:]
+        Configurations.change_last_used_languages(from_lang)
+        self.set_input_string(f't {to_lang} {" ".join(words_1)} -w {" ".join(words_2)}')
+
+        translations = self.translate()
+
+        self.assertTrue(len(translations))
+        self.assertEqual(from_lang, self.argumentParser.from_lang)
+        self.assertIn(to_lang, self.argumentParser.to_langs)
+        self.assertEqual(words, self.argumentParser.words)
+
+    def test_multi_word_misplaced_two_words(self):
+        words, from_lang, to_lang = ['suchen', 'nehmen', 'krank', 'Weib'], 'de', 'pl'
+        words_1, words_2 = words[:2], words[2:]
+        Configurations.change_last_used_languages(from_lang, to_lang)
+        self.set_input_string(f't {" ".join(words_1)} -w {" ".join(words_2)}')
+
+        translations = self.translate()
+
+        self.assertTrue(len(translations))
+        self.assertEqual(from_lang, self.argumentParser.from_lang)
+        self.assertIn(to_lang, self.argumentParser.to_langs)
+        self.assertEqual(words, self.argumentParser.words)

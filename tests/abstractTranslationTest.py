@@ -27,7 +27,7 @@ class AbstractTranslationTest(unittest.TestCase, abc.ABC):
         Configurations.init()
         Configurations.change_conf(Configs.SAVED_LANGS, ['pl', 'en', 'de', 'es', 'uk', 'zh'])
         Configurations.change_conf(Configs.DEFAULT_TRANSLATIONAL_MODE, cls._get_mode())
-        cls.print_sep_with_text(f'Starting {cls._get_mode()} mode tests!')
+        cls.print_sep_with_text(f'Starting {cls._get_mode()} tests!')
 
     def setUp(self) -> None:
         super().setUp()

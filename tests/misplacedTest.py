@@ -94,7 +94,7 @@ class MisplacedTest(AbstractTranslationTest):
         self.assertTrue(len(translations))
         self.assertEqual(from_lang, self.argumentParser.from_lang)
         self.assertIn(to_lang, self.argumentParser.to_langs)
-        self.assertEqual(words, self.argumentParser.words)
+        self.assertEqual(set(words), set(self.argumentParser.words))
 
     def test_multi_word_misplaced_two_words(self):
         words, from_lang, to_lang = ['suchen', 'nehmen', 'krank', 'Weib'], 'de', 'pl'
@@ -107,4 +107,4 @@ class MisplacedTest(AbstractTranslationTest):
         self.assertTrue(len(translations))
         self.assertEqual(from_lang, self.argumentParser.from_lang)
         self.assertIn(to_lang, self.argumentParser.to_langs)
-        self.assertEqual(words, self.argumentParser.words)
+        self.assertEqual(set(words), set(self.argumentParser.words))

@@ -111,7 +111,7 @@ class IntelligentArgumentParser:
         return self.modes.is_single_mode_on() and self._word_filter.is_any_word_moved_from_to_langs()
 
     def _is_from_lang_in_words(self):
-        self.modes.is_single_mode_on() or (self.modes.is_multi_lang_mode_on() and self._get_arg(1))
+        return self.modes.is_single_mode_on() or (self.modes.is_multi_lang_mode_on() and self._get_arg(1) is not None)
 
     def _fill_langs_from_config(self):
         if not self._to_langs:

@@ -43,7 +43,7 @@ class Connector:
 
     def get_page(self) -> requests.Response:
         if not self._from_lang or not self._to_lang or not self._word:
-            raise TranslatorArgumentException(self._from_lang, self._to_lang, self._word)  # TODO exception type
+            raise TranslatorArgumentException(self._from_lang, self._to_lang, self._word)
         url: str = self._create_target_url()
         return self._session.get(url, allow_redirects=True)
 

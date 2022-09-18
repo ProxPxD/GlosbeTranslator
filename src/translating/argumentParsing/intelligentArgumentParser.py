@@ -1,5 +1,3 @@
-from typing import Any, Callable
-
 from .configurations import Configurations, Configs
 from .constants import FLAGS
 from .layoutAdjusting import layoutAdjusterFactory
@@ -72,7 +70,7 @@ class IntelligentArgumentParser:
         elif self.modes.is_double_multi_mode_on():
             self._parse_double_multi()
 
-    def _parse_normal(self):  # TODO: add excception if no args
+    def _parse_normal(self):
         self._words += self._get_arg(0)
         self._from_lang += self._get_arg(1)
         self._to_langs += self._get_range(2)

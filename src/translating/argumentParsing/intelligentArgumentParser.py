@@ -48,17 +48,18 @@ class IntelligentArgumentParser:
 
     def parse(self):
         self._args = self._modesManager.filter_modes_out_of_args(self._args)
-
         error_messages = self._modesManager.validate_modes()
         if error_messages:
             raise ParsingException(error_messages)
 
-        self._parse_by_mode()
-        self._correct_misplaced()
-        self._fill_langs_from_config()
+        if not (self.modes.is_any_configurational_mode_on() or self.modes.is_any_displayable_mode_on()):
+            self._parse_by_mode()
+            self._correct_misplaced()
+            self._fill_langs_from_config()
+            if not self._words:
+                raise ParsingException
+
         self._adjust_to_script()
-        if not self._words:
-            raise ParsingException
 
     def _parse_by_mode(self):
         if self.modes.is_single_mode_on():

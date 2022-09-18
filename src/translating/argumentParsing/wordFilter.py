@@ -24,12 +24,15 @@ class WordFilter:
     def is_word(self, to_test: str) -> bool:
         return len(to_test) > 3 or any(char not in constants.alphabet for char in to_test)
 
+    def is_any_lang_misplaced(self, *to_check: str):
+        return any(self.is_word(elem) for elem in to_check)
+
     def _membership(self, to_test):
         return 1 if self.is_word(to_test) else 0
 
-    def split_into_langs_and_words(self, to_tests: SmartList[str]) -> tupleLists_2:
+    def split_into_langs_and_words(self, to_split: SmartList[str]) -> tupleLists_2:
         langs_words: tupleLists_2 = (SmartList(), SmartList())
-        for to_test in to_tests:
+        for to_test in to_split:
             langs_words[self._membership(to_test)] += to_test
         return langs_words
 

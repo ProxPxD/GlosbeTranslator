@@ -8,7 +8,11 @@ class MultiLangTranslationTest(AbstractTranslationTest):
 
     @classmethod
     def _get_mode(cls):
-        return FLAGS.MULTI_LANG + " mode"
+        return FLAGS.MULTI_LANG
+
+    @classmethod
+    def _get_test_name(cls) -> str:
+        return cls._get_mode() + ' mode'
 
     def _perform_translation(self):
         word = self.argumentParser.words[0] if self.argumentParser.words else None

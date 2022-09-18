@@ -42,7 +42,7 @@ class AbstractTranslationTest(unittest.TestCase, abc.ABC):
             print('ok' if ok else 'ERROR' if errors else 'FAIL')
         else:
             print()
-        time.sleep(1 / 2)  # wait not to overload the server
+        time.sleep(0.4)  # wait not to overload the server
 
     def run(self, result: unittest.result.TestResult | None = ...) -> unittest.result.TestResult | None:
         self.currentResult = result

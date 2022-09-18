@@ -15,6 +15,10 @@ class MultiWordTranslationTest(AbstractTranslationTest):
     def _get_mode(cls) -> str:
         return FLAGS.MULTI_WORD
 
+    @classmethod
+    def _get_test_name(cls) -> str:
+        return cls._get_mode() + ' mode'
+
     def test_all_args_set(self):
         from_lang, to_lang = 'pl', 'de'
         words = ['myśleć', 'ulec', 'obraz']

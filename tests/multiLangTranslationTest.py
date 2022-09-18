@@ -49,7 +49,7 @@ class MultiLangTranslationTest(AbstractTranslationTest):
             self.assertEqual(lang, self.get_constant_part(translation))
             self.assertEqual(translation_word, correct_translated_words[i])
 
-    def test_only_to_langs_set(self):
+    def test_only_langs_set(self):
         from_lang = 'zh'
         to_langs = ['pl', 'es', 'de']
         Configurations.change_last_used_languages(from_lang)

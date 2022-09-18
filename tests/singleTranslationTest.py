@@ -8,7 +8,11 @@ class SingleTranslationTest(AbstractTranslationTest):
 
     @classmethod
     def _get_mode(cls):
-        return FLAGS.SINGLE + " mode"
+        return FLAGS.SINGLE
+
+    @classmethod
+    def _get_test_name(cls) -> str:
+        return cls._get_mode() + ' mode'
 
     def _perform_translation(self):
         from_lang = self.argumentParser.from_lang

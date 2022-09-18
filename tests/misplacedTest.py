@@ -24,44 +24,59 @@ class MisplacedTest(AbstractTranslationTest):
 
     @classmethod
     def _get_mode(cls) -> str | None:
+        return None
+
+    @classmethod
+    def _get_test_name(cls) -> str:
         return 'misplaced'
 
     def test_single_misplaced_once(self):
         word, from_lang, to_lang = 'suchen', 'de', 'pl'
+        correct_translation = 'szukać'
         self.set_input_string(f't {from_lang} {word} {to_lang} -s')
 
-        translations = self.translate()
+        translation = self.translate()[0]
+        batch = self.get_nth_translation_batch(0, translation)
+        actual_translation = self.get_word_from_batch(batch)
 
-        self.assertTrue(len(translations))
+        self.assertTrue(len(translation))
         self.assertEqual(from_lang, self.argumentParser.from_lang)
         self.assertIn(to_lang, self.argumentParser.to_langs)
         self.assertIn(word, self.argumentParser.words)
+        self.assertEqual(correct_translation, actual_translation)
 
     def test_single_misplaced_twice(self):
         word, from_lang, to_lang = 'suchen', 'de', 'pl'
+        correct_translation = 'szukać'
         self.set_input_string(f't {from_lang} {to_lang} {word} -s')
 
-        translations = self.translate()
-
-        self.assertTrue(len(translations))
+        translation = self.translate()[0]
+        batch = self.get_nth_translation_batch(0, translation)
+        actual_translation = self.get_word_from_batch(batch)
         self.assertEqual(from_lang, self.argumentParser.from_lang)
         self.assertIn(to_lang, self.argumentParser.to_langs)
         self.assertIn(word, self.argumentParser.words)
+        self.assertEqual(correct_translation, actual_translation)
 
     def test_single_misplaced_one_arg(self):
         word, from_lang, to_lang = 'suchen', 'de', 'pl'
+        correct_translation = 'szukać'
         Configurations.change_last_used_languages(from_lang)
         self.set_input_string(f't {to_lang} {word} -s')
 
-        translations = self.translate()
+        translation = self.translate()[0]
+        batch = self.get_nth_translation_batch(0, translation)
+        actual_translation = self.get_word_from_batch(batch)
 
-        self.assertTrue(len(translations))
+        self.assertTrue(len(translation))
         self.assertEqual(from_lang, self.argumentParser.from_lang)
         self.assertIn(to_lang, self.argumentParser.to_langs)
         self.assertIn(word, self.argumentParser.words)
+        self.assertEqual(correct_translation, actual_translation)
 
     def test_multi_langs_misplaced_before(self):
         word, from_lang, to_langs = 'suchen', 'de', ['pl', 'fr']
+        correct_translations = 'szukać', 'chercher'
         self.set_input_string(f't {from_lang} {word} -m {" ".join(to_langs)}')
 
         translations = self.translate()
@@ -70,9 +85,14 @@ class MisplacedTest(AbstractTranslationTest):
         self.assertEqual(from_lang, self.argumentParser.from_lang)
         self.assertEqual(to_langs, self.argumentParser.to_langs)
         self.assertIn(word, self.argumentParser.words)
+        for correct_translation, translation in zip(correct_translations, translations):
+            batch = self.get_nth_translation_batch(0, translation)
+            actual_translation = self.get_word_from_batch(batch)
+            self.assertEqual(correct_translation, actual_translation)
 
     def test_multi_langs_misplaced_after(self):
         word, from_lang, to_langs = 'suchen', 'de', ['pl', 'fr']
+        correct_translations = 'szukać', 'chercher'
         Configurations.change_last_used_languages(from_lang)
         self.set_input_string(f't -m {word} {" ".join(to_langs)}')
 
@@ -82,9 +102,14 @@ class MisplacedTest(AbstractTranslationTest):
         self.assertEqual(from_lang, self.argumentParser.from_lang)
         self.assertEqual(to_langs, self.argumentParser.to_langs)
         self.assertIn(word, self.argumentParser.words)
+        for correct_translation, translation in zip(correct_translations, translations):
+            batch = self.get_nth_translation_batch(0, translation)
+            actual_translation = self.get_word_from_batch(batch)
+            self.assertEqual(correct_translation, actual_translation)
 
     def test_multi_word_misplaced_one_word(self):
         words, from_lang, to_lang = ['suchen', 'nehmen', 'krank', 'Weib'], 'de', 'pl'
+        correct_translations = 'szukać', 'brać', 'chory', 'kobieta'
         words_1, words_2 = words[:2], words[2:]
         Configurations.change_last_used_languages(from_lang)
         self.set_input_string(f't {to_lang} {" ".join(words_1)} -w {" ".join(words_2)}')
@@ -95,9 +120,14 @@ class MisplacedTest(AbstractTranslationTest):
         self.assertEqual(from_lang, self.argumentParser.from_lang)
         self.assertIn(to_lang, self.argumentParser.to_langs)
         self.assertEqual(set(words), set(self.argumentParser.words))
+        for correct_translation, translation in zip(correct_translations, translations):
+            batch = self.get_nth_translation_batch(0, translation)
+            actual_translation = self.get_word_from_batch(batch)
+            self.assertEqual(correct_translation, actual_translation)
 
     def test_multi_word_misplaced_two_words(self):
         words, from_lang, to_lang = ['suchen', 'nehmen', 'krank', 'Weib'], 'de', 'pl'
+        correct_translations = 'szukać', 'brać', 'chory', 'kobieta'
         words_1, words_2 = words[:2], words[2:]
         Configurations.change_last_used_languages(from_lang, to_lang)
         self.set_input_string(f't {" ".join(words_1)} -w {" ".join(words_2)}')
@@ -108,3 +138,7 @@ class MisplacedTest(AbstractTranslationTest):
         self.assertEqual(from_lang, self.argumentParser.from_lang)
         self.assertIn(to_lang, self.argumentParser.to_langs)
         self.assertEqual(set(words), set(self.argumentParser.words))
+        for correct_translation, translation in zip(correct_translations, translations):
+            batch = self.get_nth_translation_batch(0, translation)
+            actual_translation = self.get_word_from_batch(batch)
+            self.assertEqual(correct_translation, actual_translation)

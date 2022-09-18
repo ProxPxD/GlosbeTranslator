@@ -33,7 +33,7 @@ class WordFilter:
     def split_into_langs_and_words(self, to_split: SmartList[str]) -> tupleLists_2:
         langs_words: tupleLists_2 = (SmartList(), SmartList())
         for to_test in to_split:
-            langs_words[self._membership(to_test)] += to_test
+            langs_words[self._membership(to_test)].append(to_test)
         return langs_words
 
     def split_from_from_and_to_langs(self, from_lang: SmartList[str], to_langs: SmartList[str]) -> tupleLists_3:

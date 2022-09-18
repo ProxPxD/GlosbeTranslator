@@ -101,15 +101,18 @@ class IntelligentArgumentParser:
 
     def _correct_misplaced(self):
         if self._word_filter.is_any_lang_misplaced(*self._from_lang, *self._to_langs):
-            self._from_lang, self._to_langs, words = self._word_filter.split_from_from_and_to_langs(self.from_lang, self.to_langs)
-            if not len(self.to_langs) and (self.modes.is_single_mode_on() or self.modes.is_multi_word_mode_on()):
-                self._to_langs += -self._from_lang
-            if words:
-                if self.modes.is_single_mode_on() or self.modes.is_multi_lang_mode_on():
-                    # if self._word_filter.
-                    self._from_lang += None
-                if self.modes.is_single_mode_on() or self.modes.is_multi_word_mode_on():
-                    self._to_langs += -self._from_lang
+            self._from_lang, self._to_langs, words = self._word_filter.split_from_from_and_to_langs(self._from_lang, self.to_langs)
+            self._words += words
+            if self._is_to_lang_in_from_lang():
+                  self._to_langs += -self._from_lang
+            if self._is_from_lang_in_words():
+                self._from_lang += -self.words
+
+    def _is_to_lang_in_from_lang(self):
+        return self.modes.is_single_mode_on() and self._word_filter.is_any_word_moved_from_to_langs()
+
+    def _is_from_lang_in_words(self):
+        self.modes.is_single_mode_on() or (self.modes.is_multi_lang_mode_on() and self._get_arg(1))
 
     def _fill_langs_from_config(self):
         if not self._to_langs:

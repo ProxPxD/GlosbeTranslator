@@ -1,10 +1,10 @@
-from typing import Any, Callable
-
 from .configurations import Configurations, Configs
 from .constants import FLAGS
 from .layoutAdjusting import layoutAdjusterFactory
 from .modeManager import ModesManager
 from .parsingException import ParsingException
+from .smartList import SmartList
+from .wordFilter import WordFilter
 
 
 class IntelligentArgumentParser:
@@ -14,9 +14,10 @@ class IntelligentArgumentParser:
         self._modesManager = ModesManager()
         lang_adjustment_type = Configurations.get_conf(Configs.LANG_SPEC_ADJUSTMENT)
         self._scriptAdjuster = layoutAdjusterFactory.get_layout_adjuster(lang_adjustment_type)
-        self._words = []
-        self._from_lang = None
-        self._to_langs = []
+        self._word_filter = WordFilter()
+        self._words = SmartList()
+        self._from_lang = SmartList(limit=1)
+        self._to_langs = SmartList()
 
     @property
     def words(self):
@@ -24,7 +25,7 @@ class IntelligentArgumentParser:
 
     @property
     def from_lang(self):
-        return self._from_lang
+        return self._from_lang[0] if len(self._from_lang) else None
 
     @property
     def to_langs(self):
@@ -34,104 +35,87 @@ class IntelligentArgumentParser:
     def modes(self) -> ModesManager:
         return self._modesManager
 
+    def _get_arg(self, i: int, otherwise = None):
+        return self._args[i] if i < len(self._args) else otherwise
+
+    def _get_range(self, start: int, end: int = None):
+        if end is None:
+            return self._args[start:] if 0 < start < len(self._args) else []
+        return self._args[start:end] if 0 < start < end < len(self._args) else []
+
     def is_translation_mode_on(self):
         return self.from_lang and self._to_langs and self._words
 
     def parse(self):
         self._args = self._modesManager.filter_modes_out_of_args(self._args)
+
         error_messages = self._modesManager.validate_modes()
         if error_messages:
             raise ParsingException(error_messages)
 
-        modes: str = self._modesManager.get_active_translational_modes()
-        self._parse_by_mode(modes)
+        self._parse_by_mode()
+        self._correct_misplaced()
+        self._fill_langs_from_config()
+        self._adjust_to_script()
+        if not self._words:
+            raise ParsingException
 
-    def _parse_by_mode(self, modes: str):
-        if len(modes) == 1:
-            mode = modes[0]
-            if mode == FLAGS.SINGLE:
-                self._parse_normal()
-            elif mode == FLAGS.MULTI_WORD:
-                self._parse_multi_word()
-            elif mode == FLAGS.MULTI_LANG:
-                self._parse_multi_lang()
-        else:
-            if FLAGS.MULTI_WORD in modes and FLAGS.MULTI_LANG in modes:
-                self._parse_double_multi()
+    def _parse_by_mode(self):
+        if self.modes.is_single_mode_on():
+            self._parse_normal()
+        elif self.modes.is_multi_lang_mode_on():
+            self._parse_multi_lang()
+        elif self.modes.is_multi_word_mode_on():
+            self._parse_multi_word()
+        elif self.modes.is_double_multi_mode_on():
+            self._parse_double_multi()
 
-        if self._scriptAdjuster is not None:
-            self._adjust_to_script()
-        self._remove_nones()
-
-    def _parse_normal(self):  # TODO: add excception if no args
-        self._words.append(self._get_arg_or_else(0))
-        self._parse_langs_else_get_both_from_configs(1)
+    def _parse_normal(self):
+        self._words += self._get_arg(0)
+        self._from_lang += self._get_arg(1)
+        self._to_langs += self._get_range(2)
 
     def _parse_multi_lang(self):
-        self._words.append(self._get_arg_or_else(0))
-        self._from_lang = self._get_arg_else_previous_index_from_config(1)
-        self._to_langs = self._args[2:]
-        if not self._to_langs:
-            self._to_langs = self.modes.get_mode_args(FLAGS.MULTI_LANG)
-        if not self._to_langs:
-            self._to_langs = Configurations.load_config_languages(to_skip=self._from_lang)
-
-    def _parse_double_multi(self):
-        self._from_lang = self._get_arg_else_same_from_config(0)
-        self._to_langs = self.modes.get_mode_args(FLAGS.MULTI_LANG)
-        self._words = self.modes.get_mode_args(FLAGS.MULTI_WORD)
+        self._words += self._get_arg(0)
+        self._from_lang += self._get_arg(1)
+        self._to_langs += self._get_range(2)
+        self._to_langs += self.modes.get_mode_args(FLAGS.MULTI_LANG)
 
     def _parse_multi_word(self):
-        if self._modesManager.is_mode_explicitly_on(FLAGS.MULTI_WORD):
-            self._parse_multi_word_explicitly()
-        else:
-            self._parse_multi_word_implicitly()
+        self._from_lang += self._get_arg(0)
+        self._to_langs += self._get_arg(1)
+        self._words += self._get_range(2)
+        self._words += self.modes.get_mode_args(FLAGS.MULTI_WORD)
 
-    def _parse_multi_word_implicitly(self):
-        self._from_lang = self._get_arg_or_else(0)
-        self._to_langs.append(self._get_arg_or_else(1))
-        self._words = self._args[2:]
-
-    def _parse_multi_word_explicitly(self):
-        self._parse_langs_else_get_both_from_configs()
-
-        self._words = self._args[2:]
-        self._words.extend(self._modesManager.get_mode_args(FLAGS.MULTI_WORD))
-
-    def _parse_langs_else_get_both_from_configs(self, offset=0):
-        first = self._get_arg_or_else(0 + offset)
-        if not first:
-            self._from_lang = Configurations.get_nth_saved_language(0)
-            self._to_langs.append(Configurations.get_nth_saved_language(1))
-        else:
-            self._parse_langs_else_get_both_from_configs_depending_on_second(first, offset)
-
-    def _parse_langs_else_get_both_from_configs_depending_on_second(self, first: str, offset=0):
-        second = self._get_arg_or_else(1 + offset)
-        if second:
-            self._from_lang = first
-            self._to_langs.append(second)
-        else:
-            self._from_lang = Configurations.get_nth_saved_language(0)
-            self._to_langs.append(first)
-
-    def _get_arg_else_same_from_config(self, index: int):
-        return self._get_arg_else_get(index, lambda: Configurations.get_nth_saved_language(index))
-
-    def _get_arg_else_previous_index_from_config(self, index: int):
-        return self._get_arg_else_get(index, lambda: Configurations.get_nth_saved_language(index - 1))
-
-    def _get_arg_else_get(self, index: int, func: Callable[[], str]):
-        return self._args[index] if index < len(self._args) else func()
-
-    def _get_arg_or_else(self, index: int, otherwise: Any = None) -> Any:
-        return self._args[index] if index < len(self._args) else otherwise
+    def _parse_double_multi(self):
+        self._from_lang += self._get_arg(0)
+        self._to_langs += self.modes.get_mode_args(FLAGS.MULTI_LANG)
+        self._words += self.modes.get_mode_args(FLAGS.MULTI_WORD)
 
     def _adjust_to_script(self):
-        self._from_lang = self._scriptAdjuster.adjust_word(self._from_lang)
-        self._to_langs = list(map(self._scriptAdjuster.adjust_word, self.to_langs))
+        if self._scriptAdjuster is not None:
+            self._from_lang += self._scriptAdjuster.adjust_word(-self._from_lang)
+            self._to_langs = SmartList(map(self._scriptAdjuster.adjust_word, self.to_langs))
 
-    def _remove_nones(self):
-        self._to_langs = list(filter(None, self._to_langs))
-        self._words = list(filter(None, self._words))
+    def _correct_misplaced(self):
+        if self._word_filter.is_any_lang_misplaced(*self._from_lang, *self._to_langs):
+            self._from_lang, self._to_langs, words = self._word_filter.split_from_from_and_to_langs(self._from_lang, self.to_langs)
+            self._words += words
+            if self._is_to_lang_in_from_lang():
+                  self._to_langs += -self._from_lang
+            if self._is_from_lang_in_words():
+                self._from_lang += -self.words
 
+    def _is_to_lang_in_from_lang(self):
+        return self.modes.is_single_mode_on() and self._word_filter.is_any_word_moved_from_to_langs()
+
+    def _is_from_lang_in_words(self):
+        self.modes.is_single_mode_on() or (self.modes.is_multi_lang_mode_on() and self._get_arg(1))
+
+    def _fill_langs_from_config(self):
+        if not self._to_langs:
+            self._to_langs += - self._from_lang
+        if not self._to_langs:
+            self._to_langs += Configurations.get_nth_saved_language(1)
+        if not self._from_lang:
+            self._from_lang += Configurations.get_nth_saved_language(0)

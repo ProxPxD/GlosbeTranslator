@@ -13,7 +13,7 @@ class MultiWordTranslationTest(AbstractTranslationTest):
 
     @classmethod
     def _get_mode(cls) -> str:
-        return FLAGS.MULTI_WORD
+        return FLAGS.MULTI_WORD + " mode"
 
     def test_all_args_set(self):
         from_lang, to_lang = 'pl', 'de'

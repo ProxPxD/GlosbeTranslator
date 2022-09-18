@@ -112,8 +112,8 @@ class Configurations:
         return Configurations.get_conf(Configs.SAVED_LANGS)
 
     @staticmethod
-    def get_nth_saved_language(index: int) -> str:
-        return Configurations.get_saved_languages()[index]
+    def get_nth_saved_language(index: int, to_skip: str = None) -> str:
+        return Configurations.load_config_languages(to_skip)[index]
 
     @staticmethod
     def load_config_languages(to_skip: str = None) -> list[str]:
@@ -126,7 +126,11 @@ class Configurations:
         return langs
 
     @staticmethod
-    def change_last_used_languages(*langs) -> None:
+    def x(to_skip: str = None):
+        pass
+
+    @staticmethod
+    def change_last_used_languages(*langs: str) -> None:
         languages: list[str] = Configurations.get_conf(Configs.SAVED_LANGS)
         for lang in reversed(langs):
             if lang in languages:

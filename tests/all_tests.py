@@ -3,11 +3,13 @@ import unittest
 from tests.multiLangTranslationTest import MultiLangTranslationTest
 from tests.multiWordTranslationTest import MultiWordTranslationTest
 from tests.singleTranslationTest import SingleTranslationTest
+from tests.misplacedTest import MisplacedTest
 
 tests = [
     SingleTranslationTest,
     MultiLangTranslationTest,
     MultiWordTranslationTest,
+    MisplacedTest,
 ]
 
 

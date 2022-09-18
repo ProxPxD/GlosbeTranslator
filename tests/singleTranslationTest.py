@@ -1,6 +1,6 @@
 from src.translating.argumentParsing.configurations import Configurations
 from src.translating.argumentParsing.constants import FLAGS
-from src.translating.web.translatorArgumentException import TranslatorArgumentException
+from src.translating.argumentParsing.parsingException import ParsingException
 from tests.abstractTranslationTest import AbstractTranslationTest
 
 
@@ -18,7 +18,7 @@ class SingleTranslationTest(AbstractTranslationTest):
 
     def test_no_args_set(self):
         self.set_input_string('t')
-        self.assertRaises(TranslatorArgumentException, self.translate)
+        self.assertRaises(ParsingException, self.translate)
 
     def test_all_args_set(self):
         tak = 'tak'

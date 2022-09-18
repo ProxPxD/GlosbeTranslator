@@ -162,10 +162,10 @@ class ModesManager:  # TODO: create a mode filter class. Consider creating a sub
         return mode in self._modes
 
     def is_multi_lang_mode_on(self) -> bool:
-        return self.is_translational_mode_on(FLAGS.MULTI_LANG) and len(list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))) == 1
+        return self.is_translational_mode_on(FLAGS.MULTI_LANG) and len(list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))) < 2
 
     def is_multi_word_mode_on(self) -> bool:
-        return self.is_translational_mode_on(FLAGS.MULTI_WORD) and len(list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))) == 1
+        return self.is_translational_mode_on(FLAGS.MULTI_WORD) and len(list(self.get_modes_turned_on_by_type(ModeTypes.TRANSLATIONAL))) < 2
 
     def is_double_multi_mode_on(self) -> bool:
         return self.is_translational_mode_on(FLAGS.MULTI_WORD) and self.is_translational_mode_on(FLAGS.MULTI_LANG)

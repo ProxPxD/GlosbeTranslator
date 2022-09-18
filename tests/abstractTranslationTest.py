@@ -35,10 +35,13 @@ class AbstractTranslationTest(unittest.TestCase, abc.ABC):
 
     def tearDown(self) -> None:
         super().tearDown()
-        ok = self.currentResult.wasSuccessful()
-        errors = self.currentResult.errors
-        failures = self.currentResult.failures
-        print('ok' if ok else 'ERROR' if errors else 'FAIL')
+        if self.currentResult is not None:
+            errors = self.currentResult.errors
+            failures = self.currentResult.failures
+            ok = not (errors or failures)
+            print('ok' if ok else 'ERROR' if errors else 'FAIL')
+        else:
+            print()
         time.sleep(1 / 2)  # wait not to overload the server
 
     def run(self, result: unittest.result.TestResult | None = ...) -> unittest.result.TestResult | None:

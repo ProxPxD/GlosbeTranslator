@@ -1,5 +1,6 @@
 from src.translating.argumentParsing.configurations import Configurations
 from src.translating.argumentParsing.constants import FLAGS
+from src.translating.argumentParsing.parsingException import ParsingException
 from src.translating.web.translatorArgumentException import TranslatorArgumentException
 from tests.abstractTranslationTest import AbstractTranslationTest
 
@@ -55,5 +56,5 @@ class MultiLangTranslationTest(AbstractTranslationTest):
         Configurations.change_last_used_languages(from_lang)
         self.set_input_string(f't -m {" ".join(to_langs)}')
 
-        self.assertRaises(TranslatorArgumentException, self.translate)
+        self.assertRaises(ParsingException, self.translate)
         self.assertFalse(self.argumentParser.is_translation_mode_on())

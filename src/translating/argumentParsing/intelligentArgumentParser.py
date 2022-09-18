@@ -18,7 +18,7 @@ class IntelligentArgumentParser:
         self._scriptAdjuster = layoutAdjusterFactory.get_layout_adjuster(lang_adjustment_type)
         self._word_filter = WordFilter()
         self._words = SmartList()
-        self._from_lang = SmartList(1)
+        self._from_lang = SmartList(limit=1)
         self._to_langs = SmartList()
 
     @property
@@ -42,7 +42,7 @@ class IntelligentArgumentParser:
 
     def _get_range(self, start: int, end: int = None):
         if end is None:
-            end = len(self._args) - 1
+            return self._args[start:] if 0 < start < len(self._args) else []
         return self._args[start:end] if 0 < start < end < len(self._args) else []
 
     def is_translation_mode_on(self):
@@ -59,6 +59,8 @@ class IntelligentArgumentParser:
         self._correct_misplaced()
         self._fill_langs_from_config()
         self._adjust_to_script()
+        if not self._words:
+            raise ParsingException
 
     def _parse_by_mode(self):
         if self.modes.is_single_mode_on():
@@ -71,8 +73,6 @@ class IntelligentArgumentParser:
             self._parse_double_multi()
 
     def _parse_normal(self):  # TODO: add excception if no args
-        if not len(self._args):
-            raise ParsingException
         self._words += self._get_arg(0)
         self._from_lang += self._get_arg(1)
         self._to_langs += self._get_range(2)
@@ -96,8 +96,8 @@ class IntelligentArgumentParser:
 
     def _adjust_to_script(self):
         if self._scriptAdjuster is not None:
-            self._from_lang = self._scriptAdjuster.adjust_word(self.from_lang)
-            self._to_langs = list(map(self._scriptAdjuster.adjust_word, self.to_langs))
+            self._from_lang += self._scriptAdjuster.adjust_word(-self._from_lang)
+            self._to_langs = SmartList(map(self._scriptAdjuster.adjust_word, self.to_langs))
 
     def _correct_misplaced(self):
         if self._word_filter.is_any_lang_misplaced(*self._from_lang, *self._to_langs):
@@ -112,7 +112,9 @@ class IntelligentArgumentParser:
                     self._to_langs += -self._from_lang
 
     def _fill_langs_from_config(self):
-        if not self._from_lang:
-            self._from_lang += Configurations.get_nth_saved_language(0)
+        if not self._to_langs:
+            self._to_langs += - self._from_lang
         if not self._to_langs:
             self._to_langs += Configurations.get_nth_saved_language(1)
+        if not self._from_lang:
+            self._from_lang += Configurations.get_nth_saved_language(0)

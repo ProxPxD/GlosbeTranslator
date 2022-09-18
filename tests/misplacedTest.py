@@ -3,24 +3,8 @@ from tests.abstractTranslationTest import AbstractTranslationTest
 
 
 class MisplacedTest(AbstractTranslationTest):
-    def _perform_translation(self):  # TODO: create another class to handle the translation and to be used both in src and tests 
-        from_lang = self.argumentParser.from_lang
-        to_langs = self.argumentParser.to_langs if self.argumentParser.to_langs else None
-        words = self.argumentParser.words if self.argumentParser.words else None
-        translations = None
-
-        modes = self.argumentParser.modes
-        self.translator.set_from_lang(from_lang)
-
-        if modes.is_multi_lang_mode_on():
-            translations = self.translator.multi_lang_translate(words[0], to_langs)
-        elif modes.is_multi_word_mode_on():
-            translations = self.translator.multi_word_translate(to_langs[0], words)
-        elif modes.is_single_mode_on():
-            translations = self.translator.single_translate(words[0], to_langs[0])
-        elif modes.is_double_multi_mode_on():
-            translations = self.translator.double_multi_translate(to_langs, words)
-        return translations
+    def _perform_translation(self):  # TODO: create another class to handle the translation and to be used both in src and tests
+       return None
 
     @classmethod
     def _get_mode(cls) -> str | None:
@@ -88,9 +72,8 @@ class MisplacedTest(AbstractTranslationTest):
         Configurations.change_last_used_languages(from_lang)
         self.set_input_string(f't {to_lang} {" ".join(words_1)} -w {" ".join(words_2)}')
 
-        translations = self.translate()
+        self.argumentParser.parse()
 
-        self.assertTrue(len(translations))
         self.assertEqual(from_lang, self.argumentParser.from_lang)
         self.assertIn(to_lang, self.argumentParser.to_langs)
         self.assertEqual(set(words), set(self.argumentParser.words))
@@ -101,9 +84,8 @@ class MisplacedTest(AbstractTranslationTest):
         Configurations.change_last_used_languages(from_lang, to_lang)
         self.set_input_string(f't {" ".join(words_1)} -w {" ".join(words_2)}')
 
-        translations = self.translate()
+        self.argumentParser.parse()
 
-        self.assertTrue(len(translations))
         self.assertEqual(from_lang, self.argumentParser.from_lang)
         self.assertIn(to_lang, self.argumentParser.to_langs)
         self.assertEqual(set(words), set(self.argumentParser.words))

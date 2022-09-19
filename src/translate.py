@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import logging
 import sys
 from dataclasses import dataclass

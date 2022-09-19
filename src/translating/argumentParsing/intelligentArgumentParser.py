@@ -103,7 +103,7 @@ class IntelligentArgumentParser:
             self._from_lang, self._to_langs, words = self._word_filter.split_from_from_and_to_langs(self._from_lang, self.to_langs)
             self._words += words
             if self._is_to_lang_in_from_lang():
-                  self._to_langs += -self._from_lang
+                self._to_langs += -self._from_lang
             if self._is_from_lang_in_words():
                 self._from_lang += -self.words
 
@@ -114,8 +114,20 @@ class IntelligentArgumentParser:
         return self.modes.is_single_mode_on() or (self.modes.is_multi_lang_mode_on() and self._get_arg(1) is not None)
 
     def _fill_langs_from_config(self):
+        if self.modes.is_multi_lang_mode_on() or self.modes.is_double_multi_mode_on():
+            self._fill_langs_from_config_for_m_option()
+        else:
+            self._fill_langs_from_config_for_not_m_option()
+
+    def _fill_langs_from_config_for_m_option(self):
+        if not self._from_lang:
+            self._from_lang += Configurations.get_nth_saved_language(0)
         if not self._to_langs:
-            self._to_langs += - self._from_lang
+            self._to_langs += Configurations.load_config_languages(self.from_lang)
+
+    def _fill_langs_from_config_for_not_m_option(self):
+        if not self._to_langs:
+            self._to_langs += -self._from_lang
         if not self._to_langs:
             self._to_langs += Configurations.get_nth_saved_language(1)
         if not self._from_lang:

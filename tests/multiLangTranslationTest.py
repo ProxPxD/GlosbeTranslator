@@ -1,4 +1,4 @@
-from src.translating.argumentParsing.configurations import Configurations
+from src.translating.argumentParsing.configurations import Configurations, Configs
 from src.translating.argumentParsing.constants import FLAGS
 from src.translating.argumentParsing.parsingException import ParsingException
 from tests.abstractTranslationTest import AbstractTranslationTest
@@ -61,3 +61,22 @@ class MultiLangTranslationTest(AbstractTranslationTest):
 
         self.assertRaises(ParsingException, self.translate)
         self.assertFalse(self.argumentParser.is_translation_mode_on())
+
+    def test_only_word_set(self):
+        word, from_lang = '女人', 'zh'
+        to_langs = ['pl', 'es', 'de']
+        Configurations.change_conf(Configs.LANG_LIMIT, len(to_langs))
+        Configurations.change_last_used_languages(from_lang, *to_langs)
+        self.set_input_string(f't {word} -m')
+
+        translations = self.translate()
+
+        correct_translated_words = ['kobieta', 'mujer', 'Frau']
+        self.assertEqual(len(translations), len(to_langs))
+        self.assertEqual(from_lang, self.argumentParser.from_lang)
+        for i, lang in enumerate(to_langs):
+            translation = translations[i]
+            batch = self.get_nth_translation_batch(0, translation)
+            translation_word = self.get_word_from_batch(batch)
+            self.assertEqual(lang, self.get_constant_part(translation))
+            self.assertEqual(translation_word, correct_translated_words[i])

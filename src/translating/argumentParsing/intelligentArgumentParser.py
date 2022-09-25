@@ -1,4 +1,4 @@
-from .configurations import Configurations, Configs
+from src.translating.configs.configurations import Configurations, Configs
 from .constants import FLAGS
 from .layoutAdjusting import layoutAdjusterFactory
 from .modeManager import ModesManager

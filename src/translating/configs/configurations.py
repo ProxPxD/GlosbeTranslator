@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .constants import FLAGS, LanguageSpecificAdjustmentValues, SHORT_FLAGS
+from src.translating.argumentParsing.constants import FLAGS, LanguageSpecificAdjustmentValues, SHORT_FLAGS
 
 
 @dataclass(frozen=True)

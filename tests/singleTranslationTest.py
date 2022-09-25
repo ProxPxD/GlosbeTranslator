@@ -1,6 +1,6 @@
-from src.translating.argumentParsing.configurations import Configurations
 from src.translating.argumentParsing.constants import FLAGS
 from src.translating.argumentParsing.parsingException import ParsingException
+from src.translating.configs.configurations import Configurations
 from tests.abstractTranslationTest import AbstractTranslationTest
 
 

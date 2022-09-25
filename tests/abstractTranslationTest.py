@@ -1,7 +1,7 @@
 import abc
 import time
 
-from src.translating.argumentParsing.configurations import Configurations, Configs
+from src.translating.configs.configurations import Configurations, Configs
 from tests.abstractTest import AbstractTest
 
 

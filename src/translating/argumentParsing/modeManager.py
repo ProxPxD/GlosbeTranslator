@@ -1,7 +1,7 @@
 import functools
 from typing import Callable, Generator, Any
 
-from .configurations import Configurations, Configs
+from src.translating.configs.configurations import Configurations, Configs
 from .constants import ValidationErrors, Messages, SHORT_FLAGS, short_to_usual_flags_dict, FLAGS, ModeTypes, \
     mode_types_to_modes, \
     modes_to_arity_dict, flag_to_description_dict

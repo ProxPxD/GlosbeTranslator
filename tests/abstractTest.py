@@ -1,8 +1,8 @@
 import abc
 import unittest
 
-from src.translating.argumentParsing.configurations import Configurations, Configs
 from src.translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from src.translating.configs.configurations import Configurations, Configs
 from src.translating.constants import TranslationParts
 from src.translating.translator import Translator
 

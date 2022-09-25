@@ -1,7 +1,7 @@
+from src.translating.argumentParsing.constants import FLAGS, ModeTypes
+from src.translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from src.translating.argumentParsing.modeManager import ModesManager
 from .configurations import Configurations
-from .constants import FLAGS, ModeTypes
-from .intelligentArgumentParser import IntelligentArgumentParser
-from .modeManager import ModesManager
 
 
 def display_information(argument_parser: IntelligentArgumentParser):

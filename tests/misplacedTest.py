@@ -1,4 +1,4 @@
-from src.translating.argumentParsing.configurations import Configurations
+from src.translating.configs.configurations import Configurations
 from tests.abstractTranslationTest import AbstractTranslationTest
 
 

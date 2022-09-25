@@ -1,4 +1,4 @@
-from src.translating.argumentParsing.constants import FLAGS
+from src.translating.argumentParsing.IntelligentParser.src import FLAGS
 from src.translating.configs.configurations import Configurations
 from tests.abstractTranslationTest import AbstractTranslationTest
 

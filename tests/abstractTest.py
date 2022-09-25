@@ -1,7 +1,7 @@
 import abc
 import unittest
 
-from src.translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from src.translating.argumentParsing.translatorParser import TranslatorParser
 from src.translating.configs.configurations import Configurations, Configs
 from src.translating.constants import TranslationParts
 from src.translating.translator import Translator
@@ -9,7 +9,7 @@ from src.translating.translator import Translator
 
 class AbstractTest(unittest.TestCase, abc.ABC):
 
-    argumentParser: IntelligentArgumentParser = None
+    argumentParser: TranslatorParser = None
     translator: Translator = Translator()
     half_sep_length = 40
     currentResult = None
@@ -55,7 +55,7 @@ class AbstractTest(unittest.TestCase, abc.ABC):
         return 'unnamed'
 
     def set_input_string(self, input_string: str):
-        AbstractTest.argumentParser = IntelligentArgumentParser(input_string.split(' '))
+        AbstractTest.argumentParser = TranslatorParser(input_string.split(' '))
 
     def get_constant_part(self, translation: tuple):
         return translation[0]

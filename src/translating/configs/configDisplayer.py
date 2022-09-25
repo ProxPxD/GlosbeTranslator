@@ -1,10 +1,10 @@
-from src.translating.argumentParsing.constants import FLAGS, ModeTypes
-from src.translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
-from src.translating.argumentParsing.modeManager import ModesManager
+from src.translating.argumentParsing.IntelligentParser.src.constants import FLAGS, ModeTypes
+from src.translating.argumentParsing.IntelligentParser.src.modeManager import ModesManager
+from src.translating.argumentParsing.translatorParser import TranslatorParser
 from .configurations import Configurations
 
 
-def display_information(argument_parser: IntelligentArgumentParser):
+def display_information(argument_parser: TranslatorParser):
     for to_display in argument_parser.modes.get_modes_turned_on_by_type(ModeTypes.DISPLAYABLE):
         if to_display == FLAGS.SETTINGS:
             display_configs(FLAGS.DEFAULT_TRANSLATIONAL_MODE, FLAGS.LANG_LIMIT,

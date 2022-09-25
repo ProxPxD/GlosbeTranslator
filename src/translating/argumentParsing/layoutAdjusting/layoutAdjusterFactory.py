@@ -1,8 +1,8 @@
+from src.translating.argumentParsing.IntelligentParser.src.constants import LanguageSpecificAdjustmentValues
 from src.translating.configs.configurations import Configurations, Configs
 from .abstractLayoutAdjuster import AbstractLayoutAdjuster
 from .keyboardLayoutAdjuster import KeyboardLayoutAdjuster
 from .nativeLayoutAdjuster import NativeLayoutAdjuster
-from ..constants import LanguageSpecificAdjustmentValues
 
 _adjusters = {
         LanguageSpecificAdjustmentValues.NATIVE: NativeLayoutAdjuster,

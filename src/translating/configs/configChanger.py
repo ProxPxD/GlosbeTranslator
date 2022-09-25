@@ -1,10 +1,10 @@
-from src.translating.argumentParsing import modeManager
-from src.translating.argumentParsing.constants import Messages, ModeTypes, FLAGS
-from src.translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
+from src.translating.argumentParsing.IntelligentParser.src.constants import Messages, ModeTypes, FLAGS
+from src.translating.argumentParsing.translatorParser import TranslatorParser
 from .configurations import Configurations, Configs
+from ..argumentParsing.IntelligentParser.src import modeManager
 
 
-def set_configs(argument_parser: IntelligentArgumentParser):
+def set_configs(argument_parser: TranslatorParser):
     for config_name in argument_parser.modes.get_modes_turned_on_by_type(ModeTypes.CONFIGURATIONAL):
         arguments = argument_parser.modes.get_mode_args(config_name)
         set_config(config_name, arguments)

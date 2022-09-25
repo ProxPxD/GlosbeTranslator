@@ -2,10 +2,10 @@ import logging
 import sys
 from dataclasses import dataclass
 
+from src.translating.argumentParsing.IntelligentParser.src.parsingException import ParsingException
+from src.translating.argumentParsing.translatorParser import TranslatorParser
 from src.translating.configs import configChanger, configurations, configDisplayer
 from src.translating.configs.configurations import Configurations
-from translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
-from translating.argumentParsing.parsingException import ParsingException
 from translating.constants import LogMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator
@@ -25,10 +25,10 @@ def main():
         Configurations.init()
         logging.basicConfig(filename=Data.LOG_PATH, encoding='utf-8', level=logging.WARNING,
                             format='%(levelname)s: %(message)s ')
-        argument_parser = IntelligentArgumentParser(sys.argv)
+        argument_parser = TranslatorParser(sys.argv)
         argument_parser.parse()
         if argument_parser.modes.is_any_displayable_mode_on():
-             configDisplayer.display_information(argument_parser)
+            configDisplayer.display_information(argument_parser)
         if argument_parser.modes.is_any_configurational_mode_on():
             configChanger.set_configs(argument_parser)
         if argument_parser.is_translation_mode_on():
@@ -49,14 +49,14 @@ def get_test_arguments():
     return 't -la'.split(' ')  # t laborious en uk
 
 
-def translate_and_print(argument_parser: IntelligentArgumentParser):
+def translate_and_print(argument_parser: TranslatorParser):
     translations = get_translations(argument_parser)
     translation_printer = TranslationPrinter()
     translation_printer.print_translations(translations, argument_parser)
     Configurations.change_last_used_languages(argument_parser.from_lang, *argument_parser.to_langs)
 
 
-def get_translations(argument_parser: IntelligentArgumentParser):
+def get_translations(argument_parser: TranslatorParser):
     translator = Translator(argument_parser.from_lang)
     modes = argument_parser.modes
     translations = None

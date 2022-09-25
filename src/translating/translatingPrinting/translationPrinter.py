@@ -1,7 +1,7 @@
 import logging
 
+from src.translating.argumentParsing.translatorParser import TranslatorParser
 from .formatter import Formatter
-from ..argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
 from ..constants import LogMessages
 
 
@@ -13,7 +13,7 @@ class TranslationPrinter:
     def __init__(self):
         self._formatter = Formatter()
 
-    def print_translations(self, translations, argument_parser: IntelligentArgumentParser):
+    def print_translations(self, translations, argument_parser: TranslatorParser):
         translations = self._formatter.format_translations(translations)
         if argument_parser.modes.is_single_mode_on():
             translation = next(translations)[1]
@@ -21,12 +21,12 @@ class TranslationPrinter:
         else:
             self._print_multi_translation_mode(translations, argument_parser)
 
-    def _print_single_translation_mode(self, translation: list[dict, ...], argument_parser: IntelligentArgumentParser):
+    def _print_single_translation_mode(self, translation: list[dict, ...], argument_parser: TranslatorParser):
         if len(translation):
             print(argument_parser.words[0])
             print(self._formatter.format_translation_into_string(translation))
 
-    def _print_multi_translation_mode(self, translations, argument_parser: IntelligentArgumentParser):
+    def _print_multi_translation_mode(self, translations, argument_parser: TranslatorParser):
         constant_elem: str = self._get_constant_translation_element(argument_parser)
         starting_msg: str = f'{argument_parser.from_lang} -- {constant_elem}:' if constant_elem else f'{argument_parser.from_lang}:'
 
@@ -59,7 +59,7 @@ class TranslationPrinter:
             return marker[1]
         return marker
 
-    def _get_constant_translation_element(self, argument_parser: IntelligentArgumentParser):
+    def _get_constant_translation_element(self, argument_parser: TranslatorParser):
         if argument_parser.modes.is_multi_lang_mode_on():
             return argument_parser.words[0]
         elif argument_parser.modes.is_multi_word_mode_on():

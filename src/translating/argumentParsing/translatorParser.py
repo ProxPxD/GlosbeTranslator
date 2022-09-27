@@ -1,5 +1,5 @@
-from .IntelligentParser.src.intelligentParser import IntelligentParser
-from .IntelligentParser.src.parsingException import ParsingException
+from .abstractParsing.src.parser import Parser
+from .abstractParsing.src.parsingException import ParsingException
 from .constants import FLAGS
 from .layoutAdjusting import layoutAdjusterFactory
 from .smartList import SmartList
@@ -7,7 +7,7 @@ from .wordFilter import WordFilter
 from ..configs.configurations import Configurations, Configs
 
 
-class TranslatorParser(IntelligentParser):
+class TranslatorParser(Parser):
 
     _words: SmartList
 
@@ -33,10 +33,7 @@ class TranslatorParser(IntelligentParser):
         return self._to_langs
 
     def parse(self):
-        self._args = self._modesManager.filter_modes_out_of_args(self._args)
-        error_messages = self._modesManager.validate_modes()
-        if error_messages:
-            raise ParsingException(error_messages)
+        super().parse()  # TODO: temp
 
         if not (self.modes.is_any_configurational_mode_on() or self.modes.is_any_displayable_mode_on()):
             self._parse_by_mode()

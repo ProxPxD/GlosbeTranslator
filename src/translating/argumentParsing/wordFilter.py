@@ -1,5 +1,5 @@
-from src.translating.argumentParsing import constants
-from src.translating.argumentParsing.smartList import SmartList
+from ..argumentParsing import constants
+from ..argumentParsing.smartList import SmartList
 
 tupleLists_2 = tuple[SmartList[str], SmartList[str]]
 tupleLists_3 = tuple[SmartList[str], SmartList[str], SmartList[str]]

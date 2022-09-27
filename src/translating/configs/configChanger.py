@@ -1,6 +1,6 @@
 
 from .configurations import Configurations, Configs
-from ..argumentParsing.IntelligentParser.src import modeManager
+from ..argumentParsing.abstractParsing.src import modeManager
 from ..argumentParsing.constants import FLAGS, ModeTypes, Messages
 from ..argumentParsing.translatorParser import TranslatorParser
 

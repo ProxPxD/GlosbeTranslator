@@ -1,5 +1,5 @@
-from src.translating.argumentParsing.IntelligentParser.src import FLAGS
-from src.translating.argumentParsing.IntelligentParser.src.parsingException import ParsingException
+from src.translating.argumentParsing.abstractParsing.src import FLAGS
+from src.translating.argumentParsing.abstractParsing.src.parsingException import ParsingException
 from src.translating.configs.configurations import Configurations
 from tests.abstractTranslationTest import AbstractTranslationTest
 

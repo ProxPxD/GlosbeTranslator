@@ -1,7 +1,8 @@
-from src.translating.argumentParsing.IntelligentParser.src.constants import FLAGS, ModeTypes
-from src.translating.argumentParsing.IntelligentParser.src.modeManager import ModesManager
-from src.translating.argumentParsing.translatorParser import TranslatorParser
+
 from .configurations import Configurations
+from ..argumentParsing.IntelligentParser.src.modeManager import FlagsManager
+from ..argumentParsing.constants import FLAGS
+from ..argumentParsing.translatorParser import TranslatorParser
 
 
 def display_information(argument_parser: TranslatorParser):
@@ -11,7 +12,7 @@ def display_information(argument_parser: TranslatorParser):
                             FLAGS.SAVED_LANGS, FLAGS.ADJUSTMENT_LANG, FLAGS.LAYOUT_ADJUSTMENT_MODE)
             continue
         if to_display == FLAGS.HELP:
-            ModesManager.show_help()
+            FlagsManager.show_help()
             continue
         display_config(to_display, show_possible=True)
 

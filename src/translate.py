@@ -2,10 +2,10 @@ import logging
 import sys
 from dataclasses import dataclass
 
-from src.translating.argumentParsing.IntelligentParser.src.parsingException import ParsingException
-from src.translating.argumentParsing.translatorParser import TranslatorParser
-from src.translating.configs import configChanger, configurations, configDisplayer
-from src.translating.configs.configurations import Configurations
+from translating.argumentParsing.IntelligentParser.src.parsingException import ParsingException
+from translating.argumentParsing.translatorParser import TranslatorParser
+from translating.configs import configChanger, configurations, configDisplayer
+from translating.configs.configurations import Configurations
 from translating.constants import LogMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
 from translating.translator import Translator

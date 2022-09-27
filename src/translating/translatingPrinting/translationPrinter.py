@@ -1,7 +1,7 @@
 import logging
 
-from src.translating.argumentParsing.translatorParser import TranslatorParser
 from .formatter import Formatter
+from ..argumentParsing.translatorParser import TranslatorParser
 from ..constants import LogMessages
 
 

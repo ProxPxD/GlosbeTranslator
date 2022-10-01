@@ -1,8 +1,8 @@
+from src.translating.argumentParsing.abstractParsing.src.nodes.smartList import SmartList
 from .abstractParsing.src.parser import Parser
 from .abstractParsing.src.parsingException import ParsingException
 from .constants import FLAGS
 from .layoutAdjusting import layoutAdjusterFactory
-from .smartList import SmartList
 from .wordFilter import WordFilter
 from ..configs.configurations import Configurations, Configs
 

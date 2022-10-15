@@ -1,24 +1,73 @@
-from src.translating.argumentParsing.abstractParsing.src.nodes.smartList import SmartList
-from .abstractParsing.src.parser import Parser
-from .abstractParsing.src.parsingException import ParsingException
 from .constants import FLAGS
-from .layoutAdjusting import layoutAdjusterFactory
-from .wordFilter import WordFilter
-from ..configs.configurations import Configurations, Configs
+from ..configs.configurations import Configurations
 
 
-class TranslatorParser(Parser):
-
-    _words: SmartList
+class TranslatorCli(Cli):
 
     def __init__(self, args: list[str]):
-        super().__init__(args)
-        lang_adjustment_type = Configurations.get_conf(Configs.LANG_SPEC_ADJUSTMENT)
-        self._script_adjuster = layoutAdjusterFactory.get_layout_adjuster(lang_adjustment_type)
-        self._word_filter = WordFilter()
-        self._words = SmartList()
-        self._from_lang = SmartList(limit=1)
-        self._to_langs = SmartList()
+        root = Root('root')
+        root.set_only_hidden_nodes()
+        # Collections
+        current_modes = root.add_collection('current_modes')
+        current_modes.set_type(str)
+        self.default_mode = 'before get mode'
+        current_modes.set_get_default(self.get_default_mode)
+        from_langs = root.add_collection('from_langs', 1)
+        to_langs = root.add_collection('to_langs')
+        words = root.add_collection('words')
+
+        # Flags
+        single_flag = root.add_global_flag('--single', '-s')
+        word_flag = root.add_global_flag('--word', '-w')
+        lang_flag = root.add_global_flag('--multi', '-m')
+        single_flag.when_active_add_name_to(current_modes)  # same as 1
+        current_modes.add_to_add_names(lang_flag, word_flag)  # same as 1
+        word_flag.set_limit(None, storage=words)  # infinite
+        lang_flag.set_limit(None, storage=to_langs)  # infinite
+
+        test_string = 'test'
+        words.append(test_string)
+        self.assertEqual(test_string, word_flag.get(), msg='Flag has a storage that is not the same place as the original one')
+        words.clear()
+
+        # Hidden nodes
+        join_to_str = lambda: f'{from_langs.get()}/{to_langs.get()}/{words.get()}'
+        single_node = root.add_hidden_node('single', action=join_to_str)
+        word_node = root.add_hidden_node('word', action=join_to_str)
+        lang_node = root.add_hidden_node('lang', action=join_to_str)
+        double_multi_node = root.add_hidden_node('double', action=join_to_str)
+
+        # Hidden nodes activation rules
+        single_node.set_active_on_flags_in_collection(current_modes, single_flag, but_not=[word_flag, lang_flag])
+        word_node.set_active_on_flags_in_collection(current_modes, word_flag)
+        word_node.set_inactive_on_flags_in_collection(current_modes, lang_flag, single_flag)
+        lang_node.set_active_on_flags_in_collection(current_modes, lang_flag, but_not=word_flag)
+        double_multi_node.set_active_on_flags_in_collection(current_modes, lang_flag, word_flag, but_not=single_flag)
+
+        # Params
+        from_langs.set_get_default(lambda: self.get_nth_lang(0))
+        to_langs.add_get_default_if_or(lambda: self.get_nth_lang(1), single_node.is_active, word_node.is_active)
+        to_langs.add_get_default_if_or(lambda: self.get_first_n_langs(self.limit), lang_node.is_active, double_multi_node.is_active)
+        # Single's params
+        single_node.set_params_order('word from_lang to_lang')
+        single_node.set_params_order('word to_lang')
+        single_node.set_params_order('word')
+        single_node.set_params('word', 'from_lang', 'to_lang', storages=(words, from_langs, to_langs))
+        # Lang's params
+        lang_node.set_params('word', 'from_lang', 'to_langs', storages=(words, from_langs, to_langs))
+        lang_node.set_params_order('words from_lang to_langs')
+        lang_node.set_default_setting_order('from_lang')
+        # Word's params
+        word_node.set_params('word', 'from_lang', 'to_langs', storages=(words, from_langs, to_langs))
+        word_node.set_params_order('from_lang to_langs words')
+        lang_node.set_default_setting_order('from_lang', 'to_langs')
+        # Double's params
+        double_multi_node.set_params('word', 'from_lang', 'to_langs', storages=(words, from_langs, to_langs))
+        double_multi_node.set_params_order('from_lang')
+        double_multi_node.set_params_order('')
+        super().__init__(root, args)
+
+    # TODO: refactor and remove the below
 
     @property
     def words(self):
@@ -32,17 +81,17 @@ class TranslatorParser(Parser):
     def to_langs(self):
         return self._to_langs
 
-    def parse(self):
-        super().parse()  # TODO: temp
-
-        if not (self.modes.is_any_configurational_mode_on() or self.modes.is_any_displayable_mode_on()):
-            self._parse_by_mode()
-            self._correct_misplaced()
-            self._fill_langs_from_config()
-            if not self._words:
-                raise ParsingException
-
-        self._adjust_to_script()
+    # def parse(self):
+    #     super().parse()  # TODO: temp
+    #
+    #     if not (self.modes.is_any_configurational_mode_on() or self.modes.is_any_displayable_mode_on()):
+    #         self._parse_by_mode()
+    #         self._correct_misplaced()
+    #         self._fill_langs_from_config()
+    #         if not self._words:
+    #             raise ParsingException
+    #
+    #     self._adjust_to_script()
 
     def _parse_by_mode(self):
         if self.modes.is_single_mode_on():
@@ -111,10 +160,10 @@ class TranslatorParser(Parser):
         if not self._from_lang:
             self._from_lang += Configurations.get_nth_saved_language(0)
 
-    def _adjust_to_script(self):
-        if self._script_adjuster is not None:
-            self._from_lang += self._script_adjuster.adjust_word(-self._from_lang)
-            self._to_langs = SmartList(map(self._script_adjuster.adjust_word, self.to_langs))
+    # def _adjust_to_script(self):
+    #     if self._script_adjuster is not None:
+    #         self._from_lang += self._script_adjuster.adjust_word(-self._from_lang)
+    #         self._to_langs = SmartList(map(self._script_adjuster.adjust_word, self.to_langs))
 
     def is_translation_mode_on(self):
         return self.from_lang and self._to_langs and self._words

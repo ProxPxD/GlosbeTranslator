@@ -2,13 +2,12 @@ import logging
 import sys
 from dataclasses import dataclass
 
-from translating.argumentParsing.abstractParsing.src.parsingException import ParsingException
-from translating.argumentParsing.translatorParser import TranslatorParser
+import translating.translator
+from src.translating.argumentParsing.translatorParser import TranslatorCli
 from translating.configs import configChanger, configurations, configDisplayer
 from translating.configs.configurations import Configurations
 from translating.constants import LogMessages
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
-from translating.translator import Translator
 from translating.web.wrongStatusCodeException import WrongStatusCodeException
 
 
@@ -25,7 +24,7 @@ def main():
         Configurations.init()
         logging.basicConfig(filename=Data.LOG_PATH, encoding='utf-8', level=logging.WARNING,
                             format='%(levelname)s: %(message)s ')
-        argument_parser = TranslatorParser(sys.argv)
+        argument_parser = TranslatorCli(sys.argv)
         argument_parser.parse()
         if argument_parser.modes.is_any_displayable_mode_on():
             configDisplayer.display_information(argument_parser)
@@ -57,7 +56,7 @@ def translate_and_print(argument_parser: TranslatorParser):
 
 
 def get_translations(argument_parser: TranslatorParser):
-    translator = Translator(argument_parser.from_lang)
+    translator = translating.Translator(argument_parser.from_lang)
     modes = argument_parser.modes
     translations = None
     if modes.is_multi_lang_mode_on():

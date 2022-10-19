@@ -38,11 +38,11 @@ echo "Using $rc_file_path file for installation"
 echo  >> rc_file_path # add empty line at the end of file
 if [[ $default_python -eq 1 ]]
 then
-    echo "alias $main_translate_alias='python $main_script_path'" >> rc_file_path # add appropriate alias to rc file
+    echo "alias $main_translate_alias='python $main_script_path'" >> $rc_file_path # add appropriate alias to rc file
     echo 'Translator installed using default system python'
 else
     echo "alias glosbePython=$python_path" >> rc_file_path # add alias for python interpreter
-    echo "alias $main_translate_alias='glosbePython $main_script_path'" >> rc_file_path # add appropriate alias to rc file
+    echo "alias $main_translate_alias='glosbePython $main_script_path'" >> $rc_file_path # add appropriate alias to rc file
     echo 'Translator installed using' $python_path "python"
 fi
 
@@ -50,6 +50,13 @@ echo 'Installed translator with alias:' $main_translate_alias
 
 if [[ ${#second_translate_alias} -gt 0 ]]
 then
-    echo "alias $second_translate_alias='$main_translate_alias'" >> rc_file_path # add alternative alias
+    echo "alias $second_translate_alias='$main_translate_alias'" >> $rc_file_path # add alternative alias
     echo 'Alternative alias is:' $second_translate_alias
 fi
+
+source $rc_file_path
+
+#python setup.py sdist bdist_wheel //in project directory by setup.py file
+#//if package already installed, uninstall
+#//conda uninstall <NAME>
+#python -m pip install -e .

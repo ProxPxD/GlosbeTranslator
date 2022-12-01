@@ -1,17 +1,18 @@
 import logging
 
-from .formatter import Formatter
+from .translationformatter import TranslationFormatter
 from ..argumentParsing.translatorParser import TranslatorParser
 from ..constants import LogMessages
+from ..translator import TranslationResult
+from ..web.exceptions import WrongStatusCodeException
 
 
 class TranslationPrinter:
-
     _post_sep_length = 64
     _pre_sep_length = 4
 
     def __init__(self):
-        self._formatter = Formatter()
+        self._formatter = TranslationFormatter()
 
     def print_translations(self, translations, argument_parser: TranslatorParser):
         translations = self._formatter.format_translations(translations)
@@ -20,6 +21,11 @@ class TranslationPrinter:
             self._print_single_translation_mode(translation, argument_parser)
         else:
             self._print_multi_translation_mode(translations, argument_parser)
+
+    def print_single_translation(self, translation: TranslationResult):
+        if isinstance(translation.records, WrongStatusCodeException):
+            pass  # TODO
+        translations = self._formatter.format_translation(translation)
 
     def _print_single_translation_mode(self, translation: list[dict, ...], argument_parser: TranslatorParser):
         if len(translation):

@@ -1,19 +1,24 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Iterable
 
 from ..constants import TranslationParts, PageCodeMessages
+from ..translator import TranslationResult
 
 
-class Formatter:
+class TranslationFormatter:
 
-    def format_translations(self, translations):
-        return (self._format_translation(translation) for translation in translations)
+    def __init__(self):
+        self._gender_formatter = None  # TODO
+        self._part_of_speech_formatter = None
 
-    def _format_translation(self, translation: list[dict, ...]):
-        for elem in translation[1]:
-            elem[TranslationParts.GENDER] = self._format_gender(elem[TranslationParts.GENDER])
-            elem[TranslationParts.PART_OF_SPEECH] = self._format_part_of_speech(elem[TranslationParts.PART_OF_SPEECH])
+    def format_translations(self, translations: Iterable[TranslationResult]):
+        return (self.format_translation(translation) for translation in translations)
+
+    def format_translation(self, translation: TranslationResult):
+        for record in translation.records:
+            record.gender = self._format_gender(record.gender)
+            record.part_of_speech = self._format_part_of_speech(record.part_of_speech)
         return translation
 
     def _format_gender(self, gender: str) -> str:

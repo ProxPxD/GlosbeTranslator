@@ -1,10 +1,19 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from ..constants import TranslationParts
+from ..web.exceptions import WrongStatusCodeException
+
+
+@dataclass()
+class Record:
+    translation: str = ''
+    part_of_speech: str = ''
+    gender: str = ''
 
 
 class Parser:
@@ -15,13 +24,12 @@ class Parser:
     def set_page(self, page: requests.Response):
         self._page = page
 
-    def parse(self) -> list[dict[str, str]]:
-        if self._page.status_code == 200:
-            return self._parse_translation()
-        else:
-            return [self._create_translation_part(self._page.status_code)]
+    def parse(self) -> list[Record]:
+        if self._page.status_code != 200:
+            raise WrongStatusCodeException(self._page)
+        return self._parse_translation()
 
-    def _parse_translation(self):
+    def _parse_translation(self) -> list[Record]:
         translations = []
         soup = BeautifulSoup(self._page.text, features="html.parser")
         for translation_element in soup.findAll('li', {'data-element': 'translation'}):
@@ -29,20 +37,12 @@ class Parser:
                 translations.append(self._parse_single_translation_tag(translation_element))
         return translations
 
-    def _parse_single_translation_tag(self, translation_tag: Tag):
+    def _parse_single_translation_tag(self, translation_tag: Tag) -> Record:
         translation = self._get_translation(translation_tag)
         spans = self._get_spans(translation_tag)
         part_of_speech = self._get_part_of_speech(spans)
         gender = self._get_gender(spans)
-        return self._create_translation_part(translation, part_of_speech, gender)
-
-    @staticmethod
-    def _create_translation_part(translation: str | int, part_of_speech: str = '', gender: str = ''):
-        return {
-            TranslationParts.TRANSLATION: translation,
-            TranslationParts.PART_OF_SPEECH: part_of_speech,
-            TranslationParts.GENDER: gender
-        }
+        return Record(translation, part_of_speech, gender)  # self._create_translation_part(translation, part_of_speech, gender)
 
     def _get_translation(self, translation_tag: Tag) -> str:
         return translation_tag.select_one('span[data-element="phrase"]').text[1:-1]

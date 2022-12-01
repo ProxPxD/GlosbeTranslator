@@ -4,8 +4,7 @@ from dataclasses import dataclass
 
 import requests
 
-from . import utils
-from .translatorArgumentException import TranslatorArgumentException
+from src.translating.web.exceptions import TranslatorArgumentException
 
 
 @dataclass(frozen=True)
@@ -13,26 +12,35 @@ class WebConstants:
     MAIN_URL = "glosbe.com"
 
 
+@dataclass
+class TransArgs:
+    from_lang: str = ''
+    to_lang: str = ''
+    word: str = ''
+
+    def to_url(self) -> str:
+        return f'https://{WebConstants.MAIN_URL}/{self.from_lang}/{self.to_lang}/{self.word}'
+
+    def __bool__(self):
+        return self.from_lang and self.to_lang and self.word and True
+
+
 class Connector:
 
     def __init__(self, from_lang: str, to_lang: str = None, word: str = None):
-        self._from_lang: str = from_lang
-        self._to_lang: str = to_lang
-        self._word: str = word
+        self._trans_args = TransArgs(from_lang, to_lang, word)
         self._session: requests.Session | None = None
 
-    def set_langs(self, from_lang, to_lang):
-        self.set_from_lang(from_lang)
-        self.set_to_lang(to_lang)
+    @property
+    def trans_args(self):
+        return self._trans_args
 
-    def set_from_lang(self, from_lang: str):
-        self._from_lang = from_lang
-
-    def set_to_lang(self, to_lang: str):
-        self._to_lang = to_lang
-
-    def set_word(self, word: str):
-        self._word = word
+    @property.setter
+    def trans_args(self, *values: str) -> None:
+        to_set = iter(values)
+        self._trans_args.to_lang = next(to_set, self._trans_args.to_lang)
+        self._trans_args.from_lang = next(to_set, self._trans_args.from_lang)
+        self._trans_args.word = next(to_set, self._trans_args.word)
 
     def establish_session(self):
         self._session = requests.Session()
@@ -42,13 +50,10 @@ class Connector:
         self._session.close()
 
     def get_page(self) -> requests.Response:
-        if not self._from_lang or not self._to_lang or not self._word:
-            raise TranslatorArgumentException(self._from_lang, self._to_lang, self._word)
-        url: str = self._create_target_url()
+        if not self._trans_args:
+            raise TranslatorArgumentException(self._trans_args)
+        url: str = self._trans_args.to_url()
         return self._session.get(url, allow_redirects=True)
-
-    def _create_target_url(self):
-        return utils.join_url_with_slashes(WebConstants.MAIN_URL, self._from_lang, self._to_lang, self._word)
 
     @staticmethod
     def _get_default_headers() -> dict:

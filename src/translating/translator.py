@@ -1,15 +1,18 @@
-from typing import Generator
+from dataclasses import dataclass, field, replace
+from itertools import product
+from typing import Iterable
 
 import requests
 
-from .parsing.parser import Parser
-from .web.connector import Connector
+from .parsing.parser import Parser, Record
+from .web.connector import Connector, TransArgs
+from .web.exceptions import WrongStatusCodeException
 
 
-def _no_nones(func):
-    def wrap(*args):
-        return (elem for elem in func(*args) if elem and elem[1] is not None)
-    return wrap
+@dataclass
+class TranslationResult:
+    trans_args = TransArgs()
+    records: list[Record] | WrongStatusCodeException = field(default_factory=lambda: [])
 
 
 class Translator:
@@ -17,59 +20,65 @@ class Translator:
     def __init__(self, from_lang: str = None, to_lang: str = None, word: str = None):
         self._connector: Connector = Connector(from_lang, to_lang, word)
         self._parser: Parser = Parser()
-        self._html: str = ""
 
     def set_from_lang(self, from_lang: str) -> None:
-        self._connector.set_from_lang(from_lang)
+        self._connector.trans_args.from_lang = from_lang
 
     def set_to_lang(self, to_lang: str) -> None:
-        self._connector.set_to_lang(to_lang)
+        self._connector.trans_args.to_lang = to_lang
 
-    @_no_nones
-    def multi_lang_translate(self, word: str, to_langs: list[str, ...], from_lang: str = None) -> Generator[tuple[str, list], None, None]:
+    def multi_lang_translate(self, word: str, to_langs: list[str, ...], from_lang: str = None) -> Iterable[TranslationResult]:
         if from_lang:
             self.set_from_lang(from_lang)
         self._connector.establish_session()
         for to_lang in to_langs:
-            yield to_lang, self._generate_translation(word, to_lang)
+            yield self._translate_as_result(word, to_lang)
         self._connector.close_session()
 
-    @_no_nones
-    def multi_word_translate(self, to_lang, words: list[str, ...], from_lang: str = None) -> Generator[tuple[str, list], None, None]:
+    def multi_word_translate(self, to_lang, words: list[str, ...], from_lang: str = None) -> Iterable[TranslationResult]:
         if from_lang:
             self.set_from_lang(from_lang)
         self._connector.establish_session()
         for word in words:
-            yield word, self._generate_translation(word, to_lang)
+            yield self._translate_as_result(word, to_lang)
         self._connector.close_session()
 
-    @_no_nones
-    def single_translate(self, word: str, to_lang: str = None, from_lang: str = None) -> Generator[tuple[str, list], None, None]:
+    def single_translate(self, word: str, to_lang: str = None, from_lang: str = None) -> Iterable[TranslationResult]:
         if from_lang:
             self.set_from_lang(from_lang)
         self._connector.establish_session()
-        yield word, self._generate_translation(word, to_lang)
+        yield self._translate_as_result(word, to_lang)
         self._connector.close_session()
 
-    @_no_nones
-    def double_multi_translate(self, to_langs, words: list[str, ...], from_lang: str = None) -> Generator[tuple[str, list], None, None]:
+    def double_multi_translate(self, to_langs, words: list[str, ...], from_lang: str = None, by_word=False) -> Iterable[TranslationResult]:
         if from_lang:
             self.set_from_lang(from_lang)
 
         self._connector.establish_session()
-        for to_lang in to_langs:
-            for word in words:
-                yield (to_lang, word), self._generate_translation(word, to_lang)
+        langs_words = self._get_product(to_langs, words, by_word)
+        for to_lang, word in langs_words:
+            yield self._translate_as_result(word, to_lang)
 
         self._connector.close_session()
 
-    def _generate_translation(self, word: str, to_lang: str = None) -> list:
-        self._connector.set_word(word)
+    def _get_product(self, to_langs, words, by_word=False):
+        if by_word:
+            return map(tuple, map(reversed, product(words, to_langs)))
+        return product(to_langs, words)
+
+    def _translate_as_result(self, word: str, to_lang: str = None) -> TranslationResult:
+        self._connector.trans_args.word = word
         if to_lang:
             self.set_to_lang(to_lang)
-        return self._translate_from_attributes()
 
-    def _translate_from_attributes(self) -> list:
+        trans_args = replace(self._connector.trans_args)
+        try:
+            records = self._translate_from_attributes()
+        except WrongStatusCodeException as ex:
+            return TranslationResult(trans_args, ex)
+        return TranslationResult(trans_args, records)
+
+    def _translate_from_attributes(self) -> list[Record]:
         page: requests.Response = self._connector.get_page()
         self._parser.set_page(page)
         return self._parser.parse()

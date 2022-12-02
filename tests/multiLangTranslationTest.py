@@ -21,7 +21,7 @@ class MultiLangCliTest(AbstractCliTest):
         ('no_from_lang_with_flag', 'pensar', 'es', ['zh', 'en', 'ru'], 't pensar -m zh en ru'),
         ('only_word_with_flag', 'pensar', 'es', ['zh', 'en', 'ru'], 't pensar -m'),
     ])
-    def test_flag_parsing(self, name: str, e_word: str, e_from_lang: str, e_to_langs: str, input_line: str):
+    def test_parsing(self, name: str, e_word: str, e_from_lang: str, e_to_langs: str, input_line: str):
         words, from_lang, to_langs = self.cli.root.get_collections('words', 'from_langs', 'to_langs')
         from_lang.set_default(e_from_lang)
         to_langs.set_default(e_to_langs)

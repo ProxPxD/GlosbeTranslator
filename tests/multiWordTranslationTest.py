@@ -20,7 +20,7 @@ class MultiWordCliTest(AbstractCliTest):
         ('no_from_lang_with_flag', ['schlafen', 'Herr', 'nicht'], 'de', 'pl', 't pl -w schlafen Herr nicht'),
         ('only_words_with_flag', ['schlafen', 'Herr', 'nicht'], 'de', 'pl', 't -w schlafen Herr nicht'),
     ])
-    def test_flag_parsing(self, name: str, e_words: str, e_from_lang: str, e_to_lang: str, input_line: str):
+    def test_parsing(self, name: str, e_words: str, e_from_lang: str, e_to_lang: str, input_line: str):
         words, from_lang, to_langs = self.cli.root.get_collections('words', 'from_langs', 'to_langs')
         from_lang.set_default(e_from_lang)
         to_langs.set_default(e_to_lang)

@@ -17,8 +17,11 @@ class SingleModeCliTest(AbstractCliTest):
     def test_no_args_help_printing(self):
         self.cli.parse_without_actions('t')  # self.fail(NotImplementedError.__name__)
 
-    @parameterized.expand(
-        [('all_arguments', 'tak', 'pl', 'zh', 't tak pl zh'), ('no_from_lang', 'tak', 'pl', 'zh', 't tak zh'), ('only_word', 'tak', 'pl', 'zh', 't tak'), ])
+    @parameterized.expand([
+        ('all_arguments', 'tak', 'pl', 'zh', 't tak pl zh'),
+        ('no_from_lang', 'tak', 'pl', 'zh', 't tak zh'),
+        ('only_word', 'tak', 'pl', 'zh', 't tak'),
+    ])
     def test_order_parsing(self, name: str, e_word: str, e_from_lang: str, e_to_lang: str, input_line: str):
         words, from_langs, to_langs = self.cli.root.get_collections('words', 'from_langs', 'to_langs')
         from_langs.set_default(e_from_lang)

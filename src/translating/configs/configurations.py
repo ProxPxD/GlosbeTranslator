@@ -108,26 +108,30 @@ class Configurations:
         Configurations.save()
 
     @staticmethod
+    def get_default_translation_mode() -> str:
+        return Configurations.get_conf(Configs.DEFAULT_TRANSLATIONAL_MODE)
+
+    @staticmethod
     def get_saved_languages() -> list[str]:
         return Configurations.get_conf(Configs.SAVED_LANGS)
+
+    @staticmethod
+    def get_from_language() -> str:
+        return Configurations.get_nth_saved_language(1)
 
     @staticmethod
     def get_nth_saved_language(index: int, to_skip: str = None) -> str:
         return Configurations.load_config_languages(to_skip)[index]
 
     @staticmethod
-    def load_config_languages(to_skip: str = None) -> list[str]:
+    def load_config_languages(*to_skips: str) -> list[str]:
         langs: list = Configurations.get_conf(Configs.SAVED_LANGS)[:]
-        limit: int = int(Configurations.get_conf(Configs.LANG_LIMIT))
-        if to_skip and to_skip in langs:
+        limit = int(Configurations.get_conf(Configs.LANG_LIMIT))
+        for to_skip in to_skips:
             langs.remove(to_skip)
         if limit is not None and len(langs) > limit:
             langs = langs[:limit]
         return langs
-
-    @staticmethod
-    def x(to_skip: str = None):
-        pass
 
     @staticmethod
     def change_last_used_languages(*langs: str) -> None:

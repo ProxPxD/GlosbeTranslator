@@ -9,10 +9,19 @@ from .web.connector import Connector, TransArgs
 from .web.exceptions import WrongStatusCodeException
 
 
+@dataclass(frozen=True)
+class TranslationTypes:
+    SINGLE = 'Single'
+    LANG = 'Lang'
+    WORD = 'Word'
+    DOUBLE = 'Double'
+
+
 @dataclass
 class TranslationResult:
     trans_args = TransArgs()
     records: list[Record] | WrongStatusCodeException = field(default_factory=lambda: [])
+    type = TranslationTypes.SINGLE
 
 
 class Translator:

@@ -9,7 +9,7 @@ from bs4.element import Tag
 from ..web.exceptions import WrongStatusCodeException
 
 
-@dataclass()
+@dataclass
 class Record:
     translation: str = ''
     part_of_speech: str = ''

@@ -8,7 +8,6 @@ from src.translating.translator import Translator
 
 class AbstractTest(unittest.TestCase, abc.ABC):
 
-    argumentParser: TranslatorParser = None
     translator: Translator = Translator()
     half_sep_length = 40
     currentResult = None
@@ -56,6 +55,7 @@ class AbstractTest(unittest.TestCase, abc.ABC):
         print('PASS' if passed else 'ERROR' if is_error else 'FAIL' if is_failure else 'SKIP' if is_skipped else
         'WRONG UNIT TEST OUTCOME CHECKING! Investigate (possible incompatible with a python newer than 3.10)')
 
+    @classmethod
     def tearDownClass(cls) -> None:
         cls.print_statistics(percentage=False)
 
@@ -83,40 +83,36 @@ class AbstractTest(unittest.TestCase, abc.ABC):
         self.currentResult = result
         unittest.TestCase.run(self, result)
 
-    @abc.abstractmethod
-    def _perform_translation(self):
-        pass
-
     @classmethod
     @abc.abstractmethod
     def _get_test_name(cls) -> str:
         return 'unnamed'
 
-    def set_input_string(self, input_string: str):
-        AbstractTest.argumentParser = TranslatorParser(input_string.split(' '))
-
-    def get_constant_part(self, translation: tuple):
-        return translation[0]
-
-    def get_nth_translation_batch(self, index: int, translation: tuple[str, list]):
-        return translation[1][index]
-
-    def get_nth_translated_word(self, index: int, translation: tuple[str, list]):
-        return translation[1][index][TranslationParts.TRANSLATION]
-
-    def get_word_from_batch(self, batch):
-        return batch[TranslationParts.TRANSLATION]
-
-    def get_gender_from_batch(self, batch):
-        return batch[TranslationParts.GENDER]
-
-    def get_part_of_speech_from_batch(self, batch):
-        return batch[TranslationParts.PART_OF_SPEECH]
-
-    def translate(self) -> list:
-        AbstractTest.argumentParser.parse()
-        translation = self._perform_translation()
-        return list(translation)
+    # def set_input_string(self, input_string: str):
+    #     AbstractTest.argumentParser = TranslatorParser(input_string.split(' '))
+    #
+    # def get_constant_part(self, translation: tuple):
+    #     return translation[0]
+    #
+    # def get_nth_translation_batch(self, index: int, translation: tuple[str, list]):
+    #     return translation[1][index]
+    #
+    # def get_nth_translated_word(self, index: int, translation: tuple[str, list]):
+    #     return translation[1][index][TranslationParts.TRANSLATION]
+    #
+    # def get_word_from_batch(self, batch):
+    #     return batch[TranslationParts.TRANSLATION]
+    #
+    # def get_gender_from_batch(self, batch):
+    #     return batch[TranslationParts.GENDER]
+    #
+    # def get_part_of_speech_from_batch(self, batch):
+    #     return batch[TranslationParts.PART_OF_SPEECH]
+    #
+    # def translate(self) -> list:
+    #     AbstractTest.argumentParser.parse()
+    #     translation = self._perform_translation()
+    #     return list(translation)
 
     def get_method_name(self) -> str:
         return self.id().split('.')[-1]

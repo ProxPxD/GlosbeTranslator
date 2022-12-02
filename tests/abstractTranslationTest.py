@@ -20,3 +20,7 @@ class AbstractTranslationTest(AbstractTest, abc.ABC):
     @abc.abstractmethod
     def _get_mode(cls) -> str | None:
         return None
+
+    @abc.abstractmethod
+    def _perform_translation(self):
+        pass

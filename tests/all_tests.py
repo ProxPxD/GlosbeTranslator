@@ -1,17 +1,13 @@
 import unittest
 
 from tests.abstractTest import AbstractTest
+from tests.formattingTest import FormattingTest
 from tests.misplacedTest import MisplacedTest
 from tests.multiLangTranslationTest import MultiLangTranslationTest
 from tests.multiWordTranslationTest import MultiWordTranslationTest
 from tests.singleTranslationTest import SingleTranslationTest
 
-tests = [
-    SingleTranslationTest,
-    MultiLangTranslationTest,
-    MultiWordTranslationTest,
-    MisplacedTest,
-]
+tests = [SingleTranslationTest, MultiLangTranslationTest, MultiWordTranslationTest, MisplacedTest, FormattingTest, ]
 
 
 def main():

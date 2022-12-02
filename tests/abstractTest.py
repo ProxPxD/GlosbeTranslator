@@ -3,12 +3,10 @@ import unittest
 from typing import Iterable
 
 from src.translating.configs.configurations import Configurations, Configs
-from src.translating.translator import Translator
 
 
 class AbstractTest(unittest.TestCase, abc.ABC):
 
-    translator: Translator = Translator()
     half_sep_length = 40
     currentResult = None
 
@@ -31,10 +29,14 @@ class AbstractTest(unittest.TestCase, abc.ABC):
         Configurations.change_conf(Configs.SAVED_LANGS, ['pl', 'en', 'de', 'es', 'uk', 'zh'])
 
     def setUp(self) -> None:
+        if not self.get_method_name().startswith('test_'):
+            return
         super().setUp()
         print('- ', self.get_method_name(), end=' ... ')
 
     def tearDown(self) -> None:
+        if not self.get_method_name().startswith('test_'):
+            return
         super().tearDown()
         result = self.defaultTestResult()
         self._feedErrorsToResult(result, self._outcome.errors)

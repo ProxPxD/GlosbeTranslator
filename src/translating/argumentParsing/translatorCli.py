@@ -3,6 +3,23 @@ from smartcli import Cli, Root, CliCollection, Flag, VisibleNode
 from ..configs.configurations import Configurations
 from ..translatingPrinting.translationPrinter import TranslationPrinter
 from ..translator import Translator, TranslationTypes
+from smartcli import Cli, Root, CliCollection, Flag, VisibleNode
+
+from ..configs.configurations import Configurations
+from ..translatingPrinting.translationPrinter import TranslationPrinter
+from ..translator import Translator, TranslationTypes
+
+CURRENT_MODES_COL = 'current_modes'
+FROM_LANGS_COL = 'from_langs'
+TO_LANGS_COL = 'to_langs'
+WORDS_COL = 'words'
+
+SINGLE_LONG_FLAG = '--single'
+LANG_LONG_FLAG = '--lang'
+WORD_LONG_FLAG = '--word'
+SINGLE_SHORT_FLAG = '-s'
+LANG_SHORT_FLAG = '-m'
+WORD_SHORT_FLAG = '-w'
 
 
 class TranslatorCli(Cli):
@@ -34,24 +51,24 @@ class TranslatorCli(Cli):
         self._configure_hidden_nodes()
 
     def _create_collections(self) -> None:
-        self._current_modes = self._root.add_collection('current_modes')
-        self._current_modes.set_type(str)
-        self._current_modes.set_get_default(Configurations.get_default_translation_mode)
-        self._from_langs = self._root.add_collection('from_langs', 1)
-        self._from_langs.set_get_default(Configurations.get_from_language)
-        self._to_langs = self._root.add_collection('to_langs')
+        self._current_modes = self._root.add_collection(CURRENT_MODES_COL)
+        self._from_langs = self._root.add_collection(FROM_LANGS_COL, 1)
+        self._to_langs = self._root.add_collection(TO_LANGS_COL)
+        self._words = self._root.add_collection(WORDS_COL)
 
     def _configure_collections(self) -> None:
+        self._current_modes.set_type(str)
+        self._current_modes.set_get_default(Configurations.get_default_translation_mode)
+        self._from_langs.set_get_default(Configurations.get_from_language)
         self._to_langs.add_get_default_if_or(lambda: Configurations.get_nth_saved_language(1, *self._from_langs), self._single_node.is_active,
                                              self._word_node.is_active)
         self._to_langs.add_get_default_if_or(lambda: Configurations.load_config_languages(*self._from_langs), self._lang_node.is_active,
                                              self._double_multi_node.is_active)
-        self._words = self._root.add_collection('words')
 
     def _create_flags(self) -> None:
-        self._single_flag = self._root.add_flag('--single', '-s')
-        self._lang_flag = self._root.add_flag('--multi', '-m')
-        self._word_flag = self._root.add_flag('--word', '-w')
+        self._single_flag = self._root.add_flag(SINGLE_LONG_FLAG, SINGLE_SHORT_FLAG)
+        self._lang_flag = self._root.add_flag(LANG_LONG_FLAG, LANG_SHORT_FLAG)
+        self._word_flag = self._root.add_flag(WORD_LONG_FLAG, WORD_SHORT_FLAG)
 
     def _configure_flags(self) -> None:
         self._current_modes.add_to_add_names(self._single_flag, self._lang_flag, self._word_flag)

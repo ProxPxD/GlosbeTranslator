@@ -3,11 +3,11 @@ import unittest
 from tests.abstractTest import AbstractTest
 from tests.formattingTest import FormattingTest
 from tests.misplacedTest import MisplacedTest
-from tests.multiLangTranslationTest import MultiLangTranslationTest
-from tests.multiWordTranslationTest import MultiWordTranslationTest
-from tests.singleTranslationTest import SingleTranslationTest
+from tests.multiLangTranslationTest import MultiLangCliTest
+from tests.multiWordTranslationTest import MultiWordCliTest
+from tests.singleTranslationTest import SingleModeCliTest
 
-tests = [SingleTranslationTest, MultiLangTranslationTest, MultiWordTranslationTest, MisplacedTest, FormattingTest, ]
+tests = [SingleModeCliTest, MultiLangCliTest, MultiWordCliTest, MisplacedTest, FormattingTest, ]
 
 
 def main():

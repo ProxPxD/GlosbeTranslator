@@ -11,6 +11,7 @@ class MultiWordCliTest(AbstractCliTest):
 
     @classmethod
     def setUpClass(cls) -> None:
+        super().setUpClass()
         cls.cli.root.get_collection(CURRENT_MODES_COL).set_default('-w')
 
     @parameterized.expand([

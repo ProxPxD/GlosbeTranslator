@@ -12,6 +12,7 @@ class SingleModeCliTest(AbstractCliTest):
 
     @classmethod
     def setUpClass(cls) -> None:
+        super().setUpClass()
         cls.cli.root.get_collection(CURRENT_MODES_COL).set_default('-s')
 
     def test_no_args_help_printing(self):

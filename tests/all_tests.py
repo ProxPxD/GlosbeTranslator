@@ -7,7 +7,13 @@ from tests.multiLangTranslationTest import MultiLangCliTest
 from tests.multiWordTranslationTest import MultiWordCliTest
 from tests.singleTranslationTest import SingleModeCliTest
 
-tests = [SingleModeCliTest, MultiLangCliTest, MultiWordCliTest, MisplacedTest, FormattingTest, ]
+tests = [
+    SingleModeCliTest,
+    MultiLangCliTest,
+    MultiWordCliTest,
+    MisplacedTest,
+    FormattingTest,
+]
 
 
 def main():

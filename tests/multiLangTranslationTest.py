@@ -12,6 +12,7 @@ class MultiLangCliTest(AbstractCliTest):
 
     @classmethod
     def setUpClass(cls) -> None:
+        super().setUpClass()
         cls.cli.root.get_collection(CURRENT_MODES_COL).set_default('-m')
 
     @parameterized.expand([

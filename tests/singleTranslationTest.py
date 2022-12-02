@@ -15,9 +15,6 @@ class SingleModeCliTest(AbstractCliTest):
         super().setUpClass()
         cls.cli.root.get_collection(CURRENT_MODES_COL).set_default('-s')
 
-    def test_no_args_help_printing(self):
-        self.cli.parse_without_actions('t')  # self.fail(NotImplementedError.__name__)
-
     @parameterized.expand([
         ('all_arguments', 'tak', 'pl', 'zh', 't tak pl zh'),
         ('no_from_lang', 'tak', 'pl', 'zh', 't tak zh'),

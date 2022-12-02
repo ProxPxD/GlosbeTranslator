@@ -2,6 +2,7 @@ import unittest
 
 from tests.abstractTest import AbstractTest
 from tests.formattingTest import FormattingTest
+from tests.helpTest import HelpTest
 from tests.misplacedTest import MisplacedTest
 from tests.multiLangTranslationTest import MultiLangCliTest
 from tests.multiWordTranslationTest import MultiWordCliTest
@@ -13,6 +14,7 @@ tests = [
     MultiWordCliTest,
     MisplacedTest,
     FormattingTest,
+    HelpTest,
 ]
 
 

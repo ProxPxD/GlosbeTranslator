@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import requests
 
-from src.translating.web.exceptions import TranslatorArgumentException
+from .exceptions import TranslatorArgumentException
 
 
 @dataclass(frozen=True)
@@ -35,8 +35,8 @@ class Connector:
     def trans_args(self):
         return self._trans_args
 
-    @property.setter
-    def trans_args(self, *values: str) -> None:
+    @trans_args.setter
+    def trans_args_s(self, *values: str) -> None:
         to_set = iter(values)
         self._trans_args.to_lang = next(to_set, self._trans_args.to_lang)
         self._trans_args.from_lang = next(to_set, self._trans_args.from_lang)

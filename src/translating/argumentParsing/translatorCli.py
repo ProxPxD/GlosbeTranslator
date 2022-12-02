@@ -1,9 +1,4 @@
-from smartcli import Cli, Root, CliCollection, Flag, VisibleNode
-
-from ..configs.configurations import Configurations
-from ..translatingPrinting.translationPrinter import TranslationPrinter
-from ..translator import Translator, TranslationTypes
-from smartcli import Cli, Root, CliCollection, Flag, VisibleNode
+from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
 
 from ..configs.configurations import Configurations
 from ..translatingPrinting.translationPrinter import TranslationPrinter
@@ -30,10 +25,12 @@ class TranslatorCli(Cli):
         self._from_langs: CliCollection
         self._to_langs: CliCollection
         self._words: CliCollection
-        self._single_node: VisibleNode
-        self._word_node: VisibleNode
-        self._lang_node: VisibleNode
-        self._double_multi_node: VisibleNode
+        self._to_langs_param: Parameter
+        self._words_param: Parameter
+        self._single_node: HiddenNode
+        self._word_node: HiddenNode
+        self._lang_node: HiddenNode
+        self._double_multi_node: HiddenNode
         self._from_langs: Flag
         self._to_langs: Flag
         self._words: Flag
@@ -44,6 +41,7 @@ class TranslatorCli(Cli):
         self._root = Root('root')
         self._create_collections()
         self._create_flags()
+        self._create_params()
         self._create_hidden_nodes()
 
         self._configure_collections()
@@ -75,6 +73,10 @@ class TranslatorCli(Cli):
         self._word_flag.set_limit(None, storage=self._words)  # infinite
         self._lang_flag.set_limit(None, storage=self._to_langs)  # infinite
 
+    def _create_params(self) -> None:
+        self._to_langs_param = Parameter('to_langs', parameter_lower_limit=0, parameter_limit=None)
+        self._words_param = Parameter('words', parameter_lower_limit=1, parameter_limit=None)
+
     def _create_hidden_nodes(self) -> None:
         self.root.set_only_hidden_nodes()
         self._single_node = self._root.add_hidden_node(TranslationTypes.SINGLE, action=self.translate_single)
@@ -103,16 +105,18 @@ class TranslatorCli(Cli):
     def _configure_lang_node(self) -> None:
         self._lang_node.set_active_on_flags_in_collection(self._current_modes, self._lang_flag, but_not=self._word_flag)
 
-        self._lang_node.set_params('word', 'from_lang', 'to_langs', storages=(self._words, self._from_langs, self._to_langs))
-        self._lang_node.set_possible_param_order('words from_lang to_langs')
+        self._lang_node.set_params('word', 'from_lang', self._to_langs_param, storages=(self._words, self._from_langs, self._to_langs))
+        self._lang_node.get_param('to_langs').set_to_multi_at_least_zero()
+        self._lang_node.set_possible_param_order('word from_lang to_langs')
         self._lang_node.set_default_setting_order('from_lang')
 
     def _configure_word_node(self) -> None:
         self._word_node.set_active_on_flags_in_collection(self._current_modes, self._word_flag, but_not=[self._lang_flag, self._single_flag])
 
-        self._word_node.set_params('word', 'from_lang', 'to_langs', storages=(self._words, self._from_langs, self._to_langs))
+        self._word_node.set_params('from_lang', 'to_lang', self._words_param, storages=(self._from_langs, self._to_langs, self._words))
         self._word_node.set_possible_param_order('from_lang to_langs words')
-        self._lang_node.set_default_setting_order('from_lang', 'to_langs')
+        self._lang_node.set_default_setting_order('from_lang', 'words')
+        self._lang_node.set_default_setting_order('words')
 
     def _configure_double_node(self) -> None:
         self._double_multi_node.set_active_on_flags_in_collection(self._current_modes, self._lang_flag, self._word_flag, but_not=self._single_flag)

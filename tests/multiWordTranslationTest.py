@@ -1,70 +1,31 @@
-from src.translating.argumentParsing.abstractParsing.src import FLAGS
-from src.translating.configs.configurations import Configurations
-from tests.abstractTranslationTest import AbstractTranslationTest
+from parameterized import parameterized
+
+from src.translating.argumentParsing.translatorCli import CURRENT_MODES_COL
+from tests.abstractCliTest import AbstractCliTest
 
 
-class MultiWordTranslationTest(AbstractTranslationTest):
-    @classmethod
-    def _perform_translation(self):
-        words = self.argumentParser.words
-        from_lang = self.argumentParser.from_lang
-        to_lang = self.argumentParser.to_langs[0]
-        return self.translator.multi_word_translate(to_lang, words, from_lang)
-
-    @classmethod
-    def _get_mode(cls) -> str:
-        return FLAGS.MULTI_WORD
-
+class MultiWordCliTest(AbstractCliTest):
     @classmethod
     def _get_test_name(cls) -> str:
-        return cls._get_mode() + ' mode'
+        return 'Word Mode CLI'
 
-    def test_all_args_set(self):
-        from_lang, to_lang = 'pl', 'de'
-        words = ['myśleć', 'ulec', 'obraz']
-        self.set_input_string(f't {from_lang} {to_lang} {" ".join(words)}')
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.cli.root.get_collection(CURRENT_MODES_COL).set_default('-w')
 
-        translations = self.translate()
+    @parameterized.expand([
+        ('all_arguments', ['schlafen', 'Herr', 'nicht'], 'de', 'pl', 't de pl schlafen Herr nicht'),
+        ('additional_with_flag', ['schlafen', 'Herr', 'nicht'], 'de', 'pl', 't de pl schlafen Herr -w nicht'),
+        ('no_from_lang_with_flag', ['schlafen', 'Herr', 'nicht'], 'de', 'pl', 't pl -w schlafen Herr nicht'),
+        ('only_words_with_flag', ['schlafen', 'Herr', 'nicht'], 'de', 'pl', 't -w schlafen Herr nicht'),
+    ])
+    def test_flag_parsing(self, name: str, e_words: str, e_from_lang: str, e_to_lang: str, input_line: str):
+        words, from_lang, to_langs = self.cli.root.get_collections('words', 'from_langs', 'to_langs')
+        from_lang.set_default(e_from_lang)
+        to_langs.set_default(e_to_lang)
 
-        correct_translated_words = ['denken', 'erliegen', 'Bild']
-        self.assertEqual(len(translations), len(words))
-        for i, word in enumerate(words):
-            translation = translations[i]
-            batch = self.get_nth_translation_batch(0, translation)
-            translation_word = self.get_word_from_batch(batch)
-            self.assertEqual(word, self.get_constant_part(translation))
-            self.assertEqual(translation_word, correct_translated_words[i])
+        self.cli.parse_without_actions(input_line)
 
-    def test_no_from_language_arg_set(self):
-        from_lang, to_lang = 'pl', 'de'
-        words = ['myśleć', 'ulec', 'obraz']
-        Configurations.change_last_used_languages(from_lang, to_lang)
-        self.set_input_string(f't {to_lang} -w {" ".join(words)}')
-
-        translations = self.translate()
-
-        correct_translated_words = ['denken', 'erliegen', 'Bild']
-        self.assertEqual(len(translations), len(correct_translated_words))
-        for i, word in enumerate(words):
-            translation = translations[i]
-            batch = self.get_nth_translation_batch(0, translation)
-            translation_word = self.get_word_from_batch(batch)
-            self.assertEqual(word, self.get_constant_part(translation))
-            self.assertEqual(translation_word, correct_translated_words[i])
-
-    def test_only_words_args_set(self):
-        from_lang, to_lang = 'pl', 'de'
-        words = ['myśleć', 'ulec', 'obraz']
-        Configurations.change_last_used_languages(from_lang, to_lang)
-        self.set_input_string(f't -w {" ".join(words)}')
-
-        translations = self.translate()
-
-        correct_translated_words = ['denken', 'erliegen', 'Bild']
-        self.assertEqual(len(translations), len(correct_translated_words))
-        for i, word in enumerate(words):
-            translation = translations[i]
-            batch = self.get_nth_translation_batch(0, translation)
-            translation_word = self.get_word_from_batch(batch)
-            self.assertEqual(word, self.get_constant_part(translation))
-            self.assertEqual(translation_word, correct_translated_words[i])
+        self.assertCountEqual(e_words, words.get_plain())
+        self.assertEqual(e_from_lang, from_lang.get())
+        self.assertEqual(e_to_lang, to_langs.get())

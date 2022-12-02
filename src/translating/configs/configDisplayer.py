@@ -2,7 +2,7 @@
 from .configurations import Configurations
 from ..argumentParsing.abstractParsing.src.modeManager import FlagsManager
 from ..argumentParsing.constants import FLAGS
-from ..argumentParsing.translatorParser import TranslatorParser
+from ..argumentParsing.translatorCli import TranslatorParser
 
 
 def display_information(argument_parser: TranslatorParser):

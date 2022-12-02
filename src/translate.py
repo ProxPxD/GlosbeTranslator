@@ -2,7 +2,7 @@ import logging
 import sys
 from dataclasses import dataclass
 
-from translating.argumentParsing.translatorParser import TranslatorCli
+from translating.argumentParsing.translatorCli import TranslatorCli
 from translating.configs import configurations
 from translating.configs.configurations import Configurations
 from translating.constants import LogMessages

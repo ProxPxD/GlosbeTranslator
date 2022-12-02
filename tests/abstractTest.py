@@ -2,9 +2,7 @@ import abc
 import unittest
 from typing import Iterable
 
-from src.translating.argumentParsing.translatorParser import TranslatorParser
 from src.translating.configs.configurations import Configurations, Configs
-from src.translating.constants import TranslationParts
 from src.translating.translator import Translator
 
 

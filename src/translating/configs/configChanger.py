@@ -2,7 +2,7 @@
 from .configurations import Configurations, Configs
 from ..argumentParsing.abstractParsing.src import modeManager
 from ..argumentParsing.constants import FLAGS, ModeTypes, Messages
-from ..argumentParsing.translatorParser import TranslatorParser
+from ..argumentParsing.translatorCli import TranslatorParser
 
 
 def set_configs(argument_parser: TranslatorParser):

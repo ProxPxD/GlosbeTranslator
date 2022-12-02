@@ -1,91 +1,33 @@
-from src.translating.configs.configurations import Configurations
-from tests.abstractTranslationTest import AbstractTranslationTest
+from parameterized import parameterized
+
+from src.translating.argumentParsing.translatorCli import CURRENT_MODES_COL
+from tests.abstractCliTest import AbstractCliTest
 
 
-class MisplacedTest(AbstractTranslationTest):
-    def _perform_translation(self):  # TODO: create another class to handle the translation and to be used both in src and tests
-       return None
-
-    @classmethod
-    def _get_mode(cls) -> str | None:
-        return None
+class MisplacedTest(AbstractCliTest):
 
     @classmethod
     def _get_test_name(cls) -> str:
-        return 'misplaced'
+        return 'Misplaced'
 
-    def test_single_misplaced_once(self):
-        word, from_lang, to_lang = 'suchen', 'de', 'pl'
-        self.set_input_string(f't {from_lang} {word} {to_lang} -s')
+    @parameterized.expand([
+        ('single_once', ['suchen'], ['de'], ['pl'], 't de suchen pl', '-s'),
+        ('single_twice', ['suchen'], ['de'], ['pl'], 't de pl suchen', '-s'),
+        ('single_no_from_lang', ['suchen'], ['de'], ['pl'], 't pl suchen', '-s'),
+        ('lang_misplaced_before', ['suchen'], ['de'], ['pl', 'fr'], 't de suchen -m pl fr', None),
+        ('lang_misplaced_after', ['suchen'], ['de'], ['pl', 'fr'], 't -m pl suchen fr', None),
+        ('word_misplaced_one_word', ['suchen', 'nehmen', 'krank', 'Weib'], ['de'], ['pl'], 't pl suchen -w nehmen krank Weib', None),
+        ('word_misplaced_two_words', ['suchen', 'nehmen', 'krank', 'Weib'], ['de'], ['pl'], 't suchen nehmen -w krank Weib', None),
+    ])
+    def test_misplaced(self, name: str, e_words: str, e_from_langs: str, e_to_langs: str, input_line: str, mode: str):
+        words, from_langs, to_langs = self.cli.root.get_collections('words', 'from_langs', 'to_langs')
+        from_langs.set_default(e_from_langs)
+        to_langs.set_default(e_to_langs)
+        if mode:
+            self.cli.root.get_collection(CURRENT_MODES_COL).set_default(mode)
 
-        self.argumentParser.parse()
+        self.cli.parse_without_actions(input_line)
 
-        self.assertEqual(from_lang, self.argumentParser.from_lang)
-        self.assertIn(to_lang, self.argumentParser.to_langs)
-        self.assertEqual({word}, set(self.argumentParser.words))
-
-    def test_single_misplaced_twice(self):
-        word, from_lang, to_lang = 'suchen', 'de', 'pl'
-        self.set_input_string(f't {from_lang} {to_lang} {word} -s')
-
-        self.argumentParser.parse()
-
-        self.assertEqual(from_lang, self.argumentParser.from_lang)
-        self.assertIn(to_lang, self.argumentParser.to_langs)
-        self.assertEqual({word}, set(self.argumentParser.words))
-
-    def test_single_misplaced_one_arg(self):
-        word, from_lang, to_lang = 'suchen', 'de', 'pl'
-        Configurations.change_last_used_languages(from_lang)
-        self.set_input_string(f't {to_lang} {word} -s')
-
-        self.argumentParser.parse()
-
-        self.assertEqual(from_lang, self.argumentParser.from_lang)
-        self.assertIn(to_lang, self.argumentParser.to_langs)
-        self.assertEqual({word}, set(self.argumentParser.words))
-
-    def test_multi_langs_misplaced_before(self):
-        word, from_lang, to_langs = 'suchen', 'de', ['pl', 'fr']
-        self.set_input_string(f't {from_lang} {word} -m {" ".join(to_langs)}')
-
-        self.argumentParser.parse()
-
-        self.assertEqual(from_lang, self.argumentParser.from_lang)
-        self.assertEqual(to_langs, self.argumentParser.to_langs)
-        self.assertEqual({word}, set(self.argumentParser.words))
-
-    def test_multi_langs_misplaced_after(self):
-        word, from_lang, to_langs = 'suchen', 'de', ['pl', 'fr']
-        Configurations.change_last_used_languages(from_lang)
-        self.set_input_string(f't -m {word} {" ".join(to_langs)}')
-
-        self.argumentParser.parse()
-
-        self.assertEqual(from_lang, self.argumentParser.from_lang)
-        self.assertEqual(to_langs, self.argumentParser.to_langs)
-        self.assertEqual({word}, set(self.argumentParser.words))
-
-    def test_multi_word_misplaced_one_word(self):
-        words, from_lang, to_lang = ['suchen', 'nehmen', 'krank', 'Weib'], 'de', 'pl'
-        words_1, words_2 = words[:2], words[2:]
-        Configurations.change_last_used_languages(from_lang)
-        self.set_input_string(f't {to_lang} {" ".join(words_1)} -w {" ".join(words_2)}')
-
-        self.argumentParser.parse()
-
-        self.assertEqual(from_lang, self.argumentParser.from_lang)
-        self.assertIn(to_lang, self.argumentParser.to_langs)
-        self.assertEqual(set(words), set(self.argumentParser.words))
-
-    def test_multi_word_misplaced_two_words(self):
-        words, from_lang, to_lang = ['suchen', 'nehmen', 'krank', 'Weib'], 'de', 'pl'
-        words_1, words_2 = words[:2], words[2:]
-        Configurations.change_last_used_languages(from_lang, to_lang)
-        self.set_input_string(f't {" ".join(words_1)} -w {" ".join(words_2)}')
-
-        self.argumentParser.parse()
-
-        self.assertEqual(from_lang, self.argumentParser.from_lang)
-        self.assertIn(to_lang, self.argumentParser.to_langs)
-        self.assertEqual(set(words), set(self.argumentParser.words))
+        self.assertCountEqual(e_words, words.get_plain())
+        self.assertCountEqual(e_from_langs, from_langs.get_plain())
+        self.assertCountEqual(e_to_langs, to_langs.get_plain())

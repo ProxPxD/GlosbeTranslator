@@ -9,12 +9,34 @@ FROM_LANGS_COL = 'from_langs'
 TO_LANGS_COL = 'to_langs'
 WORDS_COL = 'words'
 
+# Modes
 SINGLE_LONG_FLAG = '--single'
 LANG_LONG_FLAG = '--lang'
 WORD_LONG_FLAG = '--word'
 SINGLE_SHORT_FLAG = '-s'
 LANG_SHORT_FLAG = '-m'
 WORD_SHORT_FLAG = '-w'
+
+# Flags:
+LANG_LIMIT_LONG_FLAG = '--limit'
+LANG_LIMIT_SHORT_FLAG = '-l'
+LANGS_SHOW_LONG_FLAG = '--langs'
+LANGS_SHOW_SHORT_FLAG = '-ll'
+LAST_LANG_LONG_FLAG = '--last'  # put number
+LAST_1_LANG_LONG_FLAG_2 = '--last1'
+LAST_1_LANG_SHORT_FLAG = '-1'
+LAST_2_LONG_FLAG = '--last2'
+LAST_2_SHORT_FLAG = '-2'
+DEFAULT_MODE_LONG_FLAG = '--default-mode'
+DEFAULT_MODE_SHORT_FLAG = '-dm'
+SETTINGS_LONG_FLAG = '--settings'
+SETTINGS_SHORT_FLAG = '-ss'
+HELP_LONG_FLAG = '--help'
+HELP_SHORT_FLAG = '-h'
+
+# Flags of nodes
+ADD_LANG_SHORT_FLAG = '-al'
+REMOVE_LANG_SHORT_FLAG = '-rl'
 
 
 class TranslatorCli(Cli):
@@ -99,7 +121,7 @@ class TranslatorCli(Cli):
         self._single_node.set_possible_param_order('word')
 
     def translate_single(self) -> None:
-        translation = self._translator.single_translate(word=self._words.get(), to_lang=self.to_langs.get(), from_lang=self.from_lang.get())
+        translation = self._translator.single_translate(word=self._words.get(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get())
         TranslationPrinter.print_translations(translation)
 
     def _configure_lang_node(self) -> None:

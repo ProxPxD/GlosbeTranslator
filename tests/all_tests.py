@@ -1,6 +1,7 @@
 import unittest
 
 from tests.abstractTest import AbstractTest
+from tests.flagSettingTest import FlagSettingTest
 from tests.formattingTest import FormattingTest
 from tests.helpTest import HelpTest
 from tests.misplacedTest import MisplacedTest
@@ -15,6 +16,7 @@ tests = [
     MisplacedTest,
     FormattingTest,
     HelpTest,
+    FlagSettingTest,
 ]
 
 

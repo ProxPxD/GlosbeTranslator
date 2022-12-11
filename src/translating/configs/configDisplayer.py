@@ -1,48 +1,52 @@
+from typing import Any
 
 from .configurations import Configurations
-from ..argumentParsing.abstractParsing.src.modeManager import FlagsManager
-from ..argumentParsing.constants import FLAGS
-from ..argumentParsing.translatorCli import TranslatorParser
 
 
-def display_information(argument_parser: TranslatorParser):
-    for to_display in argument_parser.modes.get_modes_turned_on_by_type(ModeTypes.DISPLAYABLE):
-        if to_display == FLAGS.SETTINGS:
-            display_configs(FLAGS.DEFAULT_TRANSLATIONAL_MODE, FLAGS.LANG_LIMIT,
-                            FLAGS.SAVED_LANGS, FLAGS.ADJUSTMENT_LANG, FLAGS.LAYOUT_ADJUSTMENT_MODE)
-            continue
-        if to_display == FLAGS.HELP:
-            FlagsManager.show_help()
-            continue
-        display_config(to_display, show_possible=True)
+#
+# def display_information(argument_parser: TranslatorParser):
+#     for to_display in argument_parser.modes.get_modes_turned_on_by_type(ModeTypes.DISPLAYABLE):
+#         if to_display == FLAGS.SETTINGS:
+#             display_configs(FLAGS.DEFAULT_TRANSLATIONAL_MODE, FLAGS.LANG_LIMIT,
+#                             FLAGS.SAVED_LANGS, FLAGS.ADJUSTMENT_LANG, FLAGS.LAYOUT_ADJUSTMENT_MODE)
+#             continue
+#         if to_display == FLAGS.HELP:
+#             FlagsManager.show_help()
+#             continue
+#         display_config(to_display, show_possible=True)
 
 
-def display_configs(*config_names: str, show_possible=False):  # TODO: implement help and input modes validation
-    for to_display in config_names:
-        display_config(to_display, show_possible)
+class ConfigDisplayer:
 
+    out = print
 
-def display_config(config_name: str, show_possible=False):
-    conf_to_display = Configurations.get_conf(config_name)
-    conf_to_display = format_config(conf_to_display)
-    print(f'{config_name[2:]}: {conf_to_display}')
+    @classmethod
+    def display_configs(cls, **config_names: str):  # TODO: implement help and input modes validation
+        for conf, value in config_names.items():
+            cls.display_config(conf, value)
 
-    if show_possible:
-        display_possible_values(config_name)
+    @classmethod
+    def display_config(cls, config_name: str, value: Any = None, show_possible=False):
+        conf_to_display = value if value is not None else Configurations.get_conf(config_name)
+        conf_to_display = cls.format_config(conf_to_display)
+        cls.out(f'{config_name[2:]}: {conf_to_display}')
 
+        if show_possible:
+            cls.display_possible_values(config_name)
 
-def format_config(config: list | str):
-    if isinstance(config, list):
-        return list_to_comma_string(config)
-    return str(config)
+    @classmethod
+    def format_config(cls, config: list | str):
+        if isinstance(config, list):
+            return cls.list_to_comma_string(config)
+        return str(config)
 
+    @classmethod
+    def list_to_comma_string(cls, list_to_transform: list | str):
+        return str(list_to_transform)[1:-1].replace("'", '')
 
-def list_to_comma_string(list_to_transform: list | str):
-    return str(list_to_transform)[1:-1].replace("'", '')
-
-
-def display_possible_values(config_name: str):
-    possible_values = Configurations.get_possible_values_for(config_name)
-    if possible_values:
-        possible_values = format_config(possible_values)
-        print(f'Possible values: {possible_values}')
+    @classmethod
+    def display_possible_values(cls, config_name: str):
+        possible_values = Configurations.get_possible_values_for(config_name)
+        if possible_values:
+            possible_values = cls.format_config(possible_values)
+            cls.out(f'Possible values: {possible_values}')

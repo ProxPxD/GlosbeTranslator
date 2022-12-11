@@ -41,7 +41,7 @@ class FLAGS:
     LANG_LIMIT: str = '--limit'
     SAVED_LANGS: str = '--langs'
     LAST: str = '--last'
-    DEFAULT_TRANSLATIONAL_MODE: str = '--default_mode'
+    DEFAULT_TRANSLATIONAL_MODE: str = '--default-mode'
     LAYOUT_ADJUSTMENT_MODE: str = '--layout_adjustment_mode'
     ADJUSTMENT_LANG: str = '--adjustment_lang'
     SETTINGS: str = '--settings'

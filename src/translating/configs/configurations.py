@@ -1,7 +1,8 @@
 import json
 from dataclasses import dataclass
+from itertools import islice
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 from ..argumentParsing.constants import FLAGS, SHORT_FLAGS, LanguageSpecificAdjustmentValues
 
@@ -42,14 +43,15 @@ class Configurations:
     _current_config_file: Path = ''
 
     @classmethod
-    def init(cls, file_name=Configs.DEFAULT_FILE_NAME) -> None:
-        if not Configurations._configs:
+    def init(cls, file_name=Configs.DEFAULT_FILE_NAME, init_default=True) -> None:
+        config_file_to_init = Paths.RESOURCES_DIR / file_name
+        if not cls._configs or cls._current_config_file != config_file_to_init:
+            cls._current_config_file = config_file_to_init
             if not Paths.RESOURCES_DIR.exists():
                 Paths.RESOURCES_DIR.mkdir()
-            cls._current_config_file = Paths.RESOURCES_DIR / file_name
             if not cls._current_config_file.exists():
-                Configurations.init_default()
-            Configurations._configs = Configurations._get_configurations()
+                cls.init_file(init_default)
+            cls._configs = cls._get_configurations()
 
     @classmethod
     def _get_configurations(cls) -> dict[str, Any]:
@@ -76,15 +78,16 @@ class Configurations:
             json.dump(configs, f, indent=4, sort_keys=True)
 
     @classmethod
-    def init_default(cls) -> None:
-        Configurations._save(Configurations.__get_default_config())
+    def init_file(cls, init_default=True) -> None:
+        to_save = Configurations.__get_default_config() if init_default else {}
+        Configurations._save(to_save)
 
     @classmethod
     def __get_default_config(cls) -> dict[str, Any]:
         return {
-            Configs.DEFAULT_TRANSLATIONAL_MODE: '-s',
-            Configs.LANG_LIMIT: 3,
-            Configs.SAVED_LANGS: ['pl', 'en', 'de', 'es'],
+            '--default-mode': '--single',
+            '--limit': 3,
+            '--langs': [],
             Configs.LANG_SPEC_ADJUSTMENT: 'none',
             Configs.ADJUSTMENT_LANG: '',
         }
@@ -97,7 +100,7 @@ class Configurations:
 
     @classmethod
     def change_conf(cls, conf: str, value) -> None:
-        if not Configurations._configs:
+        if Configurations._configs is None:
             Configurations.init()
         Configurations._configs[conf] = value
 
@@ -107,6 +110,10 @@ class Configurations:
         Alias for change_conf
         '''
         cls.change_conf(conf, value)
+
+    @classmethod
+    def get_all_configs(cls) -> dict[str, Any]:
+        return dict(cls._configs)
 
     @classmethod
     def get_conf(cls, name: str) -> Any:
@@ -123,7 +130,6 @@ class Configurations:
             else:
                 langs.append(lang)  # TODO replace with flags
 
-
     @classmethod
     def remove_langs(cls, *arguments: str):
         langs = Configurations.get_saved_languages()
@@ -135,9 +141,9 @@ class Configurations:
 
     @classmethod
     def add_default_config(cls, name: str):
-        default = Configurations.__get_default_config()
-        Configurations._configs[name] = default[name]
-        Configurations.save()
+        default = cls.__get_default_config()
+        cls._configs[name] = default[name]
+        cls.save()
 
     @classmethod
     def get_default_translation_mode(cls) -> str:
@@ -152,18 +158,21 @@ class Configurations:
         return Configurations.get_nth_saved_language(1)
 
     @classmethod
-    def get_nth_saved_language(cls, index: int, to_skip: str = None) -> str:
-        return Configurations.load_config_languages(to_skip)[index]
+    def get_nth_saved_language(cls, index: int, *to_skips: str) -> str:
+        langs = cls.load_config_languages(*to_skips)
+        return next(islice(langs, int(index), None))
 
     @classmethod
-    def load_config_languages(cls, *to_skips: str) -> list[str]:
+    def load_config_languages_by_limit(cls, *to_skips: str, limit=None) -> Iterable[str]:
+        if limit is None:
+            limit = int(Configurations.get_conf(Configs.LANG_LIMIT))
+        langs = cls.load_config_languages(*to_skips)
+        return islice(langs, limit)
+
+    @classmethod
+    def load_config_languages(cls, *to_skips: str) -> Iterable[str]:
         langs: list = Configurations.get_conf(Configs.SAVED_LANGS)[:]
-        limit = int(Configurations.get_conf(Configs.LANG_LIMIT))
-        for to_skip in to_skips:
-            langs.remove(to_skip)
-        if limit is not None and len(langs) > limit:
-            langs = langs[:limit]
-        return langs
+        return filter(lambda lang: lang not in to_skips, langs)
 
     @classmethod
     def change_last_used_languages(cls, *langs: str) -> None:

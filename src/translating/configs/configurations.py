@@ -126,7 +126,7 @@ class Configurations:
         langs = Configurations.get_saved_languages()
         for lang in arguments:
             if lang in langs:
-                print()  # TODO: Messages.ADD_EXISTENT_LANG.format(lang))
+                pass #print()  # TODO: Messages.ADD_EXISTENT_LANG.format(lang))
             else:
                 langs.append(lang)  # TODO replace with flags
 
@@ -135,7 +135,7 @@ class Configurations:
         langs = Configurations.get_saved_languages()
         for lang in arguments:
             if lang not in langs:
-                print()  # TODO: Messages.REMOVE_NONEXISTENT_LANG.format(lang))
+                pass #print()  # TODO: Messages.REMOVE_NONEXISTENT_LANG.format(lang))
             else:
                 langs.remove(lang)
 

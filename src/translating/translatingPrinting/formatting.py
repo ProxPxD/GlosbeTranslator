@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import replace
 from typing import Iterable, Callable
 
-from more_itertools import split_before
+from more_itertools import split_when
 
 from ..constants import PageCodeMessages
 from ..parsing.parser import Record
@@ -20,7 +20,7 @@ class AbstractFormatter(ABC):
 
 	@classmethod
 	def format_many(cls, to_formats) -> Iterable:
-		return (AbstractFormatter.format(to_format) for to_format in to_formats)
+		return (cls.format(to_format) for to_format in to_formats)
 
 
 class AbstractIntoStringFormatter(ABC):
@@ -32,7 +32,7 @@ class AbstractIntoStringFormatter(ABC):
 
 	@classmethod
 	def format_many_into_string(cls, to_formats: Iterable, sep: str, **kwargs) -> str:
-		formatted = map(lambda to_format: cls.format_into_string(to_formats, **kwargs), to_formats)
+		formatted = map(lambda to_format: cls.format_into_string(to_format, **kwargs), to_formats)
 		string = sep.join(formatted)
 		return string
 
@@ -85,7 +85,7 @@ class RecordFormatter(AbstractFormatter, AbstractIntoStringFormatter):
 		return string
 
 	@classmethod
-	def format_many_into_string(cls, to_formats: Iterable, sep: str = ';', **kwargs) -> str:
+	def format_many_into_string(cls, to_formats: Iterable, sep: str = '; ', **kwargs) -> str:
 		return super().format_many_into_string(to_formats, sep, **kwargs)
 
 
@@ -114,12 +114,13 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter):
 		return ''
 
 	@classmethod  # TODO: Just in case - think of refactor
-	def format_many_into_string(cls, translations: Iterable[TranslationResult], sep: str = '\n', main_division: TranslationTypes = None,
-			prefix_style: TranslationTypes = None) -> str:
-		main_divisioned = split_before(translations, cls._get_key_function(main_division))
+	def format_many_into_string(cls, translations: Iterable[TranslationResult], sep: str = '\n', main_division: TranslationTypes = None, prefix_style: TranslationTypes = None) -> str:
+		main_divisioned = split_when(translations, cls._get_key_function(main_division))
 		get_divider = cls._get_main_divider_getter(main_division)
-		inner_formatted = list(
-			map(lambda division: (get_divider(division), super().format_many_into_string(division, sep, prefix_style=prefix_style)), main_divisioned))
+		# print(list(list(main_divisioned)[0][0].records))
+		super_format_many_into_string = super().format_many_into_string
+		division_to_string = lambda division: super_format_many_into_string(division, sep, prefix_style=prefix_style)
+		inner_formatted = list(map(lambda division: (get_divider(division), division_to_string(division)), main_divisioned))
 		if len(inner_formatted) > 1:
 			pre_dash = '-' * 4
 			post_dash = '-' * 64

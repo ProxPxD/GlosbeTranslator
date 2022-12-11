@@ -1,6 +1,7 @@
 from parameterized import parameterized
 
 from src.translating.argumentParsing.translatorCli import CURRENT_MODES_COL
+from src.translating.configs.configurations import Configurations
 from tests.abstractCliTest import AbstractCliTest
 
 
@@ -10,24 +11,46 @@ class MisplacedTest(AbstractCliTest):
     def _get_test_name(cls) -> str:
         return 'Misplaced'
 
+    def get_file_name(self) -> str:
+        return 'misplaced_test'
+
+    def setUp(self) -> None:
+        super().setUp()
+        Configurations.init(self.get_file_name(), init_default=False)
+        Configurations.add_langs('fr', 'de', 'pl')
+
+    def tearDown(self) -> None:
+        super().tearDown()
+        Configurations.remove_current_configuration()
+
     @parameterized.expand([
-        ('single_once', ['suchen'], ['de'], ['pl'], 't de suchen pl', '-s'),
-        ('single_twice', ['suchen'], ['de'], ['pl'], 't de pl suchen', '-s'),
-        ('single_no_from_lang', ['suchen'], ['de'], ['pl'], 't pl suchen', '-s'),
-        ('lang_misplaced_before', ['suchen'], ['de'], ['pl', 'fr'], 't de suchen -m pl fr', None),
-        ('lang_misplaced_after', ['suchen'], ['de'], ['pl', 'fr'], 't -m pl suchen fr', None),
-        ('word_misplaced_one_word', ['suchen', 'nehmen', 'krank', 'Weib'], ['de'], ['pl'], 't pl suchen -w nehmen krank Weib', None),
-        ('word_misplaced_two_words', ['suchen', 'nehmen', 'krank', 'Weib'], ['de'], ['pl'], 't suchen nehmen -w krank Weib', None),
+        ('single_once', ['suchen'], ['de'], ['pl'], 't de suchen pl', '-s', []),
+        ('single_twice', ['suchen'], ['de'], ['pl'], 't de pl suchen', '-s', []),
+        ('single_no_from_lang', ['suchen'], ['de'], ['pl'], 't pl suchen', '-s', ['pl', 'de']),
+        ('lang_misplaced_before', ['suchen'], ['de'], ['pl', 'fr'], 't de suchen -m pl fr', None, []),
+        ('lang_misplaced_after', ['suchen'], ['de'], ['pl', 'fr'], 't -m pl suchen fr', None, []),
+        ('word_misplaced_one_word', ['suchen', 'nehmen', 'krank', 'Weib'], ['de'], ['pl'], 't pl suchen -w nehmen krank Weib', None, ['pl', 'de']),
+        ('word_misplaced_two_words', ['suchen', 'nehmen', 'krank', 'Weib'], ['de'], ['pl'], 't suchen nehmen -w krank Weib', None, ['pl', 'de']),
     ])
-    def test_misplaced(self, name: str, e_words: str, e_from_langs: str, e_to_langs: str, input_line: str, mode: str):
+    def test_misplaced(self, name: str, e_words: str, e_from_langs: str, e_to_langs: str, input_line: str, mode: str, last_langs: list[str, str]):
         words, from_langs, to_langs = self.cli.root.get_collections('words', 'from_langs', 'to_langs')
-        from_langs.set_default(e_from_langs)
-        to_langs.set_default(e_to_langs)
+        if last_langs:
+            Configurations.change_last_used_languages(*last_langs)
         if mode:
             self.cli.root.get_collection(CURRENT_MODES_COL).set_default(mode)
 
-        self.cli.parse_without_actions(input_line)
+        self.cli.parse(input_line)
 
-        self.assertCountEqual(e_words, words.get_plain())
-        self.assertCountEqual(e_from_langs, from_langs.get_plain())
-        self.assertCountEqual(e_to_langs, to_langs.get_plain())
+        # print(f'{input_line}:', '-' * 30, f'words: {words.get_as_list()}, from_langs: {from_langs.get_as_list()}, to_langs: {to_langs.get_as_list()}')
+
+        if not from_langs:
+            from_langs += Configurations.get_from_language()
+        if not to_langs:
+            to_langs += Configurations.get_nth_saved_language(0, from_langs.get())
+
+        self.assertCountEqual(e_words, words.get_as_list())
+        self.assertCountEqual(e_from_langs, from_langs.get_as_list())
+        self.assertCountEqual(e_to_langs, to_langs.get_as_list())
+
+    def test_misplaced(self):
+        self.run_current_test_with_params()

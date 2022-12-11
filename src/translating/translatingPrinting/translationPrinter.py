@@ -9,6 +9,7 @@ from ..web.exceptions import WrongStatusCodeException
 class TranslationPrinter:
     _post_sep_length = 64
     _pre_sep_length = 4
+    out = print
 
     @classmethod
     def print_translations(cls, translations, main_division=None, prefix_style=None):
@@ -16,15 +17,16 @@ class TranslationPrinter:
         #     pass  # TODO
         translations = TranslationFormatter.format_many(translations)
         translation_string = TranslationFormatter.format_many_into_string(translations, prefix_style=prefix_style, main_division=main_division)
-        print(translation_string)
+        cls.out(translation_string)
 
-    def print_single_translation(self, translation: TranslationResult):
+    @classmethod
+    def print_single_translation(cls, translation: TranslationResult):
         if isinstance(translation.records, WrongStatusCodeException):
             pass  # TODO
         translation = TranslationFormatter.format(translation)
         translation_string = TranslationFormatter.format_into_string(translation)
-        print(translation.trans_args.word)
-        print(translation_string)
+        cls.out(translation.trans_args.word)
+        cls.out(translation_string)
 
     # def _print_multi_translation_mode(self, translations, argument_parser: TranslatorParser):
     #     constant_elem: str = self._get_constant_translation_element(argument_parser)

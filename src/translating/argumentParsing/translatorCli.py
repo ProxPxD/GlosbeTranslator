@@ -1,12 +1,14 @@
 from itertools import chain
+from typing import Callable, Iterable
 
 from more_itertools import unique_everseen
 from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
 
+from .wordFilter import WordFilter
 from ..configs.configDisplayer import ConfigDisplayer
 from ..configs.configurations import Configurations
 from ..translatingPrinting.translationPrinter import TranslationPrinter
-from ..translator import Translator, TranslationTypes
+from ..translator import Translator, TranslationTypes, TranslationResult
 
 CURRENT_MODES_COL = 'current_modes'
 FROM_LANGS_COL = 'from_langs'
@@ -82,6 +84,8 @@ class TranslatorCli(Cli):
 
         self._translator = Translator()
         self._translation_printer = TranslationPrinter()
+        self._word_filter = WordFilter()
+        self._is_translating = True
 
         self._root = Root('root')
         self._create_collections()
@@ -93,9 +97,27 @@ class TranslatorCli(Cli):
         self._configure_flags()
         self._configure_hidden_nodes()
 
+    def turn_on_translating(self) -> None:
+        self._is_translating = True
+
+    def turn_off_translating(self) -> None:
+        self._is_translating = False
+
+    @property
+    def words(self):
+        return self._words.get_as_list()
+
+    @property
+    def from_lang(self):
+        return self._from_langs.get()
+
+    @property
+    def to_langs(self):
+        return self._to_langs.get_as_list()
+
     def _create_collections(self) -> None:
         self._current_modes = self._root.add_collection(CURRENT_MODES_COL)
-        self._from_langs = self._root.add_collection(FROM_LANGS_COL, 1)
+        self._from_langs = self._root.add_collection(FROM_LANGS_COL, 2)
         self._to_langs = self._root.add_collection(TO_LANGS_COL)
         self._words = self._root.add_collection(WORDS_COL)
 
@@ -163,10 +185,10 @@ class TranslatorCli(Cli):
 
     def _create_translation_nodes(self) -> None:
         self._translation_node = self.root.add_hidden_node('trans')
-        self._single_node = self._translation_node.add_hidden_node(TranslationTypes.SINGLE, action=self.translate_single)
-        self._lang_node = self._translation_node.add_hidden_node(TranslationTypes.LANG, action=lambda: None)
-        self._word_node = self._translation_node.add_hidden_node(TranslationTypes.WORD, action=lambda: None)
-        self._double_multi_node = self._translation_node.add_hidden_node(TranslationTypes.DOUBLE, action=lambda: None)
+        self._single_node = self._translation_node.add_hidden_node(TranslationTypes.SINGLE, action=self._translate_single)
+        self._lang_node = self._translation_node.add_hidden_node(TranslationTypes.LANG, action=self._translate_multi_lang)
+        self._word_node = self._translation_node.add_hidden_node(TranslationTypes.WORD, action=self._translate_multi_word)
+        self._double_multi_node = self._translation_node.add_hidden_node(TranslationTypes.DOUBLE, action=self._translate_double)
 
     def _create_configuration_node(self) -> None:
         self._configuration_node = self.root.add_hidden_node('conf')
@@ -199,9 +221,23 @@ class TranslatorCli(Cli):
         self._single_node.set_possible_param_order('word to_lang')
         self._single_node.set_possible_param_order('word')
 
-    def translate_single(self) -> None:
-        translation = self._translator.single_translate(word=self._words.get(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get())
-        TranslationPrinter.print_translations(translation)
+    def _translate_single(self) -> None:
+        self._translate(lambda: self._translator.single_translate(word=self._words.get(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()))
+
+    def _translate_multi_lang(self) -> None:
+        self._translate(lambda: self._translator.multi_lang_translate(word=self._words.get(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()))
+
+    def _translate_multi_word(self) -> None:
+        self._translate(lambda: self._translator.multi_word_translate(words=self._words.get_as_list(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()))
+
+    def _translate_double(self) -> None:
+        self._translate(lambda: self._translator.double_multi_translate(words=self._words.get_as_list(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()))
+
+    def _translate(self, translate: Callable[[], Iterable[TranslationResult]]) -> None:
+        self._correct_misplaced()
+        if self._is_translating:
+            translation = translate()
+            TranslationPrinter.print_translations(translation)
 
     def _configure_lang_node(self) -> None:
         self._lang_node.set_active_on_flags_in_collection(self._current_modes, self._lang_flag, but_not=self._word_flag)
@@ -209,15 +245,15 @@ class TranslatorCli(Cli):
         self._lang_node.set_params('word', 'from_lang', self._to_langs_param, storages=(self._words, self._from_langs, self._to_langs))
         self._lang_node.get_param('to_langs').set_to_multi_at_least_zero()
         self._lang_node.set_possible_param_order('word from_lang to_langs')
-        self._lang_node.set_default_setting_order('from_lang')
+        self._lang_node.set_possible_param_order('word')
 
     def _configure_word_node(self) -> None:
         self._word_node.set_active_on_flags_in_collection(self._current_modes, self._word_flag, but_not=[self._lang_flag, self._single_flag])
 
         self._word_node.set_params('from_lang', 'to_lang', self._words_param, storages=(self._from_langs, self._to_langs, self._words))
-        self._word_node.set_possible_param_order('from_lang to_langs words')
-        self._lang_node.set_default_setting_order('from_lang', 'words')
-        self._lang_node.set_default_setting_order('words')
+        self._word_node.set_possible_param_order('from_lang to_lang words')
+        self._word_node.set_possible_param_order('to_lang words')
+        self._word_node.set_possible_param_order('to_lang')
 
     def _configure_double_node(self) -> None:
         self._double_multi_node.set_active_on_flags_in_collection(self._current_modes, self._lang_flag, self._word_flag, but_not=self._single_flag)
@@ -281,26 +317,31 @@ class TranslatorCli(Cli):
     def set_out_stream(self, out):
         super().set_out_stream(out)
         ConfigDisplayer.out = out
+        TranslationPrinter.out = out
+
+
 
     # TODO: refactor and remove the below
 
-    @property
-    def words(self):
-        return self._words
-
-    @property
-    def from_lang(self):
-        return self._from_lang[0] if len(self._from_lang) else None
-
-    @property
-    def to_langs(self):
-        return self._to_langs
-
     def _correct_misplaced(self):
-        if self._word_filter.is_any_lang_misplaced(*self._from_lang, *self._to_langs):
-            self._from_lang, self._to_langs, words = self._word_filter.split_from_from_and_to_langs(self._from_lang, self.to_langs)
+        '''
+            How and why exactly the nested if exists is not clear to me
+            Until a better explanation I announce it magic
+        '''
+        if self._word_filter.is_any_lang_misplaced(*self._from_langs, *self._to_langs):
+            from_langs, to_langs, words = self._word_filter.split_from_from_and_to_langs(self._from_langs, self._to_langs)
+            self._from_langs.reset()
+            self._from_langs += from_langs
+            self._to_langs.reset()
+            self._to_langs += to_langs
             self._words += words
-            if self._is_to_lang_in_from_lang():
-                self._to_langs += -self._from_lang
-            if self._is_from_lang_in_words():
-                self._from_lang += -self.words
+
+            if self._word_filter.is_any_word_moved_from_to_langs():
+                if self._single_node.is_active():
+                    self._from_langs += -self._words
+                self._to_langs += -self._from_langs
+
+            if self._word_filter.is_any_word_moved_from_from_langs():
+                self._from_langs += -self._words
+
+            self._word_filter.reset()

@@ -19,7 +19,7 @@ class TranslationTypes:
 
 @dataclass
 class TranslationResult:
-    trans_args = TransArgs()
+    trans_args: TransArgs = field(default_factory=lambda: TransArgs())
     records: list[Record] | WrongStatusCodeException = field(default_factory=lambda: [])
     type = TranslationTypes.SINGLE
 

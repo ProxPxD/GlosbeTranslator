@@ -29,7 +29,7 @@ class MisplacedTest(AbstractCliTest):
         ('word_misplaced_one_word', ['suchen', 'nehmen', 'krank', 'Weib'], ['de'], ['pl'], 't pl suchen -w nehmen krank Weib', None, ['pl', 'de']),
         ('word_misplaced_two_words', ['suchen', 'nehmen', 'krank', 'Weib'], ['de'], ['pl'], 't suchen nehmen -w krank Weib', None, ['pl', 'de']),
     ])
-    def test_misplaced(self, name: str, e_words: str, e_from_langs: str, e_to_langs: str, input_line: str, mode: str, last_langs: list[str, str]):
+    def test_misplaced(self, name: str, e_words: list[str], e_from_langs: list[str], e_to_langs: list[str], input_line: str, mode: str, last_langs: list[str, str]):
         words, from_langs, to_langs = self.cli.root.get_collections('words', 'from_langs', 'to_langs')
         if last_langs:
             Configurations.change_last_used_languages(*last_langs)
@@ -37,8 +37,6 @@ class MisplacedTest(AbstractCliTest):
             self.cli.root.get_collection(CURRENT_MODES_COL).set_default(mode)
 
         self.cli.parse(input_line)
-
-        # print(f'{input_line}:', '-' * 30, f'words: {words.get_as_list()}, from_langs: {from_langs.get_as_list()}, to_langs: {to_langs.get_as_list()}')
 
         if not from_langs:
             from_langs += Configurations.get_from_language()

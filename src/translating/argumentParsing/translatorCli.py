@@ -40,15 +40,15 @@ SETTINGS_LONG_FLAG = '--settings'
 SETTINGS_SHORT_FLAG = '-ss'
 HELP_LONG_FLAG = '--help'
 HELP_SHORT_FLAG = '-h'
+SILENT_LONG_FLAG = '--silent'
+REVERSE_LONG_FLAG = '--reverse'
+REVERSE_SHORT_FLAG = '-r'
 
 # Flags of nodes
 ADD_LANG_LONG_FLAG = '--add-lang'
 ADD_LANG_SHORT_FLAG = '-al'
 REMOVE_LANG_LONG_FLAG = '--remove-lang'
 REMOVE_LANG_SHORT_FLAG = '-rl'
-
-# Functional flags
-SILENT_LONG_FLAG = '--silent'
 
 just_set = (LANG_LIMIT_LONG_FLAG, )
 just_display = (LANG_LIMIT_LONG_FLAG, DEFAULT_MODE_LONG_FLAG, LANGS_SHOW_LONG_FLAG, )
@@ -99,6 +99,8 @@ class TranslatorCli(Cli):
         self._configure_collections()
         self._configure_flags()
         self._configure_hidden_nodes()
+        self._configure_cli()
+
 
     def turn_on_translating(self) -> None:
         self._is_translating = True
@@ -168,6 +170,7 @@ class TranslatorCli(Cli):
 
     def _create_functional_flags(self) -> None:
         self.root.add_flag(SILENT_LONG_FLAG, flag_limit=0)
+        self.root.add_flag(REVERSE_LONG_FLAG, REVERSE_SHORT_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()
@@ -232,6 +235,17 @@ class TranslatorCli(Cli):
         self._single_node.set_possible_param_order('word to_lang')
         self._single_node.set_possible_param_order('word')
 
+    def _configure_cli(self) -> None:
+        self.when_used_arity_is_equal(lambda: self._word_node.disable_order(2), 2)
+        self.add_post_parse_action_when(self._reverse_langs, lambda: self.root.get_flag(REVERSE_SHORT_FLAG) and self._single_node.is_active())
+
+    def _reverse_langs(self):
+        from_langs = self._from_langs[:]
+        self._from_langs.reset()
+        self._from_langs += self._to_langs
+        self._to_langs.reset()
+        self._to_langs += from_langs
+
     def _translate_single(self) -> None:
         return self._translate(lambda: self._translator.single_translate(word=self._words.get(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()),
                                prefix_style=TranslationTypes.SINGLE)
@@ -272,7 +286,6 @@ class TranslatorCli(Cli):
         self._word_node.set_possible_param_order('from_lang to_lang words')
         self._word_node.set_possible_param_order('to_lang words')
         self._word_node.set_possible_param_order('to_lang')
-        self.when_used_arity_is_equal(lambda: self._word_node.disable_order(2), 2)
         self._word_node.set_parameters_to_skip_order('words')
 
     def _configure_double_node(self) -> None:

@@ -3,6 +3,7 @@ import unittest
 from tests.abstractTest import AbstractTest
 from tests.flagSettingTest import FlagSettingTest
 from tests.formattingTest import FormattingTest
+from tests.funtionalFlagsTest import FunctionalFlagsTest
 from tests.helpTest import HelpTest
 from tests.misplacedTest import MisplacedTest
 from tests.multiLangTranslationTest import MultiLangCliTest
@@ -17,6 +18,7 @@ tests = [
     FormattingTest,
     HelpTest,
     FlagSettingTest,
+    FunctionalFlagsTest,
 ]
 
 

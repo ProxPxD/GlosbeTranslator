@@ -1,22 +1,10 @@
 import unittest
 
-from tests.FormattingTest import FormattingTest
+from tests.RequiringConnectionTests.formattingFinalResultTest import FormattingFinalResultTest
 from tests.abstractTest import AbstractTest
-from tests.flagSettingTest import FlagSettingTest
-from tests.helpTest import HelpTest
-from tests.misplacedTest import MisplacedTest
-from tests.multiLangTranslationTest import MultiLangCliTest
-from tests.multiWordTranslationTest import MultiWordCliTest
-from tests.singleTranslationTest import SingleModeCliTest
 
 tests = [
-    SingleModeCliTest,
-    MultiLangCliTest,
-    MultiWordCliTest,
-    MisplacedTest,
-    FormattingTest,
-    HelpTest,
-    FlagSettingTest,
+    FormattingFinalResultTest,
 ]
 
 

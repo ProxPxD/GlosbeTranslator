@@ -11,9 +11,6 @@ class MisplacedTest(AbstractCliTest):
     def _get_test_name(cls) -> str:
         return 'Misplaced'
 
-    def get_file_name(self) -> str:
-        return 'misplaced_test'
-
     def setUp(self) -> None:
         super().setUp()
         Configurations.init(self.get_file_name(), init_default=False)

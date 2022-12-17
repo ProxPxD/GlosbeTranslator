@@ -12,9 +12,12 @@ class FormattingTest(AbstractCliTest):
 	def _get_test_name(cls) -> str:
 		return 'Formatting'
 
-	@parameterized.expand([  # TODO: Extend later
+	@parameterized.expand([
 		('feminine', 'fem', GenderFormatter),
+		('masculine', 'masc', GenderFormatter),
+		('neuter', 'neut', GenderFormatter),
 		('adjective', 'adj.', PartOfSpeechFormatter),
+		('adverb', 'adv.', PartOfSpeechFormatter),
 	],
 		name_func=lambda method, param_num, param: f'{method.__name__}_{param_num}_format_{param.args[0]}_with_{param.args[2].__name__}'
 	)

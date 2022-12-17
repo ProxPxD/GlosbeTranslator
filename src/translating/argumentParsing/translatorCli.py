@@ -242,7 +242,7 @@ class TranslatorCli(Cli):
                         prefix_style=TranslationTypes.DOUBLE,  #TODO: make prefix style and main division setable by the user with default values and flags
                         main_division=TranslationTypes.SINGLE) #TODO: remove empty dash content when prefix style is double and main division is single (joined style)
 
-    def _translate(self, translate: Callable[[], Iterable[TranslationResult]], *, prefix_style: TranslationTypes, main_division: TranslationTypes) -> None:
+    def _translate(self, translate: Callable[[], Iterable[TranslationResult]], *, prefix_style: TranslationTypes, main_division: TranslationTypes = None) -> None:
         self._correct_misplaced()
         if self._is_translating:
             translation = translate()
@@ -351,7 +351,7 @@ class TranslatorCli(Cli):
                     self._from_langs += -self._words
                 self._to_langs += -self._from_langs
 
-            if self._word_filter.is_any_word_moved_from_from_langs():
+            if self._word_filter.is_any_word_moved_from_from_langs() and not self._word_node.is_active():
                 self._from_langs += -self._words
 
             self._word_filter.reset()

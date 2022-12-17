@@ -47,10 +47,9 @@ class MisplacedTest(AbstractCliTest):
             from_langs += Configurations.get_from_language()
         if not to_langs:
             to_langs += Configurations.get_nth_saved_language(0, from_langs.get())
-
         self.assertCountEqual(e_words, words.get_as_list())
         self.assertCountEqual(e_from_langs, from_langs.get_as_list())
         self.assertCountEqual(e_to_langs, to_langs.get_as_list())
 
-    def test_misplaced(self):
-        self.run_current_test_with_params()
+    # def test_misplaced(self):
+    #     self.run_current_test_with_params()

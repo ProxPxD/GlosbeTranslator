@@ -74,9 +74,9 @@ class AbstractIntoPrintableIterableFormatter:
 		yield to_format
 
 	@classmethod
-	def format_many_into_printable_iterable(cls, to_formats: Iterable[Any], no_group=False, **kwargs) -> Iterable[str]:
+	def format_many_into_printable_iterable(cls, to_formats: Iterable[Any], *, level=0, **kwargs) -> Iterable[str]:
 		yield from cls._gen_if(cls._get_pre_all(**kwargs))
-		yield from cls._format_many_into_printable_iterable_core(to_formats, no_group=no_group, **kwargs)
+		yield from cls._format_many_into_printable_iterable_core(to_formats, level=level, **kwargs)
 		yield from cls._gen_if(cls.post_all)
 
 	@classmethod
@@ -84,9 +84,9 @@ class AbstractIntoPrintableIterableFormatter:
 		return False
 
 	@classmethod
-	def _format_many_into_printable_iterable_core(cls, to_formats: Iterable[Any], no_group=False, **kwargs):
-		if not no_group and cls._is_grouped(**kwargs):
-			yield from cls._format_with_groups(to_formats, **kwargs)
+	def _format_many_into_printable_iterable_core(cls, to_formats: Iterable[Any], level, **kwargs):
+		if not level == 0 and cls._is_grouped(**kwargs):
+			yield from cls._format_with_groups(to_formats, level, **kwargs)
 		else:
 			yield from cls._format_without_groups(to_formats, **kwargs)
 
@@ -104,13 +104,13 @@ class AbstractIntoPrintableIterableFormatter:
 		return lambda a: False
 
 	@classmethod
-	def _format_with_groups(cls, to_formats: Iterable[Any], **kwargs) -> Iterable[str]:
+	def _format_with_groups(cls, to_formats: Iterable[Any], level: int, **kwargs) -> Iterable[str]:
 		key = cls._get_grouping_key(**kwargs)
 		groups = bucket(to_formats, key)
 		for group in groups:
 			yield from cls._gen_if(cls._get_pre_group(group, **kwargs))
 			# TODO: check level of recursion to decide if there are groups
-			yield from cls.format_many_into_printable_iterable(groups[group], no_group=True, **kwargs)
+			yield from cls.format_many_into_printable_iterable(groups[group], level=level-1, **kwargs)
 
 	@classmethod
 	def _get_pre_group(cls, group: Any, **kwargs) -> str:

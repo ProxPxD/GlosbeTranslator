@@ -47,6 +47,9 @@ ADD_LANG_SHORT_FLAG = '-al'
 REMOVE_LANG_LONG_FLAG = '--remove-lang'
 REMOVE_LANG_SHORT_FLAG = '-rl'
 
+# Functional flags
+SILENT_LONG_FLAG = '--silent'
+
 just_set = (LANG_LIMIT_LONG_FLAG, )
 just_display = (LANG_LIMIT_LONG_FLAG, DEFAULT_MODE_LONG_FLAG, LANGS_SHOW_LONG_FLAG, )
 display_with_arg = (LAST_LANG_LONG_FLAG, )
@@ -145,13 +148,14 @@ class TranslatorCli(Cli):
     def _create_flags(self) -> None:
         self._create_mode_flags()
         self._create_configurational_flags()
+        self._create_functional_flags()
 
-    def _create_mode_flags(self):
+    def _create_mode_flags(self) -> None:
         self._single_flag = self._root.add_flag(SINGLE_LONG_FLAG, SINGLE_SHORT_FLAG)
         self._lang_flag = self._root.add_flag(LANG_LONG_FLAG, LANG_SHORT_FLAG)
         self._word_flag = self._root.add_flag(WORD_LONG_FLAG, WORD_SHORT_FLAG)
 
-    def _create_configurational_flags(self):
+    def _create_configurational_flags(self) -> None:
         self.root.add_flag(LANG_LIMIT_LONG_FLAG, LANG_LIMIT_SHORT_FLAG, flag_lower_limit=0, flag_limit=1)
         self.root.add_flag(LANGS_SHOW_LONG_FLAG, LANGS_SHOW_SHORT_FLAG, flag_limit=0)
         self.root.add_flag(LAST_LANG_LONG_FLAG, flag_lower_limit=1, flag_limit=1)
@@ -161,6 +165,9 @@ class TranslatorCli(Cli):
         self.root.add_flag(SETTINGS_LONG_FLAG, SETTINGS_SHORT_FLAG, flag_limit=0)
         self.root.add_flag(ADD_LANG_SHORT_FLAG, ADD_LANG_LONG_FLAG, flag_lower_limit=1, flag_limit=None)
         self.root.add_flag(REMOVE_LANG_SHORT_FLAG, REMOVE_LANG_LONG_FLAG, flag_lower_limit=1, flag_limit=None)
+
+    def _create_functional_flags(self) -> None:
+        self.root.add_flag(SILENT_LONG_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()
@@ -226,27 +233,29 @@ class TranslatorCli(Cli):
         self._single_node.set_possible_param_order('word')
 
     def _translate_single(self) -> None:
-        self._translate(lambda: self._translator.single_translate(word=self._words.get(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()),
-                        prefix_style=TranslationTypes.SINGLE)
+        return self._translate(lambda: self._translator.single_translate(word=self._words.get(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()),
+                               prefix_style=TranslationTypes.SINGLE)
 
     def _translate_multi_lang(self) -> None:
-        self._translate(lambda: self._translator.multi_lang_translate(word=self._words.get(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
-                        prefix_style=TranslationTypes.LANG)
+        return self._translate(lambda: self._translator.multi_lang_translate(word=self._words.get(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
+                               prefix_style=TranslationTypes.LANG)
 
     def _translate_multi_word(self) -> None:
-        self._translate(lambda: self._translator.multi_word_translate(words=self._words.get_as_list(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()),
-                        prefix_style=TranslationTypes.WORD)
+        return self._translate(lambda: self._translator.multi_word_translate(words=self._words.get_as_list(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()),
+                               prefix_style=TranslationTypes.WORD)
 
     def _translate_double(self) -> None:
-        self._translate(lambda: self._translator.double_multi_translate(words=self._words.get_as_list(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
-                        prefix_style=TranslationTypes.DOUBLE,  #TODO: make prefix style and main division setable by the user with default values and flags
-                        main_division=TranslationTypes.SINGLE) #TODO: remove empty dash content when prefix style is double and main division is single (joined style)
+        return self._translate(lambda: self._translator.double_multi_translate(words=self._words.get_as_list(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
+                               prefix_style=TranslationTypes.DOUBLE,  #TODO: make prefix style and main division setable by the user with default values and flags
+                               main_division=TranslationTypes.SINGLE) #TODO: remove empty dash content when prefix style is double and main division is single (joined style)
 
-    def _translate(self, translate: Callable[[], Iterable[TranslationResult]], *, prefix_style: TranslationTypes, main_division: TranslationTypes = None) -> None:
+    def _translate(self, translate: Callable[[], Iterable[TranslationResult]], *, prefix_style: TranslationTypes, main_division: TranslationTypes = None) -> None | Iterable[TranslationResult]:
         self._correct_misplaced()
         if self._is_translating:
             translation = translate()
-            TranslationPrinter.print_with_formatting(translation, prefix_style=prefix_style, main_division=main_division)
+            if self.root.get_flag(SILENT_LONG_FLAG).is_inactive():
+                TranslationPrinter.print_with_formatting(translation, prefix_style=prefix_style, main_division=main_division)
+            return translation
 
     def _configure_lang_node(self) -> None:
         self._lang_node.set_active_on_flags_in_collection(self._current_modes, self._lang_flag, but_not=self._word_flag)

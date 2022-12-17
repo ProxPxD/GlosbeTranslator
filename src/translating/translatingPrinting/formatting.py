@@ -56,7 +56,7 @@ class AbstractIntoPrintableIterableFormatter:
 
 	@classmethod
 	def _get_pre_all(cls, **kwargs) -> str:
-		return cls.post_all
+		return cls.pre_all
 
 	@classmethod
 	def _get_pre_one(cls, one: Any, **kwargs) -> str:
@@ -118,7 +118,7 @@ class AbstractIntoPrintableIterableFormatter:
 
 class GenderFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter):
 
-	pre_one = '['
+	pre_one = ' ['
 	post_one = ']'
 
 	@classmethod
@@ -137,7 +137,7 @@ class GenderFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter)
 
 class PartOfSpeechFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter):
 
-	pre_one = '('
+	pre_one = ' ('
 	post_one = ')'
 
 	@classmethod
@@ -195,8 +195,8 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 	def format_into_string(cls, translation: TranslationResult, **kwargs) -> str:
 		return ''.join(cls.format_into_printable_iterable(**kwargs))
 
-	@classmethod  # TODO: Just in case - think of refactor
-	def format_many_into_string(cls, translations: Iterable[TranslationResult], sep: str = '\n', main_division: TranslationTypes = None, prefix_style: TranslationTypes = None) -> str:
+	@classmethod
+	def format_many_into_string(cls, translations: Iterable[TranslationResult], main_division: TranslationTypes = None, prefix_style: TranslationTypes = None) -> str:
 		return ''.join(cls.format_many_into_printable_iterable(translations, main_division=main_division, prefix_style=prefix_style))
 
 	@classmethod

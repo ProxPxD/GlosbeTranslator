@@ -29,7 +29,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't pl -m ar la zh fr -w mieć być spać'.split(' ')  # t laborious en uk
+    return 't sehen de pl'.split(' ')  # t laborious en uk
 
 
 if __name__ == '__main__':

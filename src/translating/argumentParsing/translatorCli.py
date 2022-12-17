@@ -237,7 +237,7 @@ class TranslatorCli(Cli):
 
     def _configure_cli(self) -> None:
         self.when_used_arity_is_equal(lambda: self._word_node.disable_order(2), 2)
-        self.add_post_parse_action_when(self._reverse_langs, lambda: self.root.get_flag(REVERSE_SHORT_FLAG) and self._single_node.is_active())
+        self.add_post_parse_action_when(self._reverse_langs, lambda: self.root.get_flag(REVERSE_SHORT_FLAG).is_active() and self._single_node.is_active())
 
     def _reverse_langs(self):
         from_langs = self._from_langs[:]

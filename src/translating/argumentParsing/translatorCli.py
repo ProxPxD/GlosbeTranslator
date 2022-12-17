@@ -108,12 +108,16 @@ class TranslatorCli(Cli):
         return self._words.get_as_list()
 
     @property
-    def from_lang(self):
+    def from_lang(self) -> list[str]:
         return self._from_langs.get()
 
     @property
-    def to_langs(self):
+    def to_langs(self) -> list[str]:
         return self._to_langs.get_as_list()
+
+    @property
+    def langs(self) -> list[str]:
+        return [self.from_lang] + self.to_langs
 
     def _create_collections(self) -> None:
         self._current_modes = self._root.add_collection(CURRENT_MODES_COL)
@@ -130,7 +134,7 @@ class TranslatorCli(Cli):
     def _configure_translation_collections(self) -> None:
         self._current_modes.set_type(str)
         self._current_modes.set_get_default(Configurations.get_default_translation_mode)
-        self._from_langs.set_get_default(Configurations.get_from_language)
+        self._from_langs.set_get_default(lambda: Configurations.get_nth_saved_language(0, *self._to_langs))
         self._to_langs.add_get_default_if_or(lambda: Configurations.get_nth_saved_language(1, *self._from_langs), self._single_node.is_active, self._word_node.is_active)
         self._to_langs.add_get_default_if_or(lambda: Configurations.load_config_languages(*self._from_langs), self._lang_node.is_active, self._double_multi_node.is_active)
 
@@ -222,22 +226,27 @@ class TranslatorCli(Cli):
         self._single_node.set_possible_param_order('word')
 
     def _translate_single(self) -> None:
-        self._translate(lambda: self._translator.single_translate(word=self._words.get(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()))
+        self._translate(lambda: self._translator.single_translate(word=self._words.get(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()),
+                        prefix_style=TranslationTypes.SINGLE)
 
     def _translate_multi_lang(self) -> None:
-        self._translate(lambda: self._translator.multi_lang_translate(word=self._words.get(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()))
+        self._translate(lambda: self._translator.multi_lang_translate(word=self._words.get(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
+                        prefix_style=TranslationTypes.LANG)
 
     def _translate_multi_word(self) -> None:
-        self._translate(lambda: self._translator.multi_word_translate(words=self._words.get_as_list(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()))
+        self._translate(lambda: self._translator.multi_word_translate(words=self._words.get_as_list(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()),
+                        prefix_style=TranslationTypes.WORD)
 
     def _translate_double(self) -> None:
-        self._translate(lambda: self._translator.double_multi_translate(words=self._words.get_as_list(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()))
+        self._translate(lambda: self._translator.double_multi_translate(words=self._words.get_as_list(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
+                        prefix_style=TranslationTypes.DOUBLE,  #TODO: make prefix style and main division setable by the user with default values and flags
+                        main_division=TranslationTypes.SINGLE) #TODO: remove empty dash content when prefix style is double and main division is single (joined style)
 
-    def _translate(self, translate: Callable[[], Iterable[TranslationResult]]) -> None:
+    def _translate(self, translate: Callable[[], Iterable[TranslationResult]], *, prefix_style: TranslationTypes, main_division: TranslationTypes) -> None:
         self._correct_misplaced()
         if self._is_translating:
             translation = translate()
-            TranslationPrinter.print_translations(translation)
+            TranslationPrinter.print_with_formatting(translation, prefix_style=prefix_style, main_division=main_division)
 
     def _configure_lang_node(self) -> None:
         self._lang_node.set_active_on_flags_in_collection(self._current_modes, self._lang_flag, but_not=self._word_flag)
@@ -254,6 +263,8 @@ class TranslatorCli(Cli):
         self._word_node.set_possible_param_order('from_lang to_lang words')
         self._word_node.set_possible_param_order('to_lang words')
         self._word_node.set_possible_param_order('to_lang')
+        self.when_used_arity_is_equal(lambda: self._word_node.disable_order(2), 2)
+        self._word_node.set_parameters_to_skip_order('words')
 
     def _configure_double_node(self) -> None:
         self._double_multi_node.set_active_on_flags_in_collection(self._current_modes, self._lang_flag, self._word_flag, but_not=self._single_flag)
@@ -262,6 +273,7 @@ class TranslatorCli(Cli):
         self._double_multi_node.set_possible_param_order('from_lang')
         self._double_multi_node.set_possible_param_order('')
 
+    # TODO: add information printing after setting a conf
     def _configure_configuration_node(self) -> None:
         self._configuration_node.add_param(self._configuration_args)
         self._configuration_node.set_active_and(lambda: len(self._configuration_flags) > 0,
@@ -318,8 +330,6 @@ class TranslatorCli(Cli):
         super().set_out_stream(out)
         ConfigDisplayer.out = out
         TranslationPrinter.out = out
-
-
 
     # TODO: refactor and remove the below
 

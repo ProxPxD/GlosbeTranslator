@@ -1,5 +1,6 @@
 import logging
 import sys
+import traceback
 from dataclasses import dataclass
 
 from translating.argumentParsing.translatorCli import TranslatorCli
@@ -21,17 +22,21 @@ def main():
     try:
         Configurations.init()
         logging.basicConfig(filename=Data.LOG_PATH, encoding='utf-8', level=logging.WARNING, format='%(levelname)s: %(message)s ')
-        argument_parser = TranslatorCli(sys.argv)
-        argument_parser.parse()  # if not argument_parser.modes.is_any_displayable_mode_on():  #     Configurations.save()
-
+        cli = TranslatorCli(sys.argv)
+        cli.parse()  # if not argument_parser.modes.is_any_displayable_mode_on():  #     Configurations.save()
+        Configurations.change_last_used_languages(*cli.langs)
+        Configurations.save_and_close()
     except WrongStatusCodeException as err:
         logging.error(f'{err.page.status_code}: {err.page.text}')
-        print(LogMessages.UNKNOWN_PAGE_STATUS.format(
-            err.page.status_code))  # except ParsingException as err:  #     for msg in err.validation_messages:  #         print(msg)
+        print(LogMessages.UNKNOWN_PAGE_STATUS.format(err.page.status_code))  # except ParsingException as err:  #     for msg in err.validation_messages:  #         print(msg)
+    except Exception as ex:
+        print('Exception occured!')
+        trace_back = traceback.format_exc()
+        logging.exception(trace_back)
 
 
 def get_test_arguments():
-    return 't -la'.split(' ')  # t laborious en uk
+    return 't pl -m ar la zh fr -w mieć być spać'.split(' ')  # t laborious en uk
 
 
 if __name__ == '__main__':

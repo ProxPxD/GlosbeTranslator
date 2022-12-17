@@ -176,7 +176,7 @@ class Configurations:
 
     @classmethod
     def change_last_used_languages(cls, *langs: str) -> None:
-        languages: list[str] = Configurations.get_conf(Configs.SAVED_LANGS)
+        languages: list[str] = Configurations.get_saved_languages()
         for lang in reversed(langs):
             if lang in languages:
                 languages.remove(lang)

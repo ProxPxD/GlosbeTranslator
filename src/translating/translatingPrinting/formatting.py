@@ -6,7 +6,6 @@ from typing import Iterable, Callable, Any
 
 from more_itertools import bucket
 
-from ..constants import PageCodeMessages
 from ..parsing.parser import Record
 from ..translator import TranslationResult, TranslationTypes
 
@@ -240,11 +239,3 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 	@classmethod
 	def format_into_printable_iterable(cls, translation: TranslationResult, **kwargs) -> Iterable[str]:
 		yield ''.join(super().format_into_printable_iterable(translation, **kwargs))
-
-	# TODO: Move to printing
-	def _get_page_code_messages(self, code: int):
-		if code == 404:
-			return PageCodeMessages.PAGE_NOT_FOUND_404
-		if code == 303:
-			return PageCodeMessages.PAGE_NOT_FOUND_303
-		return PageCodeMessages.UNHANDLED_PAGE_FULL_MESSAGE.format(code)

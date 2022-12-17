@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from ..web.exceptions import WrongStatusCodeException
+from ..web.exceptions import WrongStatusCodeError
 
 
 @dataclass
@@ -26,7 +26,7 @@ class Parser:
 
     def parse(self) -> list[Record]:
         if self._page.status_code != 200:
-            raise WrongStatusCodeException(self._page)
+            raise WrongStatusCodeError(self._page)
         return self._parse_translation()
 
     def _parse_translation(self) -> list[Record]:

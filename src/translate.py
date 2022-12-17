@@ -1,18 +1,11 @@
 import logging
 import sys
 import traceback
-from dataclasses import dataclass
 
 from translating.argumentParsing.translatorCli import TranslatorCli
-from translating.configs import configurations
 from translating.configs.configurations import Configurations
-from translating.constants import LogMessages
-from translating.web.exceptions import WrongStatusCodeException
-
-
-@dataclass(frozen=True)
-class Data:
-    LOG_PATH = configurations.Paths.RESOURCES_DIR / 'logs.txt'
+from translating.constants import Messages, Data
+from translating.translatingPrinting.translationPrinter import TranslationPrinter
 
 
 def main():
@@ -26,13 +19,13 @@ def main():
         cli.parse()  # if not argument_parser.modes.is_any_displayable_mode_on():  #     Configurations.save()
         Configurations.change_last_used_languages(*cli.langs)
         Configurations.save_and_close()
-    except WrongStatusCodeException as err:
-        logging.error(f'{err.page.status_code}: {err.page.text}')
-        print(LogMessages.UNKNOWN_PAGE_STATUS.format(err.page.status_code))  # except ParsingException as err:  #     for msg in err.validation_messages:  #         print(msg)
+    except AttributeError as err:
+        logging.error(traceback.format_exc())
+        TranslationPrinter.out(Messages.ATTRIBUTE_ERROR)
     except Exception as ex:
-        print('Exception occured!')
-        trace_back = traceback.format_exc()
-        logging.exception(trace_back)
+        # TODO: in next((flag for flag in self._flags if flag.has_name(name))) of cli parser add an exception to know that the flag has not been added. Similarly in sibling cli_elements
+        logging.exception(traceback.format_exc())
+        TranslationPrinter.out(Messages.UNKNOWN_EXCEPTION)
 
 
 def get_test_arguments():

@@ -1,12 +1,14 @@
+import logging
 from dataclasses import dataclass, field, replace
 from itertools import product
 from typing import Iterable
 
 import requests
 
+from .constants import Messages
 from .parsing.parser import Parser, Record
 from .web.connector import Connector, TransArgs
-from .web.exceptions import WrongStatusCodeException
+from .web.exceptions import WrongStatusCodeError
 
 
 @dataclass(frozen=True)
@@ -20,7 +22,7 @@ class TranslationTypes:
 @dataclass
 class TranslationResult:
     trans_args: TransArgs = field(default_factory=lambda: TransArgs())
-    records: list[Record] | WrongStatusCodeException = field(default_factory=lambda: [])
+    records: list[Record] = field(default_factory=lambda: [])
     type = TranslationTypes.SINGLE
 
 
@@ -83,11 +85,21 @@ class Translator:
         trans_args = replace(self._connector.trans_args)
         try:
             records = self._translate_from_attributes()
-        except WrongStatusCodeException as ex:
-            return TranslationResult(trans_args, ex)
+        except WrongStatusCodeError as err:
+            logging.error(f'{err.page.status_code}: {err.page.text}')
+            return TranslationResult(trans_args, [Record(self._get_status_code_message(err))])
         return TranslationResult(trans_args, records)
 
     def _translate_from_attributes(self) -> list[Record]:
         page: requests.Response = self._connector.get_page()
         self._parser.set_page(page)
         return self._parser.parse()
+
+    def _get_status_code_message(self, err: WrongStatusCodeError) -> str:
+        match err.page.status_code:
+            case 404:
+                return Messages.PageCodeMessages.PAGE_NOT_FOUND_404.format(str(self._connector.trans_args))
+            case 303:
+                return Messages.PageCodeMessages.PAGE_NOT_FOUND_303
+            case _:
+                return Messages.PageCodeMessages.UNHANDLED_PAGE_FULL_MESSAGE.format(err.page.status_code)

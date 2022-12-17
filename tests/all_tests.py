@@ -1,8 +1,8 @@
 import unittest
 
-from tests.FormattingTest import FormattingTest
 from tests.abstractTest import AbstractTest
 from tests.flagSettingTest import FlagSettingTest
+from tests.formattingTest import FormattingTest
 from tests.helpTest import HelpTest
 from tests.misplacedTest import MisplacedTest
 from tests.multiLangTranslationTest import MultiLangCliTest

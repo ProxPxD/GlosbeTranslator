@@ -19,3 +19,12 @@ class AbstractCliTest(AbstractTest, abc.ABC):
 	def get_file_name(self) -> str:
 		return self._get_test_name()
 
+	@classmethod
+	def get_default_configs(cls):
+		return {
+			'--default-mode': '--single',
+			'--langs': [],
+			'--limit': 3,
+			'--layout_adjustment_mode': 'none',
+			'--adjustment_lang': '',
+    	}

@@ -1,6 +1,6 @@
 from typing import Any
 
-from src.glosbe.configurations import Configurations
+from ..configurations import Configurations
 from ..translatingPrinting.translationPrinter import TranslationPrinter
 
 

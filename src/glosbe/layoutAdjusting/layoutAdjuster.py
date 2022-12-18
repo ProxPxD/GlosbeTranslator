@@ -6,7 +6,7 @@ from typing import Type
 
 import yaml
 
-from src.glosbe.configurations import Configurations, Configs
+from ..configurations import Configurations
 
 
 class AbstractLayoutAdjuster(ABC):

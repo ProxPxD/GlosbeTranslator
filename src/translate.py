@@ -3,10 +3,9 @@ import sys
 import traceback
 from dataclasses import dataclass
 
-from src.glosbe import configurations
-from src.glosbe.configurations import Configurations
-from src.glosbe.translatingPrinting import TranslationPrinter
-from src.glosbe.translatorCli import TranslatorCli
+from glosbe.configurations import Configurations, Paths
+from glosbe.translatingPrinting.translationPrinter import TranslationPrinter
+from glosbe.translatorCli import TranslatorCli
 
 
 @dataclass(frozen=True)
@@ -18,7 +17,8 @@ class ErrorMessages:
 
 @dataclass(frozen=True)
 class Data:
-    LOG_PATH = configurations.Paths.RESOURCES_DIR / 'logs.txt'
+    LOG_PATH = Paths.RESOURCES_DIR / 'logs.txt'
+
 
 def main():
     if len(sys.argv) == 1:

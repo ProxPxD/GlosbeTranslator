@@ -1,12 +1,18 @@
 import logging
 import sys
 import traceback
+from dataclasses import dataclass
 
-from src.translating.cli.configs import Configurations
-from src.translating.cli.translatingPrinting import TranslationPrinter
-from translating.cli.translatorCli import TranslatorCli
-from translating.constants import Messages, Data
+from .glosbe.cli.configs.configurations import Configurations
+from .glosbe.cli.translatingPrinting.translationPrinter import TranslationPrinter
+from .glosbe.cli.translatorCli import TranslatorCli
 
+
+@dataclass(frozen=True)
+class ErrorMessages:
+    NO_TRANSLATION: str = 'No translation has been found. Either the arguments were invalid or the requested translation does not exist so far'
+    UNKNOWN_EXCEPTION: str = 'Unknown exception occurred!'
+    ATTRIBUTE_ERROR: str = 'Error! Please send logs to the creator'
 
 def main():
     if len(sys.argv) == 1:
@@ -21,11 +27,11 @@ def main():
         Configurations.save_and_close()
     except AttributeError as err:
         logging.error(traceback.format_exc())
-        TranslationPrinter.out(Messages.ATTRIBUTE_ERROR)
+        TranslationPrinter.out(ErrorMessages.ATTRIBUTE_ERROR)
     except Exception as ex:
         # TODO: in next((flag for flag in self._flags if flag.has_name(name))) of cli parser add an exception to know that the flag has not been added. Similarly in sibling cli_elements
         logging.exception(traceback.format_exc())
-        TranslationPrinter.out(Messages.UNKNOWN_EXCEPTION)
+        TranslationPrinter.out(ErrorMessages.UNKNOWN_EXCEPTION)
 
 
 def get_test_arguments():

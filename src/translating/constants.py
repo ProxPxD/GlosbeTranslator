@@ -10,9 +10,12 @@ class Data:
 
 @dataclass(frozen=True)
 class Messages:
-    NO_TRANSLATION: str = 'No translation has been found. Either the arguments were invalid or the requested translation does not exist so far'
-    UNKNOWN_EXCEPTION: str = 'Unknown exception occurred!'
-    ATTRIBUTE_ERROR: str = 'Error! Please send logs to the creator'
+
+    @dataclass(frozen=True)
+    class ErrorMessages:
+        NO_TRANSLATION: str = 'No translation has been found. Either the arguments were invalid or the requested translation does not exist so far'
+        UNKNOWN_EXCEPTION: str = 'Unknown exception occurred!'
+        ATTRIBUTE_ERROR: str = 'Error! Please send logs to the creator'
 
     @dataclass(frozen=True)
     class PageCodeMessages:

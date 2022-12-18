@@ -1,6 +1,6 @@
 import abc
 
-from src.translating.argumentParsing.translatorCli import TranslatorCli
+from src.translating.cli.translatorCli import TranslatorCli
 from tests.abstractTest import AbstractTest
 
 

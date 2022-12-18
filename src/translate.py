@@ -2,7 +2,7 @@ import logging
 import sys
 import traceback
 
-from translating.argumentParsing.translatorCli import TranslatorCli
+from translating.cli.translatorCli import TranslatorCli
 from translating.configs.configurations import Configurations
 from translating.constants import Messages, Data
 from translating.translatingPrinting.translationPrinter import TranslationPrinter
@@ -16,7 +16,7 @@ def main():
         Configurations.init()
         logging.basicConfig(filename=Data.LOG_PATH, encoding='utf-8', level=logging.WARNING, format='%(levelname)s: %(message)s ')
         cli = TranslatorCli(sys.argv)
-        cli.parse()  # if not argument_parser.modes.is_any_displayable_mode_on():  #     Configurations.save()
+        cli.parse()
         Configurations.change_last_used_languages(*cli.langs)
         Configurations.save_and_close()
     except AttributeError as err:

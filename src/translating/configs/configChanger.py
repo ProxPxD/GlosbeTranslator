@@ -1,8 +1,8 @@
 
 from .configurations import Configurations, Configs
-from ..argumentParsing.abstractParsing.src import modeManager
-from ..argumentParsing.constants import FLAGS, ModeTypes, Messages
-from ..argumentParsing.translatorCli import TranslatorParser
+from ..cli.abstractParsing.src import modeManager
+from ..cli.constants import FLAGS, ModeTypes, Messages
+from ..cli.translatorCli import TranslatorParser
 
 
 def set_configs(argument_parser: TranslatorParser):

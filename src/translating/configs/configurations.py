@@ -4,7 +4,10 @@ from itertools import islice
 from pathlib import Path
 from typing import Any, Iterable
 
-from ..argumentParsing.constants import FLAGS, SHORT_FLAGS, LanguageSpecificAdjustmentValues
+from more_itertools import partition
+
+from ..cli.constants import FLAGS, SHORT_FLAGS, LanguageSpecificAdjustmentValues
+from ..translatingPrinting.translationPrinter import TranslationPrinter
 
 
 @dataclass(frozen=True)
@@ -21,6 +24,12 @@ class Configs:
     LANG_SPEC_ADJUSTMENT: str = FLAGS.LAYOUT_ADJUSTMENT_MODE
     ADJUSTMENT_LANG: str = FLAGS.ADJUSTMENT_LANG
     DEFAULT_FILE_NAME: str = 'configurations'
+
+
+@dataclass(frozen=True)
+class ConfigMessages:
+    LANGUAGE_IN_SAVED: str = 'Language {} is already saved'
+    LANGUAGE_NOT_IN_SAVED: str = 'Language {} has not been in saved'
 
 
 lang_examples = '(np. en, pl, de, es)'
@@ -124,20 +133,20 @@ class Configurations:
     @classmethod
     def add_langs(cls, *arguments: str) -> None:
         langs = Configurations.get_saved_languages()
-        for lang in arguments:
-            if lang in langs:
-                pass #print()  # TODO: Messages.ADD_EXISTENT_LANG.format(lang))
-            else:
-                langs.append(lang)  # TODO replace with flags
+        not_saved, saved = partition(lambda lang: lang in langs, arguments)
+        for lang in saved:
+            TranslationPrinter.out(ConfigMessages.LANGUAGE_IN_SAVED.format(lang))
+        for lang in not_saved:
+            langs.append(lang)
 
     @classmethod
     def remove_langs(cls, *arguments: str):
         langs = Configurations.get_saved_languages()
-        for lang in arguments:
-            if lang not in langs:
-                pass #print()  # TODO: Messages.REMOVE_NONEXISTENT_LANG.format(lang))
-            else:
-                langs.remove(lang)
+        not_saved, saved = partition(lambda lang: lang in langs, arguments)
+        for lang in saved:
+            langs.remove(lang)
+        for lang in not_saved:
+            TranslationPrinter.out(ConfigMessages.LANGUAGE_NOT_IN_SAVED.format(lang))
 
     @classmethod
     def add_default_config(cls, name: str):

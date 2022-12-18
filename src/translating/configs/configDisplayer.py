@@ -3,19 +3,6 @@ from typing import Any
 from .configurations import Configurations
 
 
-#
-# def display_information(argument_parser: TranslatorParser):
-#     for to_display in argument_parser.modes.get_modes_turned_on_by_type(ModeTypes.DISPLAYABLE):
-#         if to_display == FLAGS.SETTINGS:
-#             display_configs(FLAGS.DEFAULT_TRANSLATIONAL_MODE, FLAGS.LANG_LIMIT,
-#                             FLAGS.SAVED_LANGS, FLAGS.ADJUSTMENT_LANG, FLAGS.LAYOUT_ADJUSTMENT_MODE)
-#             continue
-#         if to_display == FLAGS.HELP:
-#             FlagsManager.show_help()
-#             continue
-#         display_config(to_display, show_possible=True)
-
-
 class ConfigDisplayer:
 
     out = print

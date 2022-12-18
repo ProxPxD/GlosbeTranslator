@@ -353,8 +353,6 @@ class TranslatorCli(Cli):
         ConfigDisplayer.out = out
         TranslationPrinter.out = out
 
-    # TODO: refactor and remove the below
-
     def _correct_misplaced(self):
         '''
             How and why exactly the nested if exists is not clear to me

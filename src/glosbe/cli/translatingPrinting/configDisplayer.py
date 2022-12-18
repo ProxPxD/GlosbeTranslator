@@ -1,14 +1,14 @@
 from typing import Any
 
-from .configurations import Configurations
+from src.glosbe.cli.configurations import Configurations
+from src.glosbe.cli.translatingPrinting.translationPrinter import TranslationPrinter
 
 
+# TODO: move it in translator printer
 class ConfigDisplayer:
 
-    out = print
-
     @classmethod
-    def display_configs(cls, **config_names: str):  # TODO: implement help and input modes validation
+    def display_configs(cls, **config_names: str):
         for conf, value in config_names.items():
             cls.display_config(conf, value)
 
@@ -16,7 +16,7 @@ class ConfigDisplayer:
     def display_config(cls, config_name: str, value: Any = None, show_possible=False):
         conf_to_display = value if value is not None else Configurations.get_conf(config_name)
         conf_to_display = cls.format_config(conf_to_display)
-        cls.out(f'{config_name[2:]}: {conf_to_display}')
+        TranslationPrinter.out(f'{config_name[2:]}: {conf_to_display}')
 
         if show_possible:
             cls.display_possible_values(config_name)
@@ -36,4 +36,4 @@ class ConfigDisplayer:
         possible_values = Configurations.get_possible_values_for(config_name)
         if possible_values:
             possible_values = cls.format_config(possible_values)
-            cls.out(f'Possible values: {possible_values}')
+            TranslationPrinter.out(f'Possible values: {possible_values}')

@@ -13,56 +13,27 @@ class FLAGS:
     ADJUSTMENT_LANG: str = '--adjustment_lang'
 
 
-@dataclass(frozen=True)
-class LanguageSpecificAdjustmentValues:
-    NONE: str = 'none'
-    NATIVE: str = 'native'
-    KEYBOARD: str = 'keyboard'
-
-
-short_to_usual_flags_dict = {
-    SHORT_FLAGS.MULTI_LANG: FLAGS.MULTI_LANG,
-    SHORT_FLAGS.MULTI_WORD: FLAGS.MULTI_WORD,
-    SHORT_FLAGS.SINGLE: FLAGS.SINGLE,
-    SHORT_FLAGS.LANG_LIMIT: FLAGS.LANG_LIMIT,
-    SHORT_FLAGS.SAVED_LANGS: FLAGS.SAVED_LANGS,
-    SHORT_FLAGS.LAST: FLAGS.LAST,
-    SHORT_FLAGS.DEFAULT_TRANSLATIONAL_MODE: FLAGS.DEFAULT_TRANSLATIONAL_MODE,
-    SHORT_FLAGS.LAYOUT_ADJUSTMENT_MODE: FLAGS.LAYOUT_ADJUSTMENT_MODE,
-    SHORT_FLAGS.ADJUSTMENT_LANG: FLAGS.ADJUSTMENT_LANG,
-    SHORT_FLAGS.SETTINGS: FLAGS.SETTINGS,
-    SHORT_FLAGS.HELP: FLAGS.HELP,
-    SHORT_FLAGS.ADD_LANG: FLAGS.ADD_LANG,
-    SHORT_FLAGS.REMOVE_LANG: FLAGS.REMOVE_LANG,
-}
-
 flag_to_description_dict = {
-    FLAGS.MULTI_LANG: '',
-    FLAGS.MULTI_WORD: '',
-    FLAGS.SINGLE: '',
-    FLAGS.LANG_LIMIT: '',
-    FLAGS.SAVED_LANGS: '',
-    FLAGS.LAST: '',
-    FLAGS.DEFAULT_TRANSLATIONAL_MODE: '',
     FLAGS.LAYOUT_ADJUSTMENT_MODE: "Replaces language-specific characters with corresponding characters of latin alphabet. 'keyboard' option replaces characters with those of the same placement at default English layout."\
                                   " 'native' option replaces characters to those of a corresponding pronunciation (or meaning in case of Chinese).",
     FLAGS.ADJUSTMENT_LANG: 'Language to work with the script adjustment',
-    FLAGS.SETTINGS: '',
-    FLAGS.HELP: '',
-    FLAGS.ADD_LANG: '',
-    FLAGS.REMOVE_LANG: '',
 }
 
-
-modes_to_arity_dict = {
-    (FLAGS.MULTI_LANG, FLAGS.MULTI_WORD, FLAGS.ADD_LANG, FLAGS.REMOVE_LANG): -1,
-    (FLAGS.SINGLE, FLAGS.SAVED_LANGS, FLAGS.LANG_LIMIT, FLAGS.LAST, FLAGS.SETTINGS, FLAGS.HELP, FLAGS.DEFAULT_TRANSLATIONAL_MODE): 0,
-    (FLAGS.LANG_LIMIT, FLAGS.LAST, FLAGS.DEFAULT_TRANSLATIONAL_MODE, FLAGS.LAYOUT_ADJUSTMENT_MODE, FLAGS.ADJUSTMENT_LANG): 1
+_possible_config_values = {
+    Configs.DEFAULT_TRANSLATIONAL_MODE: [SHORT_FLAGS.SINGLE, SHORT_FLAGS.MULTI_LANG, SHORT_FLAGS.MULTI_WORD,
+                                         FLAGS.SINGLE, FLAGS.MULTI_LANG, FLAGS.MULTI_WORD],
+    Configs.LANG_SPEC_ADJUSTMENT: [LanguageSpecificAdjustmentValues.NONE,
+                                   LanguageSpecificAdjustmentValues.NATIVE,
+                                   LanguageSpecificAdjustmentValues.KEYBOARD],
+    Configs.LANG_LIMIT: 'Any positive number or 0 to cancel the limit out',
+    Configs.ADJUSTMENT_LANG: f'Any language of a different default layout than English or nothing {layout_examples}',
+    Configs.SAVED_LANGS: f'Any language {lang_examples}',
 }
 
+lang_examples = '(np. en, pl, de, es)'
+layout_examples = '(np. de, uk, ru, zh)'
 
-mode_types_to_modes = {
-    ModeTypes.TRANSLATIONAL: {FLAGS.SINGLE, FLAGS.MULTI_WORD, FLAGS.MULTI_LANG},
-    ModeTypes.CONFIGURATIONAL: {FLAGS.LANG_LIMIT, FLAGS.SAVED_LANGS, FLAGS.LAST, FLAGS.ADD_LANG, FLAGS.REMOVE_LANG, FLAGS.DEFAULT_TRANSLATIONAL_MODE, FLAGS.LAYOUT_ADJUSTMENT_MODE, FLAGS.ADJUSTMENT_LANG},
-    ModeTypes.DISPLAYABLE: {FLAGS.LANG_LIMIT, FLAGS.DEFAULT_TRANSLATIONAL_MODE, FLAGS.SETTINGS, FLAGS.HELP, FLAGS.SAVED_LANGS, FLAGS.LAYOUT_ADJUSTMENT_MODE, FLAGS.ADJUSTMENT_LANG},
-}
+def get_possible_values_for(name: str):
+    if name in _possible_config_values:
+        return _possible_config_values[name]
+    return None

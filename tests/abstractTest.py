@@ -2,7 +2,8 @@ import abc
 import unittest
 from typing import Iterable
 
-from src.translating.cli.configs import Configurations, Configs
+from src.glosbe.cli.configurations import Configurations
+from src.glosbe.cli.translatorCli import LANGS_SHOW_LONG_FLAG
 
 
 class AbstractTest(unittest.TestCase, abc.ABC):
@@ -26,7 +27,7 @@ class AbstractTest(unittest.TestCase, abc.ABC):
     def setUpClass(cls) -> None:
         cls.print_sep_with_text(f'Starting {cls._get_test_name()} tests!')
         Configurations.init()
-        Configurations.change_conf(Configs.SAVED_LANGS, ['pl', 'en', 'de', 'es', 'uk', 'zh'])
+        Configurations.change_conf(LANGS_SHOW_LONG_FLAG, ['pl', 'en', 'de', 'es', 'uk', 'zh'])
 
     def setUp(self) -> None:
         if not self.get_method_name().startswith('test_'):

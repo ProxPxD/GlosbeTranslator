@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .cli.configs import configurations
+from .cli import configurations
 
 
 @dataclass(frozen=True)

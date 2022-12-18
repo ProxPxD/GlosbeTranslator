@@ -3,9 +3,10 @@ import sys
 import traceback
 from dataclasses import dataclass
 
-from .glosbe.cli.configs.configurations import Configurations
+from .glosbe.cli.configurations import Configurations
 from .glosbe.cli.translatingPrinting.translationPrinter import TranslationPrinter
 from .glosbe.cli.translatorCli import TranslatorCli
+from .glosbe.constants import Data
 
 
 @dataclass(frozen=True)
@@ -14,12 +15,13 @@ class ErrorMessages:
     UNKNOWN_EXCEPTION: str = 'Unknown exception occurred!'
     ATTRIBUTE_ERROR: str = 'Error! Please send logs to the creator'
 
+
 def main():
     if len(sys.argv) == 1:
         sys.argv = get_test_arguments()
 
     try:
-        Configurations.init()
+        Configurations.init(default=get_default_configs())
         logging.basicConfig(filename=Data.LOG_PATH, encoding='utf-8', level=logging.WARNING, format='%(levelname)s: %(message)s ')
         cli = TranslatorCli(sys.argv)
         cli.parse()
@@ -36,6 +38,16 @@ def main():
 
 def get_test_arguments():
     return 't sehen pl de -r'.split(' ')  # t laborious en uk
+
+
+def get_default_configs():
+    return {
+        '--default-mode': 's',
+        '--langs': [],
+        '--limit': 3,
+        '--layout_adjustment_mode': 'none',
+        '--adjustment_lang': '',
+    }
 
 
 if __name__ == '__main__':

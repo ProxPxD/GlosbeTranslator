@@ -1,7 +1,8 @@
 from parameterized import parameterized
-from src.translating.cli.configs import Configurations
-from src.translating.cli.translatorCli import CURRENT_MODES_COL
 
+from src.glosbe.cli.configurations import Configurations
+from src.glosbe.cli.translatorCli import CURRENT_MODES_COL
+from src.translate import get_default_configs
 from tests.abstractCliTest import AbstractCliTest
 
 
@@ -13,7 +14,7 @@ class MisplacedTest(AbstractCliTest):
 
     def setUp(self) -> None:
         super().setUp()
-        Configurations.init(self.get_file_name(), init_default=False)
+        Configurations.init(self.get_file_name(), default=get_default_configs())
         Configurations.add_langs('fr', 'de', 'pl')
 
     def tearDown(self) -> None:

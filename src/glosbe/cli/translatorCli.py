@@ -3,10 +3,10 @@ from typing import Callable, Iterable
 
 from more_itertools import unique_everseen
 from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
-from src.translating.cli.translating.translator import Translator, TranslationTypes, TranslationResult
 
-from .configs.configDisplayer import ConfigDisplayer
-from .configs.configurations import Configurations
+from .configurations import Configurations
+from .translating.translator import Translator, TranslationTypes, TranslationResult
+from .translatingPrinting.configDisplayer import ConfigDisplayer
 from .translatingPrinting.translationPrinter import TranslationPrinter
 from .wordFilter import WordFilter
 

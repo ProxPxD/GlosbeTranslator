@@ -1,109 +1,77 @@
 from __future__ import annotations
 
-import abc
+from abc import abstractmethod, ABC
 from dataclasses import dataclass
+from typing import Type
+
+import yaml
+
+from src.glosbe.cli.configs.configurations import Configurations, Configs
 
 
-@dataclass(frozen=True)
-class LanguageSpecificAdjustmentValues:
-    NONE: str = 'none'
-    NATIVE: str = 'native'
-    KEYBOARD: str = 'keyboard'
-
-
-class AbstractLayoutAdjuster(abc.ABC):
+class AbstractLayoutAdjuster(ABC):
 
     def __init__(self, adjustment_lang: str = None):
-        self._adjustment_lang = None
+        self._lang = None
         self._dictionary = {}
         self.set_adjustment_lang(adjustment_lang)
 
     def set_adjustment_lang(self, adjustment_lang):
         if adjustment_lang:
-            self._adjustment_lang = adjustment_lang
-            self._dictionary = self._get_dictionary()[adjustment_lang] if adjustment_lang in self._get_dictionary() else {}
+            self._lang = adjustment_lang
+            self._dictionary = self._get_dictionary()
 
-    def adjust_word(self, word: str) -> str:
+    def adjust(self, word: str) -> str:
         return self._dictionary[word] if word in self._dictionary else word
 
-    @abc.abstractmethod
     def _get_dictionary(self) -> dict[str, dict[str, str]]:
-        pass
+        with open("adjusting.yaml", 'r') as adj:
+            adjustings = yaml.safe_load(adj)
+            layout = adjustings[self._get_layout()]
+            dictionary = layout[self._lang] if self._lang in layout else {}
+            return dictionary
+
+    @abstractmethod
+    def _get_layout(self) -> str:
+        raise NotImplementedError
 
 
 class KeyboardLayoutAdjuster(AbstractLayoutAdjuster):
-    def _get_dictionary(self) -> dict[str, dict[str, str]]:
-        return {
-            'uk': {
-                'ут': 'en',
-                'зд': 'pl',
-                'ву': 'de',
-                'ак': 'fr',
-                'уі': 'es',
-                'яр': 'zh',
-                'гл': 'uk',
-                'кг': 'ru',
-                'ше': 'it',
-                '-ц': '-w',
-                '-ь': '-m',
-                '-і': '-s',
-                '-іі': '-ss',
-                '-д': '-l',
-                '-дд': '-ll',
-                '-р': '-h',
-            },
-            'ru': {
-
-            },
-            'de': {
-                'яр': 'yh',
-            }
-        }
-
+    def _get_layout(self) -> str:
+        return 'keyboard'
 
 
 class NativeLayoutAdjuster(AbstractLayoutAdjuster):
+    def _get_layout(self) -> str:
+        return 'native'
 
-    def _get_dictionary(self) -> dict[str, dict[str, str]]:
-        return {
-            'uk': {
-                'ен': 'en',
-                'пл': 'pl',
-                'де': 'de',
-                'фр': 'fr',
-                'ес': 'es',
-                'дж': 'zh',
-                'ук': 'uk',
-                'ру': 'ru',
-                'іт': 'it',
-                '-в': '-w',
-                '-м': '-m',
-                '-с': '-s',
-                '-сс': '-ss',
-                '-л': '-l',
-                '-лл': '-ll',
-                '-х': '-h',
-            },
-            'ru': {
-                'ен': 'en',
-                'пл': 'pl',
-                'де': 'de',
-                'фр': 'fr',
-                'ес': 'es',
-                'дж': 'zh',
-                'ук': 'uk',
-                'ру': 'ru',
-                'ит': 'it',
-            },
-            'zh': {
-                '英': 'en',
-                '波': 'pl',
-                '德': 'de',
-                '法': 'fr',
-                '西': 'es',
-                '中': 'zh',
-                '乌': 'uk',
-                '俄': 'ru',
-                '意': 'it',
-            },
-        }
+
+class NoneLayoutAdjuster(AbstractLayoutAdjuster):
+    def _get_layout(self) -> str:
+        return 'none'
+
+
+@dataclass(frozen=True)
+class LayoutAdjustmentsModes:
+    NONE: str = 'none'
+    NATIVE: str = 'native'
+    KEYBOARD: str = 'keyboard'
+
+    @classmethod
+    def get_adjuster(cls, mode: str) -> Type[AbstractLayoutAdjuster]:
+        match mode:
+            case LayoutAdjustmentsModes.KEYBOARD:
+                return KeyboardLayoutAdjuster
+            case LayoutAdjustmentsModes.NATIVE:
+                return NativeLayoutAdjuster
+            case _:
+                return NoneLayoutAdjuster
+
+
+class LayoutAdjusterFactory:
+
+    @classmethod
+    def get_layout_adjuster(cls, mode: str = None, lang: str = None) -> AbstractLayoutAdjuster:
+        mode = mode or Configurations.get_conf(Configs.LANG_SPEC_ADJUSTMENT)
+        lang = lang or Configurations.get_conf(Configs.ADJUSTMENT_LANG)
+        return LayoutAdjustmentsModes.get_adjuster(mode)(lang)

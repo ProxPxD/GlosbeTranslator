@@ -2,7 +2,7 @@ import abc
 import unittest
 from typing import Iterable
 
-from src.translating.configs.configurations import Configurations, Configs
+from src.translating.cli.configs import Configurations, Configs
 
 
 class AbstractTest(unittest.TestCase, abc.ABC):

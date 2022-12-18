@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .configs import configurations
+from .cli.configs import configurations
 
 
 @dataclass(frozen=True)
@@ -21,5 +21,5 @@ class Messages:
     class PageCodeMessages:
         PLEASE_REPORT: str = 'Please, report the case'
         UNHANDLED_PAGE_FULL_MESSAGE: str = 'Unhandled page code: {}! ' + PLEASE_REPORT
-        PAGE_NOT_FOUND_404: str = 'Page has not been found (404). Please, check the arguments: {}'  # if the command is correct. Words: {}, translating from: , translating to:
+        PAGE_NOT_FOUND_404: str = 'Page has not been found (404). Please, check the arguments: {}'  # if the command is correct. Words: {}, glosbe from: , glosbe to:
         PAGE_NOT_FOUND_303: str = 'The page has to be redirected (303). ' + PLEASE_REPORT

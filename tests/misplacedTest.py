@@ -1,7 +1,7 @@
 from parameterized import parameterized
-
+from src.translating.cli.configs import Configurations
 from src.translating.cli.translatorCli import CURRENT_MODES_COL
-from src.translating.configs.configurations import Configurations
+
 from tests.abstractCliTest import AbstractCliTest
 
 

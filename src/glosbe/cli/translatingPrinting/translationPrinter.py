@@ -1,6 +1,7 @@
 from typing import Iterable
 
-from src.translating.translator import TranslationResult
+from src.translating.cli.translating.translator import TranslationResult
+
 from .formatting import TranslationFormatter
 
 

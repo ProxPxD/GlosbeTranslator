@@ -5,8 +5,7 @@ from dataclasses import dataclass
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-
-from ..web.exceptions import WrongStatusCodeError
+from src.translating.cli.translating.web import WrongStatusCodeError
 
 
 @dataclass

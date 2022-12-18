@@ -4,8 +4,8 @@ from itertools import product
 from typing import Iterable
 
 import requests
+from src.translating.cli.constants import Messages
 
-from .constants import Messages
 from .parsing.parser import Parser, Record
 from .web.connector import Connector, TransArgs
 from .web.exceptions import WrongStatusCodeError

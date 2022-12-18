@@ -1,9 +1,10 @@
 
+from src.translating.cli.configs.configurations import Configurations, Configs
+
 from .abstractLayoutAdjuster import AbstractLayoutAdjuster
 from .keyboardLayoutAdjuster import KeyboardLayoutAdjuster
 from .nativeLayoutAdjuster import NativeLayoutAdjuster
 from ..constants import LanguageSpecificAdjustmentValues
-from ...configs.configurations import Configurations, Configs
 
 _adjusters = {
         LanguageSpecificAdjustmentValues.NATIVE: NativeLayoutAdjuster,

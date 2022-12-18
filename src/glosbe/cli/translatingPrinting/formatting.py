@@ -5,9 +5,8 @@ from dataclasses import replace
 from typing import Iterable, Callable, Any
 
 from more_itertools import bucket
-
-from src.translating.parsing.parser import Record
-from src.translating.translator import TranslationResult, TranslationTypes
+from src.translating.cli.translating.parsing.parser import Record
+from src.translating.cli.translating.translator import TranslationResult, TranslationTypes
 
 
 class AbstractFormatter(ABC):

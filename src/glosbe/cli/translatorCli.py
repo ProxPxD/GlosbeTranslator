@@ -3,12 +3,12 @@ from typing import Callable, Iterable
 
 from more_itertools import unique_everseen
 from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
+from src.translating.cli.translating.translator import Translator, TranslationTypes, TranslationResult
 
-from src.translating.cli.translatingPrinting.translationPrinter import TranslationPrinter
+from .configs.configDisplayer import ConfigDisplayer
+from .configs.configurations import Configurations
+from .translatingPrinting.translationPrinter import TranslationPrinter
 from .wordFilter import WordFilter
-from ..configs.configDisplayer import ConfigDisplayer
-from ..configs.configurations import Configurations
-from ..translator import Translator, TranslationTypes, TranslationResult
 
 CURRENT_MODES_COL = 'current_modes'
 FROM_LANGS_COL = 'from_langs'

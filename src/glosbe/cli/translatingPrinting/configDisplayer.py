@@ -1,7 +1,7 @@
 from typing import Any
 
-from src.glosbe.cli.configurations import Configurations
-from src.glosbe.cli.translatingPrinting.translationPrinter import TranslationPrinter
+from ..translatingPrinting.translationPrinter import TranslationPrinter
+from ...cli.configurations import Configurations
 
 
 # TODO: move it in translator printer

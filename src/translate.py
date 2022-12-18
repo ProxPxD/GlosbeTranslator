@@ -3,10 +3,10 @@ import sys
 import traceback
 from dataclasses import dataclass
 
-from .glosbe.cli.configurations import Configurations
-from .glosbe.cli.translatingPrinting.translationPrinter import TranslationPrinter
-from .glosbe.cli.translatorCli import TranslatorCli
-from .glosbe.constants import Data
+from glosbe.cli.configurations import Configurations
+from glosbe.cli.translatingPrinting.translationPrinter import TranslationPrinter
+from glosbe.cli.translatorCli import TranslatorCli
+from glosbe.constants import Data
 
 
 @dataclass(frozen=True)
@@ -42,7 +42,7 @@ def get_test_arguments():
 
 def get_default_configs():
     return {
-        '--default-mode': 's',
+        '--default-mode': '-s',
         '--langs': [],
         '--limit': 3,
         '--layout_adjustment_mode': 'none',

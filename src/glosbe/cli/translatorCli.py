@@ -66,7 +66,7 @@ class TranslatorCli(Cli):
         self._from_langs: CliCollection
         self._to_langs: CliCollection
         self._words: CliCollection
-        self._configuration_flags: CliCollection
+        self._non_translation_flags: CliCollection
 
         self._to_langs_param: Parameter
         self._words_param: Parameter
@@ -130,11 +130,11 @@ class TranslatorCli(Cli):
         self._to_langs = self._root.add_collection(TO_LANGS_COL)
         self._words = self._root.add_collection(WORDS_COL)
 
-        self._configuration_flags = self._root.add_collection(CONFS_COL)
+        self._non_translation_flags = self._root.add_collection(CONFS_COL)
 
     def _configure_collections(self) -> None:
         self._configure_translation_collections()
-        self._configure_configuration_collections()
+        self._configure_non_translation_flags_collection()
 
     def _configure_translation_collections(self) -> None:
         self._current_modes.set_type(str)
@@ -143,9 +143,9 @@ class TranslatorCli(Cli):
         self._to_langs.add_get_default_if_or(lambda: Configurations.get_nth_saved_language(1, *self._from_langs), self._single_node.is_active, self._word_node.is_active)
         self._to_langs.add_get_default_if_or(lambda: Configurations.load_config_languages(*self._from_langs), self._lang_node.is_active, self._double_multi_node.is_active)
 
-    def _configure_configuration_collections(self) -> None:
+    def _configure_non_translation_flags_collection(self) -> None:
         flags = unique_everseen(map(self._root.get_flag, chain(just_set, just_display, display_with_arg, other_config)))
-        self._configuration_flags.add_to_add_self(*list(flags))
+        self._non_translation_flags.add_to_add_self(*list(flags))
 
     def _create_flags(self) -> None:
         self._create_mode_flags()
@@ -224,8 +224,8 @@ class TranslatorCli(Cli):
 
     def _configure_main_translation_node(self) -> None:
         self._translation_node.set_only_hidden_nodes()
-        self._translation_node.set_active_on_empty(self._configuration_flags)
-        self._translation_node.set_inactive_on_conditions(lambda: not len(self._args))
+        self._translation_node.set_active(self._configuration_node.is_inactive, self._display_node.is_inactive)
+        # self._translation_node.set_inactive_on_conditions(lambda: not len(self._args))
 
     def _configure_single_node(self) -> None:
         self._single_node.set_active_on_flags_in_collection(self._current_modes, self._single_flag, but_not=[self._word_flag, self._lang_flag])
@@ -298,9 +298,9 @@ class TranslatorCli(Cli):
     # TODO: add information printing after setting a conf
     def _configure_configuration_node(self) -> None:
         self._configuration_node.add_param(self._configuration_args)
-        self._configuration_node.set_active_and(lambda: len(self._configuration_flags) > 0,
-                                                lambda: all(len(storage) > 0 for storage in map(Flag.get_storage, self._configuration_flags.get_plain())))
-        self._configuration_node.set_inactive_on_conditions(lambda: any(flag.name in display_with_arg for flag in self._configuration_flags))
+        self._configuration_node.set_active_and(lambda: len(self._non_translation_flags) > 0,
+                                                lambda: all(len(storage) > 0 for storage in map(Flag.get_storage, self._non_translation_flags.get_plain())))
+        self._configuration_node.set_inactive_on_conditions(lambda: any(flag.name in display_with_arg for flag in self._non_translation_flags))
 
         self._configure_simple_setting_options()
         self._configure_add_lang_option()
@@ -308,7 +308,7 @@ class TranslatorCli(Cli):
         self._configure_default_mode_option()
 
     def _configure_simple_setting_options(self) -> None:
-        self._configuration_node.add_action(lambda: self._set_flag_confs(*list(filter(lambda flag: flag.has_name_in(just_set), self._configuration_flags))))
+        self._configuration_node.add_action(lambda: self._set_flag_confs(*list(filter(lambda flag: flag.has_name_in(just_set), self._non_translation_flags))))
 
     def _configure_add_lang_option(self) -> None:
         add_lang_flag = self._root.get_flag(ADD_LANG_LONG_FLAG)
@@ -331,15 +331,15 @@ class TranslatorCli(Cli):
         return f'-{to_flag}' if len(to_flag) < 3 else f'--{to_flag}'
 
     def _configure_display_node(self) -> None:
-        self._display_node.set_active_and(lambda: len(self._configuration_flags) > 0,
-                                          lambda: all(len(flag.get_storage()) == 0 or (flag.name in display_with_arg and len(flag.get_storage()) > 0) for flag in self._configuration_flags.get_plain()))
+        self._display_node.set_active_and(lambda: len(self._non_translation_flags) > 0,
+                                          lambda: all(len(flag.get_storage()) == 0 or (flag.name in display_with_arg and len(flag.get_storage()) > 0) for flag in self._non_translation_flags.get_plain()))
 
-        self._display_node.add_action(lambda: list(map(lambda conf: ConfigDisplayer.display_config(conf), map(Flag.get_name, filter(lambda flag: flag.has_name_in(just_display), self._configuration_flags)))))
+        self._display_node.add_action(lambda: list(map(lambda conf: ConfigDisplayer.display_config(conf), map(Flag.get_name, filter(lambda flag: flag.has_name_in(just_display), self._non_translation_flags)))))
         self._display_node.add_action_when_is_active_or(self._display_nth_last_lang, *self.root.get_flags(LAST_LANG_LONG_FLAG, LAST_1_LONG_FLAG, LAST_2_LONG_FLAG))
         self._display_node.add_action_when_is_active(self._display_settings, self.root.get_flag(SETTINGS_LONG_FLAG))
 
     def _display_nth_last_lang(self):
-        active = next(filter(Flag.is_active, self._configuration_flags))
+        active = next(filter(Flag.is_active, self._non_translation_flags))
         lang_nums = map(lambda num: num - 1, active.get_as_list())
         nth_lang = map(Configurations.get_nth_saved_language, lang_nums)
         ConfigDisplayer.display_config(active.name, list(nth_lang))

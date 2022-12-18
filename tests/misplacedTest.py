@@ -1,7 +1,7 @@
 from parameterized import parameterized
 
-from src.glosbe.cli.configurations import Configurations
-from src.glosbe.cli.translatorCli import CURRENT_MODES_COL
+from src.glosbe.configurations import Configurations
+from src.glosbe.translatorCli import CURRENT_MODES_COL
 from src.translate import get_default_configs
 from tests.abstractCliTest import AbstractCliTest
 

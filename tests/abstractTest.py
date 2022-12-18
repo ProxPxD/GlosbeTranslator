@@ -2,8 +2,8 @@ import abc
 import unittest
 from typing import Iterable
 
-from src.glosbe.cli.configurations import Configurations
-from src.glosbe.cli.translatorCli import LANGS_SHOW_LONG_FLAG
+from src.glosbe.configurations import Configurations
+from src.glosbe.translatorCli import LANGS_SHOW_LONG_FLAG
 
 
 class AbstractTest(unittest.TestCase, abc.ABC):

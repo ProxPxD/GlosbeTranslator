@@ -1,8 +1,8 @@
 from parameterized import parameterized
 from smartcli.nodes.smartList import SmartList
 
-from src.glosbe.cli.configurations import Configurations
-from src.glosbe.cli.translatorCli import SINGLE_LONG_FLAG, DEFAULT_MODE_SHORT_FLAG, DEFAULT_MODE_LONG_FLAG, LANG_LIMIT_SHORT_FLAG, LANG_LIMIT_LONG_FLAG, \
+from src.glosbe.configurations import Configurations
+from src.glosbe.translatorCli import SINGLE_LONG_FLAG, DEFAULT_MODE_SHORT_FLAG, DEFAULT_MODE_LONG_FLAG, LANG_LIMIT_SHORT_FLAG, LANG_LIMIT_LONG_FLAG, \
 	LANG_LONG_FLAG, WORD_LONG_FLAG, LANGS_SHOW_LONG_FLAG, LANGS_SHOW_SHORT_FLAG, LAST_LANG_LONG_FLAG, LAST_2_SHORT_FLAG, LAST_2_LONG_FLAG, LAST_1_SHORT_FLAG, \
 	LAST_1_LONG_FLAG, SETTINGS_SHORT_FLAG, SETTINGS_LONG_FLAG, ADD_LANG_SHORT_FLAG, ADD_LANG_LONG_FLAG, REMOVE_LANG_LONG_FLAG, REMOVE_LANG_SHORT_FLAG
 from src.translate import get_default_configs

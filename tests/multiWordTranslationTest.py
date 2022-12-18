@@ -1,6 +1,6 @@
 from parameterized import parameterized
 
-from src.glosbe.cli.translatorCli import CURRENT_MODES_COL
+from src.glosbe.translatorCli import CURRENT_MODES_COL
 from tests.abstractCliTest import AbstractCliTest
 
 

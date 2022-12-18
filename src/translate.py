@@ -3,10 +3,10 @@ import sys
 import traceback
 from dataclasses import dataclass
 
-from glosbe.cli.configurations import Configurations
-from glosbe.cli.translatingPrinting.translationPrinter import TranslationPrinter
-from glosbe.cli.translatorCli import TranslatorCli
-from glosbe.constants import Data
+from src.glosbe import configurations
+from src.glosbe.configurations import Configurations
+from src.glosbe.translatingPrinting import TranslationPrinter
+from src.glosbe.translatorCli import TranslatorCli
 
 
 @dataclass(frozen=True)
@@ -15,6 +15,10 @@ class ErrorMessages:
     UNKNOWN_EXCEPTION: str = 'Unknown exception occurred!'
     ATTRIBUTE_ERROR: str = 'Error! Please send logs to the creator'
 
+
+@dataclass(frozen=True)
+class Data:
+    LOG_PATH = configurations.Paths.RESOURCES_DIR / 'logs.txt'
 
 def main():
     if len(sys.argv) == 1:

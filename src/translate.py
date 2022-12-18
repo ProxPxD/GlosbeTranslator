@@ -37,12 +37,12 @@ def main():
 
 
 def get_test_arguments():
-    return 't sehen pl de -r'.split(' ')  # t laborious en uk
+    return 't -dm '.split(' ')  # t laborious en uk
 
 
 def get_default_configs():
     return {
-        '--default-mode': '-s',
+        '--default-mode': '--single',
         '--langs': [],
         '--limit': 3,
         '--layout_adjustment_mode': 'none',

@@ -4,11 +4,9 @@ from itertools import product
 from typing import Iterable
 
 import requests
-from src.translating.cli.constants import Messages
 
-from .parsing.parser import Parser, Record
+from .parsing.parser import Parser, Record, WrongStatusCodeError
 from .web.connector import Connector, TransArgs
-from .web.exceptions import WrongStatusCodeError
 
 
 @dataclass(frozen=True)
@@ -24,6 +22,14 @@ class TranslationResult:
     trans_args: TransArgs = field(default_factory=lambda: TransArgs())
     records: list[Record] = field(default_factory=lambda: [])
     type = TranslationTypes.SINGLE
+
+
+@dataclass(frozen=True)
+class PageCodeMessages:
+    PLEASE_REPORT: str = 'Please, report the case'
+    UNHANDLED_PAGE_FULL_MESSAGE: str = 'Unhandled page code: {}! ' + PLEASE_REPORT
+    PAGE_NOT_FOUND_404: str = 'Page has not been found (404). Please, check the arguments: {}'  # if the command is correct. Words: {}, glosbe from: , glosbe to:
+    PAGE_NOT_FOUND_303: str = 'The page has to be redirected (303). ' + PLEASE_REPORT
 
 
 class Translator:
@@ -98,8 +104,8 @@ class Translator:
     def _get_status_code_message(self, err: WrongStatusCodeError) -> str:
         match err.page.status_code:
             case 404:
-                return Messages.PageCodeMessages.PAGE_NOT_FOUND_404.format(str(self._connector.trans_args))
+                return PageCodeMessages.PAGE_NOT_FOUND_404.format(str(self._connector.trans_args))
             case 303:
-                return Messages.PageCodeMessages.PAGE_NOT_FOUND_303
+                return PageCodeMessages.PAGE_NOT_FOUND_303
             case _:
-                return Messages.PageCodeMessages.UNHANDLED_PAGE_FULL_MESSAGE.format(err.page.status_code)
+                return PageCodeMessages.UNHANDLED_PAGE_FULL_MESSAGE.format(err.page.status_code)

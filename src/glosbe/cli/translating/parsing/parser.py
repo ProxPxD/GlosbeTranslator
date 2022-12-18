@@ -5,7 +5,12 @@ from dataclasses import dataclass
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-from src.translating.cli.translating.web import WrongStatusCodeError
+
+
+class WrongStatusCodeError(ConnectionError):
+    def __init__(self, page: requests.Response, *args):
+        super().__init__(*args)
+        self.page = page
 
 
 @dataclass

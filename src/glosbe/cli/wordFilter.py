@@ -1,12 +1,12 @@
 from smartcli.nodes.smartList import SmartList
 
-from ..cli import constants
-
 tupleLists_2 = tuple[SmartList[str], SmartList[str]]
 tupleLists_3 = tuple[SmartList[str], SmartList[str], SmartList[str]]
 
 
 class WordFilter:
+
+    alphabet = 'abcdefghijklmnopqrstuvwxyz'
 
     def __init__(self):
         self._to_swap = []
@@ -27,7 +27,7 @@ class WordFilter:
         return self._to_swap
 
     def is_word(self, to_test: str) -> bool:
-        return len(to_test) > 3 or any(char not in constants.alphabet for char in to_test)
+        return len(to_test) > 3 or any(char not in WordFilter.alphabet for char in to_test)
 
     def is_any_lang_misplaced(self, *to_check: str):
         return any(self.is_word(elem) for elem in to_check)

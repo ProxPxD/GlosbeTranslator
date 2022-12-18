@@ -4,8 +4,6 @@ from dataclasses import dataclass
 
 import requests
 
-from .exceptions import TranslatorArgumentException
-
 
 @dataclass(frozen=True)
 class WebConstants:
@@ -23,6 +21,10 @@ class TransArgs:
 
     def __bool__(self):
         return self.from_lang and self.to_lang and self.word and True
+
+
+class TranslatorArgumentException(ValueError):
+    pass  # TODO
 
 
 class Connector:

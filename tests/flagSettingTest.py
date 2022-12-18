@@ -114,3 +114,9 @@ class FlagSettingTest(AbstractCliTest):
 		configs = list(Configurations.get_all_configs().keys())
 
 		self.assertEqual(configs, printed_keys)
+
+	def test_add_multiple_langs(self):
+		Configurations.add_langs('pl')
+		self.cli.parse('t -al pl pl pl pl pl')
+
+		self.assertEqual(1, len(list(filter(lambda l: l == 'pl', Configurations.get_saved_languages()))))

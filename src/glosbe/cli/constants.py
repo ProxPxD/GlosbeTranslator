@@ -2,59 +2,15 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class ValidationErrors:
-    MULTI_TRANSLATION_MODES_ON: str = 'Multi translation modes ({}) cannot be used at once!'
-
-
-@dataclass(frozen=True)
-class Messages:
-    WRONG_MODE_TYPE: str = 'Wrong mode type: {}!'
-    HAS_NOT_BEEN_FOUND: str = ' has not been found!'
-    ALREADY_EXISTS: str = ' already exists!'
-    LANGUAGE_FORM: str = 'Language "{}"'
-    ADD_EXISTENT_LANG: str = LANGUAGE_FORM + ALREADY_EXISTS
-    REMOVE_NONEXISTENT_LANG: str = LANGUAGE_FORM + HAS_NOT_BEEN_FOUND
-
-
-@dataclass(frozen=True)
 class SHORT_FLAGS:
-    MULTI_LANG: str = '-m'
-    MULTI_WORD: str = '-w'
-    SINGLE: str = '-s'
-    LANG_LIMIT: str = '-l'
-    SAVED_LANGS: str = '-ll'
-    LAST: str = '-1'
-    DEFAULT_TRANSLATIONAL_MODE: str = '-dm'
     LAYOUT_ADJUSTMENT_MODE: str = '-la'
     ADJUSTMENT_LANG: str = '-lal'
-    SETTINGS: str = '-ss'
-    HELP: str = '-h'
-    ADD_LANG: str = '-al'
-    REMOVE_LANG: str = '-rl'
 
 
 @dataclass(frozen=True)
 class FLAGS:
-    MULTI_LANG: str = '--multi'
-    MULTI_WORD: str = '--word'
-    SINGLE: str = '--single'
-    LANG_LIMIT: str = '--limit'
-    SAVED_LANGS: str = '--langs'
-    LAST: str = '--last'
-    DEFAULT_TRANSLATIONAL_MODE: str = '--default-mode'
     LAYOUT_ADJUSTMENT_MODE: str = '--layout_adjustment_mode'
     ADJUSTMENT_LANG: str = '--adjustment_lang'
-    SETTINGS: str = '--settings'
-    HELP: str = '--help'
-    ADD_LANG: str = '--add_lang'
-    REMOVE_LANG: str = '--remove_lang'
-
-
-@dataclass(frozen=True)
-class ModeTypes:
-    TRANSLATIONAL: str = 'translational'
-    CONFIGURATIONAL: str = 'configurational'
-    DISPLAYABLE: str = 'displayable'
 
 
 @dataclass(frozen=True)

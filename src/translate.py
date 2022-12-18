@@ -2,10 +2,10 @@ import logging
 import sys
 import traceback
 
+from src.translating.cli.translatingPrinting import TranslationPrinter
 from translating.cli.translatorCli import TranslatorCli
 from translating.configs.configurations import Configurations
 from translating.constants import Messages, Data
-from translating.translatingPrinting.translationPrinter import TranslationPrinter
 
 
 def main():

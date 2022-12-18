@@ -2,9 +2,9 @@ from time import sleep
 
 from parameterized import parameterized
 
+from src.translating.cli.translatingPrinting import TranslationFormatter
 from src.translating.cli.translatorCli import SILENT_LONG_FLAG, SINGLE_LONG_FLAG
 from src.translating.configs.configurations import Configurations
-from src.translating.translatingPrinting.formatting import TranslationFormatter
 from src.translating.translator import TranslationTypes
 from tests.abstractCliTest import AbstractCliTest
 

@@ -6,8 +6,8 @@ from typing import Iterable, Callable, Any
 
 from more_itertools import bucket
 
-from ..parsing.parser import Record
-from ..translator import TranslationResult, TranslationTypes
+from src.translating.parsing.parser import Record
+from src.translating.translator import TranslationResult, TranslationTypes
 
 
 class AbstractFormatter(ABC):

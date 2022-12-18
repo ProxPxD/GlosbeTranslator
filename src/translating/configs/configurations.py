@@ -6,8 +6,8 @@ from typing import Any, Iterable
 
 from more_itertools import partition
 
+from src.translating.cli.translatingPrinting.translationPrinter import TranslationPrinter
 from ..cli.constants import FLAGS, SHORT_FLAGS, LanguageSpecificAdjustmentValues
-from ..translatingPrinting.translationPrinter import TranslationPrinter
 
 
 @dataclass(frozen=True)

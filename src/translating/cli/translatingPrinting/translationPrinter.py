@@ -1,7 +1,7 @@
 from typing import Iterable
 
+from src.translating.translator import TranslationResult
 from .formatting import TranslationFormatter
-from ..translator import TranslationResult
 
 
 class TranslationPrinter:

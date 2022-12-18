@@ -2,7 +2,7 @@ from typing import Any
 
 from parameterized import parameterized
 
-from src.translating.translatingPrinting.formatting import GenderFormatter, PartOfSpeechFormatter, AbstractFormatter
+from src.translating.cli.translatingPrinting import GenderFormatter, PartOfSpeechFormatter, AbstractFormatter
 from tests.abstractCliTest import AbstractCliTest
 
 

@@ -41,7 +41,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't -ss'.split(' ')  # t laborious en uk
+    return 't cheat'.split(' ')  # after en zh
 
 
 def get_default_configs():

@@ -109,7 +109,7 @@ class AbstractIntoPrintableIterableFormatter:
 		for group in groups:
 			yield from cls._gen_if(cls._get_pre_group(group, **kwargs))
 			# TODO: check level of recursion to decide if there are groups
-			yield from cls.format_many_into_printable_iterable(groups[group], level=level-1, **kwargs)
+			yield from cls._format_many_into_printable_iterable_core(groups[group], level=level-1, **kwargs)
 
 	@classmethod
 	def _get_pre_group(cls, group: Any, **kwargs) -> str:
@@ -214,9 +214,12 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 
 	@classmethod
 	def _get_pre_group(cls, group: Any, **kwargs) -> str:
+		group_str = str(group)
+		if not group_str:
+			return ''
 		pre_dash = cls.group_dash * cls._pre_sep_length
 		post_dash = cls.group_dash * cls._post_sep_length
-		return f'{pre_dash} {str(group)} {post_dash}'
+		return f'{pre_dash} {group_str} {post_dash}\n'
 
 	@classmethod
 	def _get_grouping_key(cls, main_division: TranslationTypes, **kwargs) -> Callable:

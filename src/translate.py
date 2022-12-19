@@ -41,7 +41,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't -dm '.split(' ')  # t laborious en uk
+    return 't -ss'.split(' ')  # t laborious en uk
 
 
 def get_default_configs():

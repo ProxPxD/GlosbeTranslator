@@ -1,6 +1,7 @@
 import unittest
 
 from tests.abstractTest import AbstractTest
+from tests.configurationTest import ConfigurationTest
 from tests.flagSettingTest import FlagSettingTest
 from tests.formattingTest import FormattingTest
 from tests.funtionalFlagsTest import FunctionalFlagsTest
@@ -19,6 +20,7 @@ tests = [
     HelpTest,
     FlagSettingTest,
     FunctionalFlagsTest,
+    ConfigurationTest,
 ]
 
 

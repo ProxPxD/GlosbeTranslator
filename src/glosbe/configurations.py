@@ -121,7 +121,7 @@ class Configurations:
     @classmethod
     def get_nth_saved_language(cls, index: int, *to_skips: str) -> str:
         langs = cls.load_config_languages(*to_skips)
-        return next(islice(langs, int(index), None))
+        return next(islice(langs, int(index)), None)
 
     @classmethod
     def load_config_languages_by_limit(cls, *to_skips: str, limit=None) -> Iterable[str]:

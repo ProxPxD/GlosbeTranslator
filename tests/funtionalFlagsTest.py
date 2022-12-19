@@ -1,5 +1,6 @@
 from parameterized import parameterized
 
+from src.glosbe.configurations import Configurations
 from tests.abstractCliTest import AbstractCliTest
 
 
@@ -7,6 +8,14 @@ class FunctionalFlagsTest(AbstractCliTest):
 	@classmethod
 	def _get_test_name(cls) -> str:
 		return 'Functional Flags'
+
+	def setUp(self) -> None:
+		super().setUp()
+		Configurations.init(self.get_file_name(), default=self.get_default_configs())
+
+	def tearDown(self) -> None:
+		super().tearDown()
+		Configurations.remove_current_configuration()
 
 	@parameterized.expand([
 		('short_reverse_flag', 't żal de pl -r', ['żal'], ['pl'], ['de']),

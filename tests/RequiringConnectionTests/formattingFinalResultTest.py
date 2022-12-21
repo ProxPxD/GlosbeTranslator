@@ -6,7 +6,7 @@ from src.glosbe.configurations import Configurations
 from src.glosbe.translating.translator import TranslationTypes
 from src.glosbe.translatingPrinting.formatting import TranslationFormatter
 from src.glosbe.translatingPrinting.translationPrinter import TranslationPrinter
-from src.glosbe.translatorCli import SILENT_LONG_FLAG, SINGLE_LONG_FLAG
+from src.glosbe.translatorCli import SILENT_LONG_FLAG, SINGLE_LONG_FLAG, DOUBLE_MODE_STYLE_LONG_FLAG
 from tests.abstractCliTest import AbstractCliTest
 
 
@@ -70,6 +70,7 @@ class FormattingFinalResultTest(AbstractCliTest):
 
 		input_line += f' {SILENT_LONG_FLAG}'
 		result = self.cli.parse(input_line)
+
 		formatted = TranslationFormatter.format_many(result.result)
 		string = TranslationFormatter.format_many_into_string(formatted, prefix_style=prefix_style)
 		lines = string.split('\n')
@@ -77,9 +78,63 @@ class FormattingFinalResultTest(AbstractCliTest):
 			self.assertTrue(line.startswith(f'{prefix}: '), msg=f'prefix {prefix} not found in line {line}!')
 		# self.assertTrue(lines[-1] == '')
 
-	def test_double_mode_formatting(self):
-		langs = 'zh de ru pl'.split(' ')
-		words = 'what is the sense of life'.split()
-		self.cli.parse(f't en -w {" ".join(words)} -m {" ".join(langs)}')
+	@parameterized.expand([
+		('by_lang', TranslationTypes.LANG),
+		('by_word', TranslationTypes.WORD),
+		('by_nothing_with_single', TranslationTypes.SINGLE),
+		('by_nothing_with_double', TranslationTypes.DOUBLE),
+	])
+	def test_double_mode_formatting(self, name: str, style: str, e_group: list[str], e_prefixes: list[str]):
+		if style:
+			Configurations.set_conf(DOUBLE_MODE_STYLE_LONG_FLAG, style)
+		langs = 'zh ar'.split(' ')
+		words = 'Welt Schmerz'.split()
+		result = self.cli.parse(f't de -w {" ".join(words)} -m {" ".join(langs)}')
 
-		self.fail(NotImplementedError.__name__)
+		main_division = style
+		prefix_style = self.cli._get_prefix_style_for_main_division(main_division)
+		formatted = TranslationFormatter.format_many(result.result)
+		string = TranslationFormatter.format_many_into_string(formatted, prefix_style=prefix_style, main_division=main_division)
+		lines = string.split('\n')
+		group_iter = iter(e_group)
+		prefix_iter = iter(e_prefixes)
+
+		for i, line in enumerate(lines):
+			if e_group and i % 3 == 0:
+				self.assertIn(next(group_iter), line)
+				prefix_iter = iter(e_prefixes)
+			elif e_group:
+				self.assertTrue(line.startswith(f'{next(prefix_iter)}: '))
+			else:
+				self.fail(NotImplementedError.__name__)
+
+
+'''
+---- zh ----------------------------------------------------------------
+what: 什么 [adverb; particle; pronoun] (pronoun); 什麼 [adverb; particle; pronoun] (pronoun); 啥 (pronoun); What's
+is: 是 (verb); ‘be’; 做; 收入补助; 收入补贴; 综合调查the: 愈......愈...... (adv.); 越......越...... (adv.); 这 (noun)
+sense: 感覺 [verb] (noun); 意义 (noun); 感觉 [verb] (noun)
+of: 的 (adposition); 之 (adposition); 关于 (adposition)
+life: 生命 (noun); 生活 (noun); 存在 (noun); 生命 (noun)
+---- de ----------------------------------------------------------------
+what: was [pronoun] (adv.); welcher [pronoun] (adj.); wie (pronoun)
+is: ist (verb); alles paletti; es gibt (verb); I (noun); In (noun); IS (noun)
+the: der [article] (Article); die [article] (Article); das [article] (Article); transkription
+sense: Sinn [masc] (noun); fühlen (verb); empfinden (verb); Sensebezirk
+of: von (adposition); aus (adposition); vor (adposition)
+life: Leben [neut] (noun); Lebensdauer [fem] (noun); lebenslänglich (noun); Leben (noun); Spiel des Lebens; Das Leben; Lebenslänglich
+---- ru ----------------------------------------------------------------
+what: что [adverb] (pronoun); какой [determiner] (adv.); который [determiner] (pronoun)
+is: есть (verb); есть ’to be; идти (verb); информационная система; комплексное обследование; поддержка малоимущих
+the: тем (adv.); тот (pronoun); такой (determiner); транскрипция (noun)
+sense: чувство [neut] (noun); смысл [masc] (noun); чувствовать [impf] (verb)
+of: из (noun); о (noun); в (noun)
+life: жизнь [fem] (noun); житие [fem] (noun); существование [neut] (noun); Жизнь
+---- pl ----------------------------------------------------------------
+what: co [pronoun] (adv.); jaki [pronoun] (determiner); który [pronoun] (determiner)
+is: jest (verb); być (verb); PI
+the: ten [masc] (pronoun); to [neut] (pronoun); ta [fem] (pronoun); transkrypcja (noun)
+sense: zmysł [masc] (noun); sens [masc] (noun); odczuwać (verb)
+of: z (adposition); u (adposition); o (adv.)
+life: życie [neut] (noun); dożywocie [neut] (noun); kara dożywotniego pozbawienia wolności [fem] (noun); Życie
+'''

@@ -41,7 +41,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't pl -w mieć chcieć -m es de'.split(' ')  # after en zh
+    return 't en -m zh de ru pl -w what is the sense of life'.split(' ')  # why so long?
 
 
 def get_default_configs():

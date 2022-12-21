@@ -85,7 +85,7 @@ class Configurations:
         return dict(cls._configs)
 
     @classmethod
-    def get_conf(cls, name: str) -> Any:
+    def get_conf(cls, name: str) -> Any:  # TODO: think of default configs and setting them in case of new features
         return Configurations._configs[name]
 
     @classmethod

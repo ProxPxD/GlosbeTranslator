@@ -1,11 +1,12 @@
 from time import sleep
 
 from parameterized import parameterized
-from src.translating.cli.configs import Configurations
-from src.translating.cli.translating.translator import TranslationTypes
-from src.translating.cli.translatingPrinting import TranslationFormatter
-from src.translating.cli.translatorCli import SILENT_LONG_FLAG, SINGLE_LONG_FLAG
 
+from src.glosbe.configurations import Configurations
+from src.glosbe.translating.translator import TranslationTypes
+from src.glosbe.translatingPrinting.formatting import TranslationFormatter
+from src.glosbe.translatingPrinting.translationPrinter import TranslationPrinter
+from src.glosbe.translatorCli import SILENT_LONG_FLAG, SINGLE_LONG_FLAG
 from tests.abstractCliTest import AbstractCliTest
 
 
@@ -22,9 +23,10 @@ class FormattingFinalResultTest(AbstractCliTest):
 
 	def setUp(self) -> None:
 		super().setUp()
-		Configurations.init(self.get_file_name(), init_default=True)
+		Configurations.init(self.get_file_name(), default=self.get_default_configs())
 		Configurations.add_langs('es', 'pl', 'de', 'ar')
 		Configurations.change_conf('-l', 3)
+		TranslationPrinter.turn(False)
 		sleep(1)
 
 	def tearDown(self) -> None:
@@ -75,5 +77,9 @@ class FormattingFinalResultTest(AbstractCliTest):
 			self.assertTrue(line.startswith(f'{prefix}: '), msg=f'prefix {prefix} not found in line {line}!')
 		# self.assertTrue(lines[-1] == '')
 
-	def test_word_and_multi_mode_formatting(self):
-		self.run_current_test_with_params(3, 4, 5, 6, 7)
+	def test_double_mode_formatting(self):
+		langs = 'zh de ru pl'.split(' ')
+		words = 'what is the sense of life'.split()
+		self.cli.parse(f't en -w {" ".join(words)} -m {" ".join(langs)}')
+
+		self.fail(NotImplementedError.__name__)

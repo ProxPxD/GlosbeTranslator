@@ -29,4 +29,5 @@ class AbstractCliTest(AbstractTest, abc.ABC):
 			'--limit': 3,
 			'--layout_adjustment_mode': 'none',
 			'--adjustment_lang': '',
+			'--double-mode-style': '--lang',
     	}

@@ -183,7 +183,8 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 	_pre_sep_length = 4
 	group_dash = '-'
 
-	sep = '\n'
+	sep = ''
+	post_one = '\n'
 	post_all = '\n'
 
 	@classmethod
@@ -196,8 +197,8 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 		return ''.join(cls.format_into_printable_iterable(**kwargs))
 
 	@classmethod
-	def format_many_into_string(cls, translations: Iterable[TranslationResult], main_division: TranslationTypes = None, prefix_style: TranslationTypes = None) -> str:
-		return ''.join(cls.format_many_into_printable_iterable(translations, main_division=main_division, prefix_style=prefix_style))
+	def format_many_into_string(cls, translations: Iterable[TranslationResult], main_division: TranslationTypes = None, prefix_style: TranslationTypes = None, level=0) -> str:
+		return ''.join(cls.format_many_into_printable_iterable(translations, main_division=main_division, prefix_style=prefix_style, level=level))
 
 	@classmethod
 	def _get_pre_one(cls, translation: TranslationResult, prefix_style=None, **kwargs) -> str:

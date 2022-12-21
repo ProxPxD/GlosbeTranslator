@@ -2,9 +2,12 @@ from parameterized import parameterized
 from smartcli.nodes.smartList import SmartList
 
 from src.glosbe.configurations import Configurations
+from src.glosbe.translating.translator import TranslationTypes
+from src.glosbe.translatingPrinting.translationPrinter import TranslationPrinter
 from src.glosbe.translatorCli import SINGLE_LONG_FLAG, DEFAULT_MODE_SHORT_FLAG, DEFAULT_MODE_LONG_FLAG, LANG_LIMIT_SHORT_FLAG, LANG_LIMIT_LONG_FLAG, \
 	LANG_LONG_FLAG, WORD_LONG_FLAG, LANGS_SHOW_LONG_FLAG, LANGS_SHOW_SHORT_FLAG, LAST_LANG_LONG_FLAG, LAST_2_SHORT_FLAG, LAST_2_LONG_FLAG, LAST_1_SHORT_FLAG, \
-	LAST_1_LONG_FLAG, SETTINGS_SHORT_FLAG, SETTINGS_LONG_FLAG, ADD_LANG_SHORT_FLAG, ADD_LANG_LONG_FLAG, REMOVE_LANG_LONG_FLAG, REMOVE_LANG_SHORT_FLAG
+	LAST_1_LONG_FLAG, SETTINGS_SHORT_FLAG, SETTINGS_LONG_FLAG, ADD_LANG_SHORT_FLAG, ADD_LANG_LONG_FLAG, REMOVE_LANG_LONG_FLAG, REMOVE_LANG_SHORT_FLAG, \
+	DOUBLE_MODE_STYLE_LONG_FLAG, DOUBLE_MODE_STYLE_SHORT_FLAG, SILENT_LONG_FLAG
 from tests.abstractCliTest import AbstractCliTest
 
 
@@ -20,6 +23,7 @@ class FlagSettingTest(AbstractCliTest):
 	def setUp(self) -> None:
 		super().setUp()
 		Configurations.init(self.get_file_name(), default=self.get_default_configs())
+		TranslationPrinter.turn(True)
 
 	def tearDown(self) -> None:
 		super().tearDown()
@@ -85,7 +89,7 @@ class FlagSettingTest(AbstractCliTest):
 		('short_flag', ADD_LANG_SHORT_FLAG, 'de'),
 	])
 	def test_add_language(self, name, command: str, lang: str):
-		self.cli.parse(f't {command} {lang}')
+		self.cli.parse(f't {command} {lang} {SILENT_LONG_FLAG}')
 		langs = Configurations.get_saved_languages()
 		self.assertIn(f'{lang}', langs)
 
@@ -116,6 +120,19 @@ class FlagSettingTest(AbstractCliTest):
 
 	def test_add_multiple_langs(self):
 		Configurations.add_langs('pl')
-		self.cli.parse('t -al pl pl pl pl pl')
-
+		self.cli.parse(f't -al pl pl pl pl pl {SILENT_LONG_FLAG}')
 		self.assertEqual(1, len(list(filter(lambda l: l == 'pl', Configurations.get_saved_languages()))))
+
+	@parameterized.expand([
+		('by_lang', TranslationTypes.LANG, DOUBLE_MODE_STYLE_LONG_FLAG),
+		('by_word', TranslationTypes.WORD, DOUBLE_MODE_STYLE_LONG_FLAG),
+		('by_nothing_with_single', TranslationTypes.SINGLE, DOUBLE_MODE_STYLE_LONG_FLAG),
+		('by_nothing_with_double', TranslationTypes.DOUBLE, DOUBLE_MODE_STYLE_LONG_FLAG),
+		('by_lang_short', TranslationTypes.LANG, DOUBLE_MODE_STYLE_SHORT_FLAG),
+		('by_word_short', TranslationTypes.WORD, DOUBLE_MODE_STYLE_SHORT_FLAG),
+		('by_nothing_with_single_short', TranslationTypes.SINGLE, DOUBLE_MODE_STYLE_SHORT_FLAG),
+		('by_nothing_with_double_short', TranslationTypes.DOUBLE, DOUBLE_MODE_STYLE_SHORT_FLAG),
+	])
+	def test_double_mode_formatting_in_one_flag(self, name: str, style: TranslationTypes, flag: str):
+		self.cli.parse(f't {flag} {style}')
+		self.assertEqual(style, Configurations.get_conf(DOUBLE_MODE_STYLE_LONG_FLAG))

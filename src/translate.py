@@ -41,7 +41,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't cheat'.split(' ')  # after en zh
+    return 't pl -w mieć chcieć -m es de'.split(' ')  # after en zh
 
 
 def get_default_configs():
@@ -51,6 +51,7 @@ def get_default_configs():
         '--limit': 3,
         '--layout_adjustment_mode': 'none',
         '--adjustment_lang': '',
+        '--double-mode-style': 'Lang',
     }
 
 

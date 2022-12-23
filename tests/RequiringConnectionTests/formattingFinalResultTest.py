@@ -32,7 +32,7 @@ class FormattingFinalResultTest(AbstractCliTest):
 
 	def tearDown(self) -> None:
 		super().tearDown()
-		# Configurations.remove_current_configuration()
+		Configurations.remove_current_configuration()
 
 	@parameterized.expand([
 		('all_args', 't piec pl es', ['horno [masc] (noun);', ' hornear (verb);'], []),
@@ -113,6 +113,7 @@ class FormattingFinalResultTest(AbstractCliTest):
 	@parameterized.expand([
 		('by_double', TranslationTypes.DOUBLE, 't de -w Welt Schmerz -m zh pl', ['zh-Welt: ', 'zh-Schmerz: ', 'pl-Welt: ', 'pl-Schmerz: ']),
 		('by_single', TranslationTypes.SINGLE, 't de -w Welt Schmerz -m zh pl', [''] * 4),
+		('by_none', None, 't de -w Welt Schmerz -m zh pl', [''] * 4),
 	])
 	def test_double_mode_no_group_formatting(self, name: str, style: str, input_line: str, e_prefixes: list[str]):
 		if style:
@@ -132,33 +133,3 @@ class FormattingFinalResultTest(AbstractCliTest):
 				self.assertTrue(line.startswith(expected_prefix))
 			else:
 				self.assertTrue(':' not in line and line[0] != ' ')
-
-'''
----- zh ----------------------------------------------------------------
-what: 什么 [adverb; particle; pronoun] (pronoun); 什麼 [adverb; particle; pronoun] (pronoun); 啥 (pronoun); What's
-is: 是 (verb); ‘be’; 做; 收入补助; 收入补贴; 综合调查the: 愈......愈...... (adv.); 越......越...... (adv.); 这 (noun)
-sense: 感覺 [verb] (noun); 意义 (noun); 感觉 [verb] (noun)
-of: 的 (adposition); 之 (adposition); 关于 (adposition)
-life: 生命 (noun); 生活 (noun); 存在 (noun); 生命 (noun)
----- de ----------------------------------------------------------------
-what: was [pronoun] (adv.); welcher [pronoun] (adj.); wie (pronoun)
-is: ist (verb); alles paletti; es gibt (verb); I (noun); In (noun); IS (noun)
-the: der [article] (Article); die [article] (Article); das [article] (Article); transkription
-sense: Sinn [masc] (noun); fühlen (verb); empfinden (verb); Sensebezirk
-of: von (adposition); aus (adposition); vor (adposition)
-life: Leben [neut] (noun); Lebensdauer [fem] (noun); lebenslänglich (noun); Leben (noun); Spiel des Lebens; Das Leben; Lebenslänglich
----- ru ----------------------------------------------------------------
-what: что [adverb] (pronoun); какой [determiner] (adv.); который [determiner] (pronoun)
-is: есть (verb); есть ’to be; идти (verb); информационная система; комплексное обследование; поддержка малоимущих
-the: тем (adv.); тот (pronoun); такой (determiner); транскрипция (noun)
-sense: чувство [neut] (noun); смысл [masc] (noun); чувствовать [impf] (verb)
-of: из (noun); о (noun); в (noun)
-life: жизнь [fem] (noun); житие [fem] (noun); существование [neut] (noun); Жизнь
----- pl ----------------------------------------------------------------
-what: co [pronoun] (adv.); jaki [pronoun] (determiner); który [pronoun] (determiner)
-is: jest (verb); być (verb); PI
-the: ten [masc] (pronoun); to [neut] (pronoun); ta [fem] (pronoun); transkrypcja (noun)
-sense: zmysł [masc] (noun); sens [masc] (noun); odczuwać (verb)
-of: z (adposition); u (adposition); o (adv.)
-life: życie [neut] (noun); dożywocie [neut] (noun); kara dożywotniego pozbawienia wolności [fem] (noun); Życie
-'''

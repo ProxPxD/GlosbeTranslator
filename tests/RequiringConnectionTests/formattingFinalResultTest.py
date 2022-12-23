@@ -107,9 +107,6 @@ class FormattingFinalResultTest(AbstractCliTest):
 			else:
 				self.assertTrue(line.startswith(f'{next(prefix_iter)}: '))
 
-	def test_double_mode_formatting(self):
-		self.run_current_test_with_params(None)
-
 	@parameterized.expand([
 		('by_double', TranslationTypes.DOUBLE, 't de -w Welt Schmerz -m zh pl', ['zh-Welt: ', 'zh-Schmerz: ', 'pl-Welt: ', 'pl-Schmerz: ']),
 		('by_single', TranslationTypes.SINGLE, 't de -w Welt Schmerz -m zh pl', [''] * 4),

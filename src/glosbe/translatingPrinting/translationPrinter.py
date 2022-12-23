@@ -38,6 +38,6 @@ class TranslationPrinter:
     def print(cls, translations: Iterable[TranslationResult], prefix_style=None, main_division=None) -> None:
         if not cls._is_turned_on:
             return
-        printable = TranslationFormatter.format_many_into_printable_iterable(translations, prefix_style=prefix_style, main_division=main_division, level=1)
+        printable = TranslationFormatter.format_many_into_printable_iterable(translations, prefix_style=prefix_style, main_division=main_division)
         for to_print in printable:
             cls.out(to_print, end='')

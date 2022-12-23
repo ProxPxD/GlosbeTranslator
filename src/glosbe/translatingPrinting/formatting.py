@@ -74,6 +74,8 @@ class AbstractIntoPrintableIterableFormatter:
 
 	@classmethod
 	def format_many_into_printable_iterable(cls, to_formats: Iterable[Any], *, level=0, **kwargs) -> Iterable[str]:
+		if level is None:
+			level = cls._get_starting_group_level(**kwargs)
 		yield from cls._gen_if(cls._get_pre_all(**kwargs))
 		yield from cls._format_many_into_printable_iterable_core(to_formats, level=level, **kwargs)
 		yield from cls._gen_if(cls.post_all)
@@ -81,6 +83,10 @@ class AbstractIntoPrintableIterableFormatter:
 	@classmethod
 	def _is_grouped(cls, **kwargs) -> bool:
 		return False
+
+	@classmethod
+	def _get_starting_group_level(cls, **kwargs) -> int:
+		return 0
 
 	@classmethod
 	def _format_many_into_printable_iterable_core(cls, to_formats: Iterable[Any], level, **kwargs):
@@ -185,7 +191,7 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 
 	sep = ''
 	post_one = '\n'
-	post_all = '\n'
+	post_all = ''
 
 	@classmethod
 	def format(cls, translation: TranslationResult) -> TranslationResult:
@@ -197,7 +203,7 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 		return ''.join(cls.format_into_printable_iterable(**kwargs))
 
 	@classmethod
-	def format_many_into_string(cls, translations: Iterable[TranslationResult], main_division: TranslationTypes = None, prefix_style: TranslationTypes = None, level=0) -> str:
+	def format_many_into_string(cls, translations: Iterable[TranslationResult], main_division: TranslationTypes = None, prefix_style: TranslationTypes = None, level: int =None) -> str:
 		return ''.join(cls.format_many_into_printable_iterable(translations, main_division=main_division, prefix_style=prefix_style, level=level))
 
 	@classmethod
@@ -234,7 +240,11 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 
 	@classmethod
 	def _is_grouped(cls, main_division: TranslationTypes, **kwargs) -> bool:
-		return bool(main_division)
+		return main_division in (TranslationTypes.WORD, TranslationTypes.LANG)
+
+	@classmethod
+	def _get_starting_group_level(cls, main_division: TranslationTypes, **kwargs) -> int:
+		return 1 if cls._is_grouped(main_division) else 0
 
 	@classmethod
 	def _format_core_into_printable_iterable(cls, translation: TranslationResult, **kwargs) -> Iterable[str]:

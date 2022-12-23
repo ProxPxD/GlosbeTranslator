@@ -266,9 +266,9 @@ class TranslatorCli(Cli):
 
     def _translate_double(self) -> None:
         main_division = self.root.get_flag(DOUBLE_MODE_STYLE_LONG_FLAG).get()
-        prefix_stye = self._get_prefix_style_for_main_division(main_division)
+        prefix_style = self._get_prefix_style_for_main_division(main_division)
         return self._translate(lambda: self._translator.double_multi_translate(words=self._words.get_as_list(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
-                               prefix_style=prefix_stye,
+                               prefix_style=prefix_style,
                                main_division=main_division)
 
     def _get_prefix_style_for_main_division(self, main_division: TranslationTypes) -> TranslationTypes:

@@ -4,11 +4,17 @@ from typing import Callable, Iterable
 from more_itertools import unique_everseen
 from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
 
+from constants import FLAGS as F
 from .configurations import Configurations
+from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods, LayoutAdjusterFactory
 from .translating.translator import Translator, TranslationTypes, TranslationResult
 from .translatingPrinting.configDisplayer import ConfigDisplayer
 from .translatingPrinting.translationPrinter import TranslationPrinter
 from .wordFilter import WordFilter
+
+F.M = F.MODES
+F.C = F.CONFIGURATIONAL
+F.F = F.FUNCTIONAL
 
 CURRENT_MODES_COL = 'current_modes'
 FROM_LANGS_COL = 'from_langs'
@@ -16,48 +22,12 @@ TO_LANGS_COL = 'to_langs'
 WORDS_COL = 'words'
 CONFS_COL = 'configurations'
 
-# Modes
-SINGLE_LONG_FLAG = '--single'
-LANG_LONG_FLAG = '--lang'
-WORD_LONG_FLAG = '--word'
-SINGLE_SHORT_FLAG = '-s'
-LANG_SHORT_FLAG = '-m'
-WORD_SHORT_FLAG = '-w'
+just_set = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG)
+just_display = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DEFAULT_MODE_LONG_FLAG, F.C.LANGS_SHOW_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG)
+display_with_arg = (F.C.LAST_LANG_LONG_FLAG, )
+other_config = (F.C.LAST_1_LONG_FLAG, F.C.LAST_2_LONG_FLAG, F.C.ADD_LANG_LONG_FLAG, F.C.REMOVE_LANG_LONG_FLAG, F.C.SETTINGS_LONG_FLAG)
 
-# Flags:
-LANG_LIMIT_LONG_FLAG = '--limit'
-LANG_LIMIT_SHORT_FLAG = '-l'
-LANGS_SHOW_LONG_FLAG = '--langs'
-LANGS_SHOW_SHORT_FLAG = '-ll'
-LAST_LANG_LONG_FLAG = '--last'  # put number
-LAST_1_LONG_FLAG = '--last1'
-LAST_1_SHORT_FLAG = '-1'
-LAST_2_LONG_FLAG = '--last2'
-LAST_2_SHORT_FLAG = '-2'
-DEFAULT_MODE_LONG_FLAG = '--default-mode'
-DEFAULT_MODE_SHORT_FLAG = '-dm'
-SETTINGS_LONG_FLAG = '--settings'
-SETTINGS_SHORT_FLAG = '-ss'
-HELP_LONG_FLAG = '--help'
-HELP_SHORT_FLAG = '-h'
-SILENT_LONG_FLAG = '--silent'
-REVERSE_LONG_FLAG = '--reverse'
-REVERSE_SHORT_FLAG = '-r'
-DOUBLE_MODE_STYLE_LONG_FLAG = '--double-mode-style'  # poss: lang word single/double
-DOUBLE_MODE_STYLE_SHORT_FLAG = '-ds'
-
-# Flags of nodes
-ADD_LANG_LONG_FLAG = '--add-lang'
-ADD_LANG_SHORT_FLAG = '-al'
-REMOVE_LANG_LONG_FLAG = '--remove-lang'
-REMOVE_LANG_SHORT_FLAG = '-rl'
-
-just_set = (LANG_LIMIT_LONG_FLAG, DOUBLE_MODE_STYLE_LONG_FLAG)
-just_display = (LANG_LIMIT_LONG_FLAG, DEFAULT_MODE_LONG_FLAG, LANGS_SHOW_LONG_FLAG, DOUBLE_MODE_STYLE_LONG_FLAG)
-display_with_arg = (LAST_LANG_LONG_FLAG, )
-other_config = (LAST_1_LONG_FLAG, LAST_2_LONG_FLAG, ADD_LANG_LONG_FLAG, REMOVE_LANG_LONG_FLAG, SETTINGS_LONG_FLAG)
-
-modes = (SINGLE_LONG_FLAG, LANG_LONG_FLAG, WORD_LONG_FLAG)
+modes = (F.M.SINGLE_LONG_FLAG, F.M.LANG_LONG_FLAG, F.M.WORD_LONG_FLAG)
 
 
 class TranslatorCli(Cli):
@@ -102,6 +72,8 @@ class TranslatorCli(Cli):
         self._configure_flags()
         self._configure_hidden_nodes()
         self._configure_cli()
+
+        self._add_translation_args_preprocessing_actions()
 
     def turn_on_translating(self) -> None:
         self._is_translating = True
@@ -156,30 +128,30 @@ class TranslatorCli(Cli):
         self._create_functional_flags()
 
     def _create_mode_flags(self) -> None:
-        self._single_flag = self._root.add_flag(SINGLE_LONG_FLAG, SINGLE_SHORT_FLAG)
-        self._lang_flag = self._root.add_flag(LANG_LONG_FLAG, LANG_SHORT_FLAG)
-        self._word_flag = self._root.add_flag(WORD_LONG_FLAG, WORD_SHORT_FLAG)
+        self._single_flag = self._root.add_flag(F.M.SINGLE_LONG_FLAG, F.M.SINGLE_SHORT_FLAG)
+        self._lang_flag = self._root.add_flag(F.M.LANG_LONG_FLAG, F.M.LANG_SHORT_FLAG)
+        self._word_flag = self._root.add_flag(F.M.WORD_LONG_FLAG, F.M.WORD_SHORT_FLAG)
 
     def _create_configurational_flags(self) -> None:
-        self.root.add_flag(LANG_LIMIT_LONG_FLAG, LANG_LIMIT_SHORT_FLAG, flag_lower_limit=0, flag_limit=1)
-        self.root.add_flag(LANGS_SHOW_LONG_FLAG, LANGS_SHOW_SHORT_FLAG, flag_limit=0)
-        self.root.add_flag(LAST_LANG_LONG_FLAG, flag_lower_limit=1, flag_limit=1)
-        self.root.add_flag(LAST_1_LONG_FLAG, LAST_1_SHORT_FLAG, storage_limit=0, default=1)
-        self.root.add_flag(LAST_2_LONG_FLAG, LAST_2_SHORT_FLAG, storage_limit=0, default=2)
-        self.root.add_flag(DEFAULT_MODE_LONG_FLAG, DEFAULT_MODE_SHORT_FLAG, flag_lower_limit=0, flag_limit=1)
-        self.root.add_flag(SETTINGS_LONG_FLAG, SETTINGS_SHORT_FLAG, flag_limit=0)
-        self.root.add_flag(ADD_LANG_SHORT_FLAG, ADD_LANG_LONG_FLAG, flag_lower_limit=1, flag_limit=None)
-        self.root.add_flag(REMOVE_LANG_SHORT_FLAG, REMOVE_LANG_LONG_FLAG, flag_lower_limit=1, flag_limit=None)
-        self.root.add_flag(DOUBLE_MODE_STYLE_LONG_FLAG, DOUBLE_MODE_STYLE_SHORT_FLAG, flag_limit=1)
+        self.root.add_flag(F.C.LANG_LIMIT_LONG_FLAG, F.C.LANG_LIMIT_SHORT_FLAG, flag_lower_limit=0, flag_limit=1)
+        self.root.add_flag(F.C.LANGS_SHOW_LONG_FLAG, F.C.LANGS_SHOW_SHORT_FLAG, flag_limit=0)
+        self.root.add_flag(F.C.LAST_LANG_LONG_FLAG, flag_lower_limit=1, flag_limit=1)
+        self.root.add_flag(F.C.LAST_1_LONG_FLAG, F.C.LAST_1_SHORT_FLAG, storage_limit=0, default=1)
+        self.root.add_flag(F.C.LAST_2_LONG_FLAG, F.C.LAST_2_SHORT_FLAG, storage_limit=0, default=2)
+        self.root.add_flag(F.C.DEFAULT_MODE_LONG_FLAG, F.C.DEFAULT_MODE_SHORT_FLAG, flag_lower_limit=0, flag_limit=1)
+        self.root.add_flag(F.C.SETTINGS_LONG_FLAG, F.C.SETTINGS_SHORT_FLAG, flag_limit=0)
+        self.root.add_flag(F.C.ADD_LANG_SHORT_FLAG, F.C.ADD_LANG_LONG_FLAG, flag_lower_limit=1, flag_limit=None)
+        self.root.add_flag(F.C.REMOVE_LANG_SHORT_FLAG, F.C.REMOVE_LANG_LONG_FLAG, flag_lower_limit=1, flag_limit=None)
+        self.root.add_flag(F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_SHORT_FLAG, flag_limit=1)
 
     def _create_functional_flags(self) -> None:
-        self.root.add_flag(SILENT_LONG_FLAG, flag_limit=0)
-        self.root.add_flag(REVERSE_LONG_FLAG, REVERSE_SHORT_FLAG, flag_limit=0)
+        self.root.add_flag(F.F.SILENT_LONG_FLAG, flag_limit=0)
+        self.root.add_flag(F.F.REVERSE_LONG_FLAG, F.F.REVERSE_SHORT_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()
         self._configure_configuration_flags()
-        self.root.get_flag(SILENT_LONG_FLAG).when_active(lambda: TranslationPrinter.turn(False))
+        self.root.get_flag(F.F.SILENT_LONG_FLAG).when_active(lambda: TranslationPrinter.turn(False))
 
     def _configure_mode_flags(self) -> None:
         self._current_modes.add_to_add_names(self._single_flag, self._lang_flag, self._word_flag)
@@ -187,10 +159,10 @@ class TranslatorCli(Cli):
         self._lang_flag.set_limit(None, storage=self._to_langs)  # infinite
 
     def _configure_configuration_flags(self) -> None:
-        self._root.get_flag(LANG_LIMIT_LONG_FLAG).set_type(int)
-        self._root.get_flag(LAST_LANG_LONG_FLAG).set_type(int)
-        self._root.get_flag(LAST_LANG_LONG_FLAG).set_get_default(Configurations.get_from_language)
-        self.root.get_flag(DOUBLE_MODE_STYLE_LONG_FLAG).set_get_default(lambda: Configurations.get_conf(DOUBLE_MODE_STYLE_LONG_FLAG))
+        self._root.get_flag(F.C.LANG_LIMIT_LONG_FLAG).set_type(int)
+        self._root.get_flag(F.C.LAST_LANG_LONG_FLAG).set_type(int)
+        self._root.get_flag(F.C.LAST_LANG_LONG_FLAG).set_get_default(Configurations.get_from_language)
+        self.root.get_flag(F.C.DOUBLE_MODE_STYLE_LONG_FLAG).set_get_default(lambda: Configurations.get_conf(F.C.DOUBLE_MODE_STYLE_LONG_FLAG))
 
     def _create_params(self) -> None:
         self._to_langs_param = Parameter('to_langs', parameter_lower_limit=0, parameter_limit=None)
@@ -243,7 +215,7 @@ class TranslatorCli(Cli):
 
     def _configure_cli(self) -> None:
         self.when_used_arity_is_equal(lambda: self._word_node.disable_order(2), 2)
-        self.add_post_parse_action_when(self._reverse_langs, lambda: self.root.get_flag(REVERSE_SHORT_FLAG).is_active() and self._single_node.is_active())
+        self.add_post_parse_action_when(self._reverse_langs, lambda: self.root.get_flag(F.F.REVERSE_SHORT_FLAG).is_active() and self._single_node.is_active())
 
     def _reverse_langs(self):
         from_langs = self._from_langs[:]
@@ -265,7 +237,7 @@ class TranslatorCli(Cli):
                                prefix_style=TranslationTypes.WORD)
 
     def _translate_double(self) -> None:
-        main_division = self.root.get_flag(DOUBLE_MODE_STYLE_LONG_FLAG).get()
+        main_division = self.root.get_flag(F.C.DOUBLE_MODE_STYLE_LONG_FLAG).get()
         prefix_style = self._get_prefix_style_for_main_division(main_division)
         return self._translate(lambda: self._translator.double_multi_translate(words=self._words.get_as_list(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
                                prefix_style=prefix_style,
@@ -327,15 +299,15 @@ class TranslatorCli(Cli):
         self._configuration_node.add_action(lambda: self._set_flag_confs(*list(filter(lambda flag: flag.has_name_in(just_set), self._non_translation_flags))))
 
     def _configure_add_lang_option(self) -> None:
-        add_lang_flag = self._root.get_flag(ADD_LANG_LONG_FLAG)
+        add_lang_flag = self._root.get_flag(F.C.ADD_LANG_LONG_FLAG)
         self._configuration_node.add_action_when_is_active(lambda: Configurations.add_langs(*add_lang_flag.get_plain()), add_lang_flag)
 
     def _configure_remove_lang_option(self) -> None:
-        remove_lang_flag = self._root.get_flag(REMOVE_LANG_SHORT_FLAG)
+        remove_lang_flag = self._root.get_flag(F.C.REMOVE_LANG_SHORT_FLAG)
         self._configuration_node.add_action_when_is_active(lambda: Configurations.remove_langs(*remove_lang_flag.get_plain()), remove_lang_flag)
 
     def _configure_default_mode_option(self) -> None:
-        default_mode_flag = self.root.get_flag(DEFAULT_MODE_LONG_FLAG)
+        default_mode_flag = self.root.get_flag(F.C.DEFAULT_MODE_LONG_FLAG)
         set_conf = lambda: Configurations.set_conf(default_mode_flag.name, self.root.get_flag(self._to_flag(default_mode_flag.get())).name)
         self._configuration_node.add_action_when_is_active(set_conf, default_mode_flag)
 
@@ -351,8 +323,8 @@ class TranslatorCli(Cli):
                                           lambda: all(len(flag.get_storage()) == 0 or (flag.name in display_with_arg and len(flag.get_storage()) > 0) for flag in self._non_translation_flags.get_plain()))
 
         self._display_node.add_action(lambda: list(map(lambda conf: ConfigDisplayer.display_config(conf), map(Flag.get_name, filter(lambda flag: flag.has_name_in(just_display), self._non_translation_flags)))))
-        self._display_node.add_action_when_is_active_or(self._display_nth_last_lang, *self.root.get_flags(LAST_LANG_LONG_FLAG, LAST_1_LONG_FLAG, LAST_2_LONG_FLAG))
-        self._display_node.add_action_when_is_active(self._display_settings, self.root.get_flag(SETTINGS_LONG_FLAG))
+        self._display_node.add_action_when_is_active_or(self._display_nth_last_lang, *self.root.get_flags(F.C.LAST_LANG_LONG_FLAG, F.C.LAST_1_LONG_FLAG, F.C.LAST_2_LONG_FLAG))
+        self._display_node.add_action_when_is_active(self._display_settings, self.root.get_flag(F.C.SETTINGS_LONG_FLAG))
 
     def _display_nth_last_lang(self):
         active = next(filter(Flag.is_active, self._non_translation_flags))
@@ -391,3 +363,10 @@ class TranslatorCli(Cli):
                 self._from_langs += -self._words
 
             self._word_filter.reset()
+
+    def _add_translation_args_preprocessing_actions(self) -> None:
+        self.add_args_preprocessing_action(self._adjust_args, lambda: Configurations.get_adjustment_method() in LayoutAdjustmentsMethods.get_adjusting_methods())
+
+    def _adjust_args(self, args: list[str]) -> list[str]:
+        adjuster = LayoutAdjusterFactory.get_layout_adjuster()
+        return [adjuster.adjust(arg) for arg in args]

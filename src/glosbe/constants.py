@@ -2,15 +2,50 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class SHORT_FLAGS:
-    LAYOUT_ADJUSTMENT_MODE: str = '-la'
-    ADJUSTMENT_LANG: str = '-lal'
-
-
-@dataclass(frozen=True)
 class FLAGS:
-    LAYOUT_ADJUSTMENT_MODE: str = '--layout_adjustment_mode'
-    ADJUSTMENT_LANG: str = '--adjustment_lang'
+    @dataclass(frozen=True)
+    class MODES:
+        SINGLE_LONG_FLAG = '--single'
+        LANG_LONG_FLAG = '--lang'
+        WORD_LONG_FLAG = '--word'
+        SINGLE_SHORT_FLAG = '-s'
+        LANG_SHORT_FLAG = '-m'
+        WORD_SHORT_FLAG = '-w'
+
+    @dataclass(frozen=True)
+    class CONFIGURATIONAL:
+        LANG_LIMIT_LONG_FLAG = '--limit'
+        LANG_LIMIT_SHORT_FLAG = '-l'
+        LANGS_SHOW_LONG_FLAG = '--langs'
+        LANGS_SHOW_SHORT_FLAG = '-ll'
+        LAST_LANG_LONG_FLAG = '--last'  # put number
+        LAST_1_LONG_FLAG = '--last1'
+        LAST_1_SHORT_FLAG = '-1'
+        LAST_2_LONG_FLAG = '--last2'
+        LAST_2_SHORT_FLAG = '-2'
+        DEFAULT_MODE_LONG_FLAG = '--default-mode'
+        DEFAULT_MODE_SHORT_FLAG = '-dm'
+        SETTINGS_LONG_FLAG = '--settings'
+        SETTINGS_SHORT_FLAG = '-ss'
+        DOUBLE_MODE_STYLE_LONG_FLAG = '--double-mode-style'  # poss: lang word single/double
+        DOUBLE_MODE_STYLE_SHORT_FLAG = '-ds'
+        LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG = '--layout-adjustment-method'
+        LAYOUT_ADJUSTMENT_METHOD_SHORT_FLAG = '-lam'
+        LAYOUT_ADJUSTMENT_LANG_LONG_FLAG = '--layout-adjustment-lang'
+        LAYOUT_ADJUSTMENT_LANG_SHORT_FLAG = '-lal'
+        ADD_LANG_LONG_FLAG = '--add-lang'
+        ADD_LANG_SHORT_FLAG = '-al'
+        REMOVE_LANG_LONG_FLAG = '--remove-lang'
+        REMOVE_LANG_SHORT_FLAG = '-rl'
+
+    @dataclass(frozen=True)
+    class FUNCTIONAL:
+        SILENT_LONG_FLAG = '--silent'
+        REVERSE_LONG_FLAG = '--reverse'
+        REVERSE_SHORT_FLAG = '-r'
+
+    HELP_LONG_FLAG = '--help'
+    HELP_SHORT_FLAG = '-h'
 
 
 flag_to_description_dict = {

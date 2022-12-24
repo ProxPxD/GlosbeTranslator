@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from typing import Type
+from typing import Type, Iterable
 
 import yaml
 
 from ..configurations import Configurations
+from ..constants import FLAGS
 
 
 class AbstractLayoutAdjuster(ABC):
@@ -26,10 +27,13 @@ class AbstractLayoutAdjuster(ABC):
 
     def _get_dictionary(self) -> dict[str, dict[str, str]]:
         with open("adjusting.yaml", 'r') as adj:
-            adjustings = yaml.safe_load(adj)
-            layout = adjustings[self._get_layout()]
-            dictionary = layout[self._lang] if self._lang in layout else {}
-            return dictionary
+            try:
+                adjustings = yaml.safe_load(adj)
+                layout = adjustings[self._get_layout()]
+                dictionary = layout[self._lang]
+                return dictionary
+            except LookupError:
+                return dict()
 
     @abstractmethod
     def _get_layout(self) -> str:
@@ -52,17 +56,23 @@ class NoneLayoutAdjuster(AbstractLayoutAdjuster):
 
 
 @dataclass(frozen=True)
-class LayoutAdjustmentsModes:
+class LayoutAdjustmentsMethods:
     NONE: str = 'none'
     NATIVE: str = 'native'
     KEYBOARD: str = 'keyboard'
 
     @classmethod
-    def get_adjuster(cls, mode: str) -> Type[AbstractLayoutAdjuster]:
-        match mode:
-            case LayoutAdjustmentsModes.KEYBOARD:
+    def get_adjusting_methods(cls) -> Iterable[str]:
+        to_return = list(cls.__annotations__.keys())
+        to_return.remove(cls.NONE)
+        return to_return
+
+    @classmethod
+    def get_adjuster(cls, method: str) -> Type[AbstractLayoutAdjuster]:
+        match method:
+            case LayoutAdjustmentsMethods.KEYBOARD:
                 return KeyboardLayoutAdjuster
-            case LayoutAdjustmentsModes.NATIVE:
+            case LayoutAdjustmentsMethods.NATIVE:
                 return NativeLayoutAdjuster
             case _:
                 return NoneLayoutAdjuster
@@ -71,7 +81,7 @@ class LayoutAdjustmentsModes:
 class LayoutAdjusterFactory:
 
     @classmethod
-    def get_layout_adjuster(cls, mode: str = None, lang: str = None) -> AbstractLayoutAdjuster:
-        mode = mode or Configurations.get_conf(Configs.LANG_SPEC_ADJUSTMENT)
-        lang = lang or Configurations.get_conf(Configs.ADJUSTMENT_LANG)
-        return LayoutAdjustmentsModes.get_adjuster(mode)(lang)
+    def get_layout_adjuster(cls, method: str = None, lang: str = None) -> AbstractLayoutAdjuster:
+        method = method or Configurations.get_conf(FLAGS.CONFIGURATIONAL.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG)
+        lang = lang or Configurations.get_conf(FLAGS.CONFIGURATIONAL.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG)
+        return LayoutAdjustmentsMethods.get_adjuster(method)(lang)

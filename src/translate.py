@@ -25,7 +25,7 @@ def main():
         sys.argv = get_test_arguments()
 
     try:
-        Configurations.init(default=get_default_configs())
+        Configurations.init()
         logging.basicConfig(filename=Data.LOG_PATH, encoding='utf-8', level=logging.WARNING, format='%(levelname)s: %(message)s ')
         cli = TranslatorCli(sys.argv)
         cli.parse()
@@ -42,17 +42,6 @@ def main():
 
 def get_test_arguments():
     return 't en -m zh de ru pl -w what is the sense of life'.split(' ')  # why so long?
-
-
-def get_default_configs():
-    return {
-        '--default-mode': '--single',
-        '--langs': [],
-        '--limit': 3,
-        '--layout_adjustment_mode': 'none',
-        '--adjustment_lang': '',
-        '--double-mode-style': 'Lang',
-    }
 
 
 if __name__ == '__main__':

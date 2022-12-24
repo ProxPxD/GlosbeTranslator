@@ -6,7 +6,13 @@ from typing import Any, Iterable
 
 from more_itertools import partition
 
+from .constants import FLAGS
+from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods
+from .translating.translator import TranslationTypes
 from .translatingPrinting.translationPrinter import TranslationPrinter
+
+C = FLAGS.CONFIGURATIONAL
+M = FLAGS.MODES
 
 
 @dataclass(frozen=True)
@@ -26,6 +32,15 @@ class Configurations:
 
     _configs: dict = None
     _current_config_file: Path = ''
+
+    defaults = {
+        C.DEFAULT_MODE_LONG_FLAG: M.SINGLE_LONG_FLAG,
+        C.LANGS_SHOW_LONG_FLAG: [],
+        C.LANG_LIMIT_LONG_FLAG: 3,
+        C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG: LayoutAdjustmentsMethods.NONE,
+        C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG: '',
+        C.DOUBLE_MODE_STYLE_LONG_FLAG: TranslationTypes.LANG,
+    }
 
     @classmethod
     def init(cls, file_name=Paths.DEFAULT_CONF_FILE_NAME, default=None) -> None:
@@ -86,7 +101,19 @@ class Configurations:
 
     @classmethod
     def get_conf(cls, name: str) -> Any:  # TODO: think of default configs and setting them in case of new features
+        if name not in Configurations._configs:
+            cls._set_default_value_for(name)
         return Configurations._configs[name]
+
+    @classmethod
+    def _set_default_value_for(cls, conf: str) -> None:
+        default = cls._get_default_value_for(conf)
+        if default is not None:
+            cls._configs[conf] = default
+
+    @classmethod
+    def _get_default_value_for(cls, conf: str) -> Any:
+        return cls.defaults[conf] if conf in cls.defaults else None
 
     @classmethod
     def add_langs(cls, *arguments: str) -> None:
@@ -99,7 +126,7 @@ class Configurations:
 
     @classmethod
     def remove_langs(cls, *arguments: str):
-        langs = Configurations.get_saved_languages()
+        langs = cls.get_saved_languages()
         not_saved, saved = partition(lambda lang: lang in langs, arguments)
         for lang in saved:
             langs.remove(lang)
@@ -108,15 +135,15 @@ class Configurations:
 
     @classmethod
     def get_default_translation_mode(cls) -> str:
-        return Configurations.get_conf('--default-mode')
+        return cls.get_conf(C.DEFAULT_MODE_LONG_FLAG)
 
     @classmethod
     def get_saved_languages(cls) -> list[str]:
-        return Configurations.get_conf('--langs')
+        return cls.get_conf(C.LANGS_SHOW_LONG_FLAG)
 
     @classmethod
     def get_from_language(cls) -> str:
-        return Configurations.get_nth_saved_language(1)
+        return cls.get_nth_saved_language(1)
 
     @classmethod
     def get_nth_saved_language(cls, index: int, *to_skips: str) -> str:
@@ -124,15 +151,23 @@ class Configurations:
         return next(islice(langs, int(index), None), None)
 
     @classmethod
+    def get_adjustment_method(cls) -> str:
+        return cls.get_conf(C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG)
+
+    @classmethod
+    def get_adjustment_lang(cls) -> str:
+        return cls.get_conf(C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG)
+
+    @classmethod
     def load_config_languages_by_limit(cls, *to_skips: str, limit=None) -> Iterable[str]:
         if limit is None:
-            limit = int(Configurations.get_conf('--limit'))
+            limit = int(Configurations.get_conf(C.LANG_LIMIT_LONG_FLAG))
         langs = cls.load_config_languages(*to_skips)
         return islice(langs, limit)
 
     @classmethod
     def load_config_languages(cls, *to_skips: str) -> Iterable[str]:
-        langs: list = Configurations.get_conf('--langs')[:]
+        langs: list = Configurations.get_conf(C.LANGS_SHOW_LONG_FLAG)[:]
         return filter(lambda lang: lang not in to_skips, langs)
 
     @classmethod
@@ -142,4 +177,4 @@ class Configurations:
             if lang in languages:
                 languages.remove(lang)
                 languages.insert(0, lang)
-        Configurations.change_conf('--langs', languages)
+        Configurations.change_conf(C.LANGS_SHOW_LONG_FLAG, languages)

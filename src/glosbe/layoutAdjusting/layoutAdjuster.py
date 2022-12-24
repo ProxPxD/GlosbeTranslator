@@ -6,9 +6,6 @@ from typing import Type, Iterable
 
 import yaml
 
-from ..configurations import Configurations
-from ..constants import FLAGS
-
 
 class AbstractLayoutAdjuster(ABC):
 
@@ -63,9 +60,7 @@ class LayoutAdjustmentsMethods:
 
     @classmethod
     def get_adjusting_methods(cls) -> Iterable[str]:
-        to_return = list(cls.__annotations__.keys())
-        to_return.remove(cls.NONE)
-        return to_return
+        return list(value for value in cls.__annotations__.keys() if cls.__dict__[value] != cls.NONE)
 
     @classmethod
     def get_adjuster(cls, method: str) -> Type[AbstractLayoutAdjuster]:
@@ -82,6 +77,4 @@ class LayoutAdjusterFactory:
 
     @classmethod
     def get_layout_adjuster(cls, method: str = None, lang: str = None) -> AbstractLayoutAdjuster:
-        method = method or Configurations.get_conf(FLAGS.CONFIGURATIONAL.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG)
-        lang = lang or Configurations.get_conf(FLAGS.CONFIGURATIONAL.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG)
         return LayoutAdjustmentsMethods.get_adjuster(method)(lang)

@@ -1,9 +1,10 @@
-import json
+
 from dataclasses import dataclass
 from itertools import islice
 from pathlib import Path
 from typing import Any, Iterable
 
+import yaml
 from more_itertools import partition
 
 from .constants import FLAGS
@@ -19,7 +20,7 @@ M = FLAGS.MODES
 class Paths:
     WORKING_DIR = Path(__file__).parent.parent.parent
     RESOURCES_DIR = WORKING_DIR / 'resources'
-    DEFAULT_CONF_FILE_NAME: str = 'configurations.json'
+    DEFAULT_CONF_FILE_NAME: str = 'configurations.yaml'
 
 
 @dataclass(frozen=True)
@@ -56,7 +57,7 @@ class Configurations:
     @classmethod
     def _get_configurations(cls) -> dict[str, Any]:
         with open(cls._current_config_file, 'r') as f:
-            configs = json.load(f)
+            configs = yaml.safe_load(f) or {}
         return configs
 
     @classmethod
@@ -74,13 +75,14 @@ class Configurations:
 
     @classmethod
     def _save(cls, configs: dict) -> None:
-        with open(cls._current_config_file, 'w') as f:
-            json.dump(configs, f, indent=4, sort_keys=True)
+        with open(cls._current_config_file, 'w') as config_file:
+            yaml.safe_dump(configs, config_file, default_flow_style=False)
 
     @classmethod
     def init_file(cls, values=None) -> None:
-        to_save = values if values else {}
-        Configurations._save(to_save)
+        cls._current_config_file.touch()
+        if values:
+            Configurations._save(values)
 
     @classmethod
     def change_conf(cls, conf: str, value) -> None:

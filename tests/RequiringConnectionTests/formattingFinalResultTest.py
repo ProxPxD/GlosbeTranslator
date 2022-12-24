@@ -4,10 +4,10 @@ from more_itertools import take
 from parameterized import parameterized
 
 from src.glosbe.configurations import Configurations
+from src.glosbe.constants import FLAGS as F
 from src.glosbe.translating.translator import TranslationTypes
 from src.glosbe.translatingPrinting.formatting import TranslationFormatter
 from src.glosbe.translatingPrinting.translationPrinter import TranslationPrinter
-from src.glosbe.translatorCli import SILENT_LONG_FLAG, SINGLE_LONG_FLAG, DOUBLE_MODE_STYLE_LONG_FLAG
 from tests.abstractCliTest import AbstractCliTest
 
 
@@ -43,7 +43,7 @@ class FormattingFinalResultTest(AbstractCliTest):
 		if last_langs:
 			Configurations.change_last_used_languages(*last_langs)
 
-		input_line += f' {SILENT_LONG_FLAG} {SINGLE_LONG_FLAG}'
+		input_line += f' {F.F.SILENT_LONG_FLAG} {F.F.SINGLE_LONG_FLAG}'
 
 		result = self.cli.parse(input_line)
 		formatted = TranslationFormatter.format_many(result.result)
@@ -69,7 +69,7 @@ class FormattingFinalResultTest(AbstractCliTest):
 
 		prefix_style = TranslationTypes.WORD if '-w' in input_line else TranslationTypes.LANG
 
-		input_line += f' {SILENT_LONG_FLAG}'
+		input_line += f' {F.F.SILENT_LONG_FLAG}'
 		result = self.cli.parse(input_line)
 
 		formatted = TranslationFormatter.format_many(result.result)
@@ -85,7 +85,7 @@ class FormattingFinalResultTest(AbstractCliTest):
 	])
 	def test_double_mode_formatting(self, name: str, style: str, input_line: str, e_groups: list[str], e_prefixes: list[str]):
 		if style:
-			Configurations.set_conf(DOUBLE_MODE_STYLE_LONG_FLAG, style)
+			Configurations.set_conf(F.C.DOUBLE_MODE_STYLE_LONG_FLAG, style)
 		result = self.cli.parse(input_line)
 
 		main_division = style
@@ -114,7 +114,7 @@ class FormattingFinalResultTest(AbstractCliTest):
 	])
 	def test_double_mode_no_group_formatting(self, name: str, style: str, input_line: str, e_prefixes: list[str]):
 		if style:
-			Configurations.set_conf(DOUBLE_MODE_STYLE_LONG_FLAG, style)
+			Configurations.set_conf(F.C.DOUBLE_MODE_STYLE_LONG_FLAG, style)
 
 		result = self.cli.parse(input_line)
 		formatted = TranslationFormatter.format_many(result.result)

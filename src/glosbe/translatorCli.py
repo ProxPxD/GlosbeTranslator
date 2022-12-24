@@ -4,8 +4,8 @@ from typing import Callable, Iterable
 from more_itertools import unique_everseen
 from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
 
-from constants import FLAGS as F
 from .configurations import Configurations
+from .constants import FLAGS as F
 from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods, LayoutAdjusterFactory
 from .translating.translator import Translator, TranslationTypes, TranslationResult
 from .translatingPrinting.configDisplayer import ConfigDisplayer
@@ -284,6 +284,7 @@ class TranslatorCli(Cli):
         self._double_multi_node.set_possible_param_order('')
 
     # TODO: add information printing after setting a conf
+    # TODO: add possible values checking (also in smartcli)
     def _configure_configuration_node(self) -> None:
         self._configuration_node.add_param(self._configuration_args)
         self._configuration_node.set_active_and(lambda: len(self._non_translation_flags) > 0,
@@ -368,5 +369,7 @@ class TranslatorCli(Cli):
         self.add_args_preprocessing_action(self._adjust_args, lambda: Configurations.get_adjustment_method() in LayoutAdjustmentsMethods.get_adjusting_methods())
 
     def _adjust_args(self, args: list[str]) -> list[str]:
-        adjuster = LayoutAdjusterFactory.get_layout_adjuster()
+        method = Configurations.get_adjustment_method()
+        lang = Configurations.get_adjustment_lang()
+        adjuster = LayoutAdjusterFactory.get_layout_adjuster(method, lang)
         return [adjuster.adjust(arg) for arg in args]

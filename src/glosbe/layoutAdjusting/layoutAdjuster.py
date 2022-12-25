@@ -39,17 +39,17 @@ class AbstractLayoutAdjuster(ABC):
 
 class KeyboardLayoutAdjuster(AbstractLayoutAdjuster):
     def _get_layout(self) -> str:
-        return 'keyboard'
+        return LayoutAdjustmentsMethods.KEYBOARD
 
 
 class NativeLayoutAdjuster(AbstractLayoutAdjuster):
     def _get_layout(self) -> str:
-        return 'native'
+        return LayoutAdjustmentsMethods.NATIVE
 
 
 class NoneLayoutAdjuster(AbstractLayoutAdjuster):
     def _get_layout(self) -> str:
-        return 'none'
+        return LayoutAdjustmentsMethods.NONE
 
 
 @dataclass(frozen=True)

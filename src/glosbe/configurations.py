@@ -81,8 +81,8 @@ class Configurations:
     @classmethod
     def init_file(cls, values=None) -> None:
         cls._current_config_file.touch()
-        if values:
-            Configurations._save(values)
+        values = values or cls.defaults
+        Configurations._save(values)
 
     @classmethod
     def change_conf(cls, conf: str, value) -> None:

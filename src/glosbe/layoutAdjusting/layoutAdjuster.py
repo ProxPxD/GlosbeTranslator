@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Type, Iterable
 
 import yaml
+
+ADJUSTMENT_FILE = Path(__file__).parent / 'adjusting.yaml'
 
 
 class AbstractLayoutAdjuster(ABC):
@@ -23,7 +26,7 @@ class AbstractLayoutAdjuster(ABC):
         return self._dictionary[word] if word in self._dictionary else word
 
     def _get_dictionary(self) -> dict[str, dict[str, str]]:
-        with open("adjusting.yaml", 'r') as adj:
+        with open(ADJUSTMENT_FILE, 'r') as adj:
             try:
                 adjustings = yaml.safe_load(adj)
                 layout = adjustings[self._get_layout()]
@@ -60,7 +63,7 @@ class LayoutAdjustmentsMethods:
 
     @classmethod
     def get_adjusting_methods(cls) -> Iterable[str]:
-        return list(value for value in cls.__annotations__.keys() if cls.__dict__[value] != cls.NONE)
+        return list(cls.__dict__[value] for value in cls.__annotations__.keys() if cls.__dict__[value] != cls.NONE)
 
     @classmethod
     def get_adjuster(cls, method: str) -> Type[AbstractLayoutAdjuster]:

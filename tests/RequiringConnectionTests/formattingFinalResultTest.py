@@ -43,7 +43,7 @@ class FormattingFinalResultTest(AbstractCliTest):
 		if last_langs:
 			Configurations.change_last_used_languages(*last_langs)
 
-		input_line += f' {F.F.SILENT_LONG_FLAG} {F.F.SINGLE_LONG_FLAG}'
+		input_line += f' {F.F.SILENT_LONG_FLAG} {F.M.SINGLE_LONG_FLAG}'
 
 		result = self.cli.parse(input_line)
 		formatted = TranslationFormatter.format_many(result.result)

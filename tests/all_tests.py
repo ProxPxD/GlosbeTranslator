@@ -1,5 +1,6 @@
 import unittest
 
+from tests.LayoutAdjusterTest import LayoutAdjusterTest
 from tests.abstractTest import AbstractTest
 from tests.configurationTest import ConfigurationTest
 from tests.flagSettingTest import FlagSettingTest
@@ -21,6 +22,7 @@ tests = [
     FlagSettingTest,
     FunctionalFlagsTest,
     ConfigurationTest,
+    LayoutAdjusterTest,
 ]
 
 

@@ -59,7 +59,7 @@ class Parser:
         return self._get_ith(spans, 0)
 
     def _get_gender(self, spans: list[Tag, ...]) -> str:
-        return self._get_ith(spans, 1)[1:-1]
+        return self._get_ith(spans, 1)
 
     def _get_ith(self, items: list[Tag, ...], i: int):
         return items[i].text if len(items) > i else ''

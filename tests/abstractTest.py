@@ -3,9 +3,7 @@ import unittest
 from typing import Iterable
 
 from src.glosbe.configurations import Configurations
-from src.glosbe.constants import FLAGS
-
-F = FLAGS
+from src.glosbe.constants import FLAGS as F
 
 
 class AbstractTest(unittest.TestCase, abc.ABC):

@@ -12,10 +12,6 @@ from .translatingPrinting.configDisplayer import ConfigDisplayer
 from .translatingPrinting.translationPrinter import TranslationPrinter
 from .wordFilter import WordFilter
 
-F.M = F.MODES
-F.C = F.CONFIGURATIONAL
-F.F = F.FUNCTIONAL
-
 CURRENT_MODES_COL = 'current_modes'
 FROM_LANGS_COL = 'from_langs'
 TO_LANGS_COL = 'to_langs'

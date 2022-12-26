@@ -1,4 +1,5 @@
 import logging
+import shlex
 import sys
 import traceback
 from dataclasses import dataclass
@@ -41,7 +42,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't en -m zh de ru pl -w what is the sense of life'.split(' ')  # why so long?
+    return shlex.split('t single en zh')  # why so long?
 
 
 if __name__ == '__main__':

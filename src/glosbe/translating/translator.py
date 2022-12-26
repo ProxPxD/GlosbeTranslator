@@ -20,7 +20,7 @@ class TranslationTypes:
 @dataclass
 class TranslationResult:
     trans_args: TransArgs = field(default_factory=lambda: TransArgs())
-    records: list[Record] = field(default_factory=lambda: [])
+    records: Iterable[Record] = field(default_factory=lambda: [])
     type = TranslationTypes.SINGLE
 
 
@@ -96,7 +96,7 @@ class Translator:
             return TranslationResult(trans_args, [Record(self._get_status_code_message(err))])
         return TranslationResult(trans_args, records)
 
-    def _translate_from_attributes(self) -> list[Record]:
+    def _translate_from_attributes(self) -> Iterable[Record]:
         page: requests.Response = self._connector.get_page()
         self._parser.set_page(page)
         return self._parser.parse()

@@ -3,9 +3,7 @@ import logging
 import sys
 from dataclasses import dataclass
 
-from translating.argumentParsing import configChanger
-from translating.argumentParsing import configDisplayer
-from translating.argumentParsing import configurations
+from translating.argumentParsing import configChanger, configDisplayer, configurations
 from translating.argumentParsing.configurations import Configurations
 from translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
 from translating.argumentParsing.parsingException import ParsingException
@@ -49,7 +47,7 @@ def main():
 
 
 def get_test_arguments():
-    return 't -la'.split(' ')  # t laborious en uk
+    return 't mąż pl de -s'.split(' ')  # t laborious en uk
 
 
 def translate_and_print(argument_parser: IntelligentArgumentParser):

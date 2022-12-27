@@ -11,6 +11,7 @@ from src.glosbe.translatingPrinting.translationPrinter import TranslationPrinter
 from tests.abstractCliTest import AbstractCliTest
 
 
+# TODO: add no website test cases
 class FormattingFinalResultTest(AbstractCliTest):
 
 	@classmethod

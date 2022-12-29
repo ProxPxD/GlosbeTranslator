@@ -51,6 +51,7 @@ class FLAGS:
     F = FUNCTIONAL
     M = MODES
 
+
     # _descriptions = {
     #     CONFIGURATIONAL.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG: "Replaces language-specific characters with corresponding characters of latin alphabet. 'keyboard'" \
     #                                 " option replaces characters with those of the same placement at default English layout."\

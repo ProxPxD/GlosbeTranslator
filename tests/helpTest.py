@@ -20,5 +20,19 @@ class HelpTest(AbstractCliTest):
 	])
 	@skipIf(lambda: HelpTest.cli.root.help == '', 'no help implemented')
 	def test_help_printing(self, name: str, input_line: str):
-		self.cli.parse_without_actions(input_line)
+		self.cli.parse(input_line)
 		self.fail(NotImplementedError.__name__)
+
+
+'''
+	root.help.name = 'trans'
+            root.help.short_description = 'Translates any word from and to any language'
+            single_node.help.short_description = 'Translates a single word'
+            single_node.help.synopsis = 'trans <WORD> [FROM_LANG] [TO_LANG]'
+            word_node.help.short_description = 'Translates many words to a single node'
+            word_node.help.synopsis = 'trans [FROM_LANG] [TO_LANG] [-w] <WORD>...'
+            lang_node.help.short_description = 'Translates a word to many languages'
+            lang_node.help.synopsis = 'trans <WORD> [FROM_LANG] [-m] <TO_LANG>...'
+            double_multi_node.help.short_description = 'Translates many words into many languages'
+            double_multi_node.help.synopsis = 'trans [FROM_LANG] -w <WORD>... -m <TO_LANG>... '
+            '''

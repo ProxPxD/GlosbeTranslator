@@ -42,7 +42,7 @@ def main():
 
 
 def get_test_arguments():
-    return shlex.split('t mieć pl de')  # why so long?
+    return shlex.split('t -h')  # why so long?
 
 
 if __name__ == '__main__':

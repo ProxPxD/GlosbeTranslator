@@ -71,6 +71,8 @@ class TranslatorCli(Cli):
 
         self._add_translation_args_preprocessing_actions()
 
+        self._create_help()
+
     def turn_on_translating(self) -> None:
         self._is_translating = True
 
@@ -136,8 +138,8 @@ class TranslatorCli(Cli):
         self.root.add_flag(F.C.LAST_2_LONG_FLAG, F.C.LAST_2_SHORT_FLAG, storage_limit=0, default=2)
         self.root.add_flag(F.C.DEFAULT_MODE_LONG_FLAG, F.C.DEFAULT_MODE_SHORT_FLAG, flag_lower_limit=0, flag_limit=1)
         self.root.add_flag(F.C.SETTINGS_LONG_FLAG, F.C.SETTINGS_SHORT_FLAG, flag_limit=0)
-        self.root.add_flag(F.C.ADD_LANG_SHORT_FLAG, F.C.ADD_LANG_LONG_FLAG, flag_lower_limit=1, flag_limit=None)
-        self.root.add_flag(F.C.REMOVE_LANG_SHORT_FLAG, F.C.REMOVE_LANG_LONG_FLAG, flag_lower_limit=1, flag_limit=None)
+        self.root.add_flag(F.C.ADD_LANG_LONG_FLAG, F.C.ADD_LANG_SHORT_FLAG, flag_lower_limit=1, flag_limit=None)
+        self.root.add_flag(F.C.REMOVE_LANG_LONG_FLAG, F.C.REMOVE_LANG_SHORT_FLAG, flag_lower_limit=1, flag_limit=None)
         self.root.add_flag(F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_SHORT_FLAG, flag_limit=1)
 
     def _create_functional_flags(self) -> None:
@@ -198,7 +200,7 @@ class TranslatorCli(Cli):
 
     def _configure_main_translation_node(self) -> None:
         self._translation_node.set_only_hidden_nodes()
-        self._translation_node.set_active(self._configuration_node.is_inactive, self._display_node.is_inactive)
+        self._translation_node.set_active(self._configuration_node.is_inactive, self._display_node.is_inactive, but_not=(lambda: self.root.get_flag(F.HELP_LONG_FLAG).is_active(),))
         # self._translation_node.set_inactive_on_conditions(lambda: not len(self._args))
 
     def _configure_single_node(self) -> None:
@@ -369,3 +371,35 @@ class TranslatorCli(Cli):
         lang = Configurations.get_adjustment_lang()
         adjuster = LayoutAdjusterFactory.get_layout_adjuster(method, lang)
         return [adjuster.adjust(arg) for arg in args]
+
+    def _create_help(self) -> None:
+        self.root.add_general_help_flag_to_all(F.HELP_LONG_FLAG, F.HELP_SHORT_FLAG)
+        self._create_translation_nodes_help()
+
+    def _create_translation_nodes_help(self) -> None:
+        self._single_node.help.short_description = 'Translates one word from and to one language'
+        self._single_node.help.long_description = ''
+        self._single_node.help.synopsis = 'trans <WORD> [FROM_LANG] [TO_LANG]'
+        self._word_node.help.short_description = 'Translates many words from one language and to one language'
+        self._word_node.help.long_description = ''
+        self._word_node.help.synopsis = 'trans [FROM_LANG] [TO_LANG] [-w] <WORD>...'
+        self._lang_node.help.short_description = 'Translates a word from a single language to many languages'
+        self._lang_node.help.short_description = ''
+        self._lang_node.help.synopsis = 'trans <WORD> [FROM_LANG] [-m] <TO_LANG>...'
+        self._double_multi_node.help.short_description = 'Translates many words from a single language into many languages'
+        self._double_multi_node.help.long_description = ''
+        self._double_multi_node.help.synopsis = 'trans [FROM_LANG] -w <WORD>... -m <TO_LANG>... '
+
+        self.root.help.name = 'trans'
+        self.root.help.short_description = 'Translation program'
+        self.root.help.long_description = ''\
+            'The translator allows to translate a word from and to every language supported by Glosbe translator (glosbe.com). '\
+            'The program has single mode that allows to perform a single translation (one word from one language to one language); '\
+            'multi-lang mode that allows to translate a word from one language into multiple languages; '\
+            'multi-word mode that allows to translate many words into and from one language and also'\
+            'double mode that allows to translate many words into many languages from a selected language.'
+        self.root.help.synopsis = ''\
+            + f'{self._single_node.name}: {self._single_node.help.synopsis}\n'\
+            + f'{self._lang_node.name}: {self._lang_node.help.synopsis}\n'\
+            + f'{self._word_node.name}: {self._word_node.help.synopsis}\n'\
+            + f'{self._double_multi_node.name}: {self._double_multi_node.help.synopsis}\n'

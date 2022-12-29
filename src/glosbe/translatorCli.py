@@ -145,7 +145,7 @@ class TranslatorCli(Cli):
     def _create_functional_flags(self) -> None:
         self.root.add_flag(F.F.SILENT_LONG_FLAG, flag_limit=0)
         self.root.add_flag(F.F.REVERSE_LONG_FLAG, F.F.REVERSE_SHORT_FLAG, flag_limit=0)
-        self.root.add_flag(F.F.SYNOPSIS_LONG_FLAG, flag_limit=0)
+        self.root.add_flag(F.F.SYNOPSIS_LONG_FLAG, F.F.SYNOPSIS_SHORT_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()

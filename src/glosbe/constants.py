@@ -44,6 +44,7 @@ class FLAGS:
         REVERSE_LONG_FLAG = '--reverse'
         REVERSE_SHORT_FLAG = '-r'
         SYNOPSIS_LONG_FLAG = '--synopsis'
+        SYNOPSIS_SHORT_FLAG = '-syn'
 
     HELP_LONG_FLAG = '--help'
     HELP_SHORT_FLAG = '-h'

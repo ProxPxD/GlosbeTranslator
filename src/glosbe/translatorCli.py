@@ -21,7 +21,7 @@ CONFS_COL = 'configurations'
 just_set = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG)
 just_display = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DEFAULT_MODE_LONG_FLAG, F.C.LANGS_SHOW_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG)
 display_with_arg = (F.C.LAST_LANG_LONG_FLAG, )
-other_config = (F.C.LAST_1_LONG_FLAG, F.C.LAST_2_LONG_FLAG, F.C.ADD_LANG_LONG_FLAG, F.C.REMOVE_LANG_LONG_FLAG, F.C.SETTINGS_LONG_FLAG)
+other_config = (F.C.LAST_1_LONG_FLAG, F.C.LAST_2_LONG_FLAG, F.C.ADD_LANG_LONG_FLAG, F.C.REMOVE_LANG_LONG_FLAG, F.C.SETTINGS_LONG_FLAG, F.F.SYNOPSIS_LONG_FLAG)
 
 modes = (F.M.SINGLE_LONG_FLAG, F.M.LANG_LONG_FLAG, F.M.WORD_LONG_FLAG)
 
@@ -145,11 +145,12 @@ class TranslatorCli(Cli):
     def _create_functional_flags(self) -> None:
         self.root.add_flag(F.F.SILENT_LONG_FLAG, flag_limit=0)
         self.root.add_flag(F.F.REVERSE_LONG_FLAG, F.F.REVERSE_SHORT_FLAG, flag_limit=0)
+        self.root.add_flag(F.F.SYNOPSIS_LONG_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()
         self._configure_configuration_flags()
-        self.root.get_flag(F.F.SILENT_LONG_FLAG).when_active(lambda: TranslationPrinter.turn(False))
+        self._configure_functional_flags()
 
     def _configure_mode_flags(self) -> None:
         self._current_modes.add_to_add_names(self._single_flag, self._lang_flag, self._word_flag)
@@ -161,6 +162,10 @@ class TranslatorCli(Cli):
         self._root.get_flag(F.C.LAST_LANG_LONG_FLAG).set_type(int)
         self._root.get_flag(F.C.LAST_LANG_LONG_FLAG).set_get_default(Configurations.get_from_language)
         self.root.get_flag(F.C.DOUBLE_MODE_STYLE_LONG_FLAG).set_get_default(lambda: Configurations.get_conf(F.C.DOUBLE_MODE_STYLE_LONG_FLAG))
+
+    def _configure_functional_flags(self) -> None:
+        self.root.get_flag(F.F.SILENT_LONG_FLAG).when_active(lambda: TranslationPrinter.turn(False))
+        self.root.get_flag(F.F.SYNOPSIS_LONG_FLAG).when_active(lambda: TranslationPrinter.out(self.root.help.synopsis))
 
     def _create_params(self) -> None:
         self._to_langs_param = Parameter('to_langs', parameter_lower_limit=0, parameter_limit=None)
@@ -318,8 +323,8 @@ class TranslatorCli(Cli):
         return f'-{to_flag}' if len(to_flag) < 3 else f'--{to_flag}'
 
     def _configure_display_node(self) -> None:
-        self._display_node.set_active_and(lambda: len(self._non_translation_flags) > 0,
-                                          lambda: all(len(flag.get_storage()) == 0 or (flag.name in display_with_arg and len(flag.get_storage()) > 0) for flag in self._non_translation_flags.get_plain()))
+        self._display_node.set_active(lambda: len(self._non_translation_flags) > 0,
+                                      lambda: all(len(flag.get_storage()) == 0 or (flag.name in display_with_arg and len(flag.get_storage()) > 0) for flag in self._non_translation_flags.get_plain()))
 
         self._display_node.add_action(lambda: list(map(lambda conf: ConfigDisplayer.display_config(conf), map(Flag.get_name, filter(lambda flag: flag.has_name_in(just_display), self._non_translation_flags)))))
         self._display_node.add_action_when_is_active_or(self._display_nth_last_lang, *self.root.get_flags(F.C.LAST_LANG_LONG_FLAG, F.C.LAST_1_LONG_FLAG, F.C.LAST_2_LONG_FLAG))
@@ -402,4 +407,4 @@ class TranslatorCli(Cli):
             + f'{self._single_node.name}: {self._single_node.help.synopsis}\n'\
             + f'{self._lang_node.name}: {self._lang_node.help.synopsis}\n'\
             + f'{self._word_node.name}: {self._word_node.help.synopsis}\n'\
-            + f'{self._double_multi_node.name}: {self._double_multi_node.help.synopsis}\n'
+            + f'{self._double_multi_node.name}: {self._double_multi_node.help.synopsis}'

@@ -43,6 +43,7 @@ class FLAGS:
         SILENT_LONG_FLAG = '--silent'
         REVERSE_LONG_FLAG = '--reverse'
         REVERSE_SHORT_FLAG = '-r'
+        SYNOPSIS_LONG_FLAG = '--synopsis'
 
     HELP_LONG_FLAG = '--help'
     HELP_SHORT_FLAG = '-h'

@@ -3,6 +3,7 @@ import unittest
 from tests.LayoutAdjusterTest import LayoutAdjusterTest
 from tests.abstractTest import AbstractTest
 from tests.configurationTest import ConfigurationTest
+from tests.doubleModeCliTest import DoubleModeCliTest
 from tests.flagSettingTest import FlagSettingTest
 from tests.formattingTest import FormattingTest
 from tests.funtionalFlagsTest import FunctionalFlagsTest
@@ -16,6 +17,7 @@ tests = [
     SingleModeCliTest,
     MultiLangCliTest,
     MultiWordCliTest,
+    DoubleModeCliTest,
     MisplacedTest,
     FormattingTest,
     HelpTest,

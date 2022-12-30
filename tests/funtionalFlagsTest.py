@@ -27,3 +27,8 @@ class FunctionalFlagsTest(AbstractCliTest):
 		self.assertCountEqual(e_words, words.get_as_list())
 		self.assertCountEqual(e_from_langs, from_lang.get_as_list())
 		self.assertCountEqual(e_to_langs, to_langs.get_as_list())
+
+	@parameterized.expand([
+	])
+	def test_from_lang_flag(self, name: str, input_line: str, e_words: list[str], e_from_langs: list[str], e_to_langs: list[str], default_mode: str):
+		self.fail(NotImplementedError.__name__)

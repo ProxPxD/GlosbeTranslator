@@ -9,6 +9,7 @@ class DoubleModeCliTest(AbstractCliTest):
 		return 'Double Mode'
 
 	@parameterized.expand([
+		('', [], '', [], '')
 	])
-	def test_parsing(self, name: str, e_word: str, e_from_lang: str, e_to_langs: str, input_line: str):
+	def test_parsing(self, name: str, e_word: list[str], e_from_lang: str, e_to_langs: list[str], input_line: str):
 		self.fail(NotImplementedError.__name__)

@@ -48,6 +48,7 @@ class AbstractIntoPrintableIterableFormatter:
 	post_one = ''
 	pre_group = ''
 	post_group = ''
+	no_value = None
 
 	@classmethod
 	def _gen_if(cls, to_yield: str):
@@ -97,12 +98,19 @@ class AbstractIntoPrintableIterableFormatter:
 
 	@classmethod
 	def _format_without_groups(cls, to_formats: Iterable[Any], **kwargs) -> Iterable[str]:
-		is_not_first = False
+		is_first = True
 		for to_format in to_formats:
-			if is_not_first:
+			if not is_first:
 				yield cls.sep
 			yield from cls.format_into_printable_iterable(to_format, **kwargs)
-			is_not_first = True
+			is_first = False
+		if is_first:
+			yield from cls._get_no_value_string(**kwargs)
+
+	@classmethod
+	def _get_no_value_string(cls, **kwargs) -> Iterable[str]:
+		if cls.no_value is not None:
+			yield cls.no_value
 
 	@classmethod
 	def _get_grouping_key(cls, **kwargs) -> Callable:
@@ -159,6 +167,7 @@ class RecordFormatter(AbstractFormatter, AbstractIntoStringFormatter, AbstractIn
 
 	sep = '; '
 	post_all = ''
+	no_value = 'No translation has been found'
 
 	@classmethod
 	def format(cls, record: Record):

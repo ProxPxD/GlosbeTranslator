@@ -1,6 +1,7 @@
 from parameterized import parameterized
 
 from src.glosbe.configurations import Configurations
+from src.glosbe.constants import FLAGS as F
 from tests.abstractCliTest import AbstractCliTest
 
 
@@ -12,7 +13,7 @@ class ConfigurationTest(AbstractCliTest):
 
 	def setUp(self) -> None:
 		super().setUp()
-		Configurations.init(self.get_file_name(), default=self.get_default_configs())
+		Configurations.init(self.get_file_name())
 
 	def tearDown(self) -> None:
 		super().tearDown()
@@ -37,3 +38,15 @@ class ConfigurationTest(AbstractCliTest):
 		Configurations.change_conf('--langs', ['pl', 'zh', 'es', 'de'])
 		actual = Configurations.get_nth_saved_language(n)
 		self.assertEqual(expected, actual)
+
+	@parameterized.expand([
+		('equal_limit_to_conf_langs_count', 3, ['de', 'fr', 'zh'], ['de', 'fr', 'zh']),
+		('smaller_limit_than_conf_langs_count', 2, ['de', 'fr'], ['de', 'fr', 'zh', 'en', 'ru']),
+		('greater_limit_than_conf_langs_count', 10, ['de', 'fr'], ['de', 'fr']),
+	])
+	def test_limit(self, name: str, limit: int, e_to_langs: list[str], conf_langs: list[str]):
+		Configurations.change_conf(F.C.LANGS_SHOW_LONG_FLAG, conf_langs)
+		Configurations.change_conf(F.C.LANG_LIMIT_LONG_FLAG, limit)
+		self.cli.parse('t mieć pl -m')
+		a_to_langs = self.cli.to_langs
+		self.assertCountEqual(e_to_langs, a_to_langs)

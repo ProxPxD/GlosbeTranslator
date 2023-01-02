@@ -42,8 +42,8 @@ def main():
 
 def get_test_arguments():
     return shlex.split('t blando')
-
     # TODO: add test for no saved lang exception
+
 
 if __name__ == '__main__':
     try:

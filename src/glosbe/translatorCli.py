@@ -112,7 +112,7 @@ class TranslatorCli(Cli):
         self._current_modes.set_get_default(Configurations.get_default_translation_mode)
         self._from_langs.set_get_default(lambda: Configurations.get_nth_saved_language(0, *self._to_langs))
         self._to_langs.add_get_default_if_or(lambda: Configurations.get_nth_saved_language(1, *self._from_langs), self._single_node.is_active, self._word_node.is_active)
-        self._to_langs.add_get_default_if_or(lambda: Configurations.load_config_languages(*self._from_langs), self._lang_node.is_active, self._double_multi_node.is_active)
+        self._to_langs.add_get_default_if_or(lambda: list(Configurations.load_config_languages_by_limit(*self._from_langs)), self._lang_node.is_active, self._double_multi_node.is_active)
 
     def _configure_non_translation_flags_collection(self) -> None:
         existing = filter(self.root.has_flag, chain(just_set, just_display, display_with_arg, other_config))

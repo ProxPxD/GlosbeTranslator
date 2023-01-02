@@ -11,7 +11,6 @@ from glosbe.translatorCli import TranslatorCli
 
 @dataclass(frozen=True)
 class ErrorMessages:
-    NO_TRANSLATION: str = 'No translation has been found. Either the arguments were invalid or the requested translation does not exist so far'
     UNKNOWN_EXCEPTION: str = 'Unknown exception occurred!'
     ATTRIBUTE_ERROR: str = 'Error! Please send logs to the creator'
 
@@ -42,8 +41,9 @@ def main():
 
 
 def get_test_arguments():
-    return shlex.split('t --synopsis')  # why so long?
+    return shlex.split('t blando')
 
+    # TODO: add test for no saved lang exception
 
 if __name__ == '__main__':
     try:

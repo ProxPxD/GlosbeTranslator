@@ -20,6 +20,9 @@ class Record:
     part_of_speech: str = ''
     gender: str = ''
 
+    def __bool__(self):
+        return any(filter(bool, (self.translation, self.part_of_speech, self.gender)))
+
 
 class Parser:
 

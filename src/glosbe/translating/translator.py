@@ -6,7 +6,7 @@ from typing import Iterable
 import requests
 
 from .parsing.parser import Parser, Record, WrongStatusCodeError
-from .web.connector import Connector, TransArgs
+from .web.connector import Connector, TransArgs, TranslatorArgumentException
 
 
 @dataclass(frozen=True)
@@ -30,6 +30,11 @@ class PageCodeMessages:
     UNHANDLED_PAGE_FULL_MESSAGE: str = 'Unhandled page code: {}! ' + PLEASE_REPORT
     PAGE_NOT_FOUND_404: str = 'Page has not been found (404). Please, check the arguments: {}'  # if the command is correct. Words: {}, glosbe from: , glosbe to:
     PAGE_NOT_FOUND_303: str = 'The page has to be redirected (303). ' + PLEASE_REPORT
+
+
+class ErrorMessages:
+    NO_TRANSLATION: str = 'No translation has been found. Either the arguments were invalid or the requested translation does not exist so far'
+    INVALID_ARGUMENT: str = 'Error! An argument has not been set {}'
 
 
 class Translator:
@@ -94,6 +99,9 @@ class Translator:
         except WrongStatusCodeError as err:
             logging.error(f'{err.page.status_code}: {err.page.text}')
             return TranslationResult(trans_args, [Record(self._get_status_code_message(err))])
+        except TranslatorArgumentException:
+            logging.exception(f'Exception: Invalid argument {str(trans_args)}')
+            return TranslationResult(trans_args, [Record(ErrorMessages.INVALID_ARGUMENT.format(str(trans_args)))])
         return TranslationResult(trans_args, records)
 
     def _translate_from_attributes(self) -> Iterable[Record]:

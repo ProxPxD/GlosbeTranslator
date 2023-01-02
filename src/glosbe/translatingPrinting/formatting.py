@@ -167,7 +167,6 @@ class RecordFormatter(AbstractFormatter, AbstractIntoStringFormatter, AbstractIn
 
 	sep = '; '
 	post_all = ''
-	no_value = 'No translation has been found'
 
 	@classmethod
 	def format(cls, record: Record):

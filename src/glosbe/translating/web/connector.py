@@ -20,11 +20,12 @@ class TransArgs:
         return f'https://{WebConstants.MAIN_URL}/{self.from_lang}/{self.to_lang}/{self.word}'
 
     def __bool__(self):
-        return self.from_lang and self.to_lang and self.word and True
+        return all(filter(bool, (self.from_lang, self.to_lang, self.word)))
 
 
 class TranslatorArgumentException(ValueError):
-    pass  # TODO
+    def __init__(self, trans_args: TransArgs):
+        self.trans_args = trans_args
 
 
 class Connector:

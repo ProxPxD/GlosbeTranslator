@@ -1,9 +1,11 @@
 import logging
+import traceback
 from dataclasses import dataclass, field, replace
 from itertools import product
 from typing import Iterable
 
 import requests
+import requests.exceptions as request_exceptions
 
 from .parsing.parser import Parser, Record, WrongStatusCodeError
 from .web.connector import Connector, TransArgs, TranslatorArgumentException
@@ -26,15 +28,17 @@ class TranslationResult:
 
 @dataclass(frozen=True)
 class PageCodeMessages:
-    PLEASE_REPORT: str = 'Please, report the case'
-    UNHANDLED_PAGE_FULL_MESSAGE: str = 'Unhandled page code: {}! ' + PLEASE_REPORT
-    PAGE_NOT_FOUND_404: str = 'Page has not been found (404). Please, check the arguments: {}'  # if the command is correct. Words: {}, glosbe from: , glosbe to:
-    PAGE_NOT_FOUND_303: str = 'The page has to be redirected (303). ' + PLEASE_REPORT
+    PLEASE_REPORT = 'Please, report the case'
+    UNHANDLED_PAGE_FULL_MESSAGE = 'Unhandled page code: {}! ' + PLEASE_REPORT
+    PAGE_NOT_FOUND_404 = 'Page has not been found (404). Please, check the arguments: {}'  # if the command is correct. Words: {}, glosbe from: , glosbe to:
+    PAGE_NOT_FOUND_303 = 'The page has to be redirected (303). ' + PLEASE_REPORT
 
 
 class ErrorMessages:
-    NO_TRANSLATION: str = 'No translation has been found. Either the arguments were invalid or the requested translation does not exist so far'
-    INVALID_ARGUMENT: str = 'Error! An argument has not been set {}'
+    NO_TRANSLATION = 'No translation has been found. Either the arguments were invalid or the requested translation does not exist so far'
+    INVALID_ARGUMENT = 'Error! An argument has not been set {}'
+    EXCEEDED_NUMBER_OF_RETRIES = 'Error! Exceeded maximum number of retries - check your network connection'
+    CONNECTION_ERROR = 'Connection error! Check your network connection'
 
 
 class Translator:
@@ -102,6 +106,9 @@ class Translator:
         except TranslatorArgumentException:
             logging.exception(f'Exception: Invalid argument {str(trans_args)}')
             return TranslationResult(trans_args, [Record(ErrorMessages.INVALID_ARGUMENT.format(str(trans_args)))])
+        except request_exceptions.ConnectionError as err:
+            logging.exception(traceback.format_exc())
+            return TranslationResult(trans_args, [Record(ErrorMessages.CONNECTION_ERROR)])
         return TranslationResult(trans_args, records)
 
     def _translate_from_attributes(self) -> Iterable[Record]:

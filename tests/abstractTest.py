@@ -90,32 +90,6 @@ class AbstractTest(unittest.TestCase, abc.ABC):
     def _get_test_name(cls) -> str:
         return 'unnamed'
 
-    # def set_input_string(self, input_string: str):
-    #     AbstractTest.argumentParser = TranslatorParser(input_string.split(' '))
-    #
-    # def get_constant_part(self, translation: tuple):
-    #     return translation[0]
-    #
-    # def get_nth_translation_batch(self, index: int, translation: tuple[str, list]):
-    #     return translation[1][index]
-    #
-    # def get_nth_translated_word(self, index: int, translation: tuple[str, list]):
-    #     return translation[1][index][TranslationParts.TRANSLATION]
-    #
-    # def get_word_from_batch(self, batch):
-    #     return batch[TranslationParts.TRANSLATION]
-    #
-    # def get_gender_from_batch(self, batch):
-    #     return batch[TranslationParts.GENDER]
-    #
-    # def get_part_of_speech_from_batch(self, batch):
-    #     return batch[TranslationParts.PART_OF_SPEECH]
-    #
-    # def translate(self) -> list:
-    #     AbstractTest.argumentParser.parse()
-    #     translation = self._perform_translation()
-    #     return list(translation)
-
     def get_method_name(self) -> str:
         return self.id().split('.')[-1]
 

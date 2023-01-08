@@ -41,7 +41,7 @@ def main():
 
 
 def get_test_arguments():
-    return shlex.split('t blando')
+    return shlex.split('t fr pl -w vouloir gommer tâche')
     # TODO: add test for no saved lang exception
 
 

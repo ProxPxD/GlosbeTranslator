@@ -48,8 +48,7 @@ class Configurations:
         config_file_to_init = Paths.RESOURCES_DIR / file_name
         if not cls._configs or cls._current_config_file != config_file_to_init:
             cls._current_config_file = config_file_to_init
-            if not Paths.RESOURCES_DIR.exists():
-                Paths.RESOURCES_DIR.mkdir()
+            Paths.RESOURCES_DIR.mkdir(exist_ok=True)
             if not cls._current_config_file.exists():
                 cls.init_file(default)
             cls._configs = cls._get_configurations()

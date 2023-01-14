@@ -168,6 +168,8 @@ class RecordFormatter(AbstractFormatter, AbstractIntoStringFormatter, AbstractIn
 	sep = '; '
 	post_all = ''
 
+	NO_RECORDS_MESSAGE = 'No translation has been found!'
+
 	@classmethod
 	def format(cls, record: Record):
 		record = replace(record)
@@ -190,6 +192,13 @@ class RecordFormatter(AbstractFormatter, AbstractIntoStringFormatter, AbstractIn
 			yield from GenderFormatter.format_into_printable_iterable(record.gender, **kwargs)
 		if record.part_of_speech:
 			yield from PartOfSpeechFormatter.format_into_printable_iterable(record.part_of_speech, **kwargs)
+
+	@classmethod
+	def format_many_into_printable_iterable(cls, records: Iterable, **kwargs):
+		records = list(records)
+		if not records:
+			records = [Record(cls.NO_RECORDS_MESSAGE)]
+		yield from super().format_many_into_printable_iterable(records, **kwargs)
 
 
 class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, AbstractIntoPrintableIterableFormatter):

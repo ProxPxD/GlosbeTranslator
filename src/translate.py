@@ -41,7 +41,7 @@ def main():
 
 
 def get_test_arguments():
-    return shlex.split('t fr pl -w vouloir gommer tâche')
+    return shlex.split('t anomic en pl')
     # TODO: add test for no saved lang exception
 
 

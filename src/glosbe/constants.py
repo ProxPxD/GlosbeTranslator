@@ -239,6 +239,7 @@ supported_langages = {
     'aga': "Aguano Aguanu, Awano, Santa Crucino, Uguano",
     'agr': "Aguaruna Aguajún, Ahuajún, Awajún",
     'agx': "agulski Aghul-ch'al, Agul, Aghul",
+    'mis_tok': "toki pona",
 }
 
     # _descriptions = {

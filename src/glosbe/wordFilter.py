@@ -1,6 +1,6 @@
 from smartcli.nodes.smartList import SmartList
 
-from src.glosbe.constants import supported_langages
+from .constants import supported_langages
 
 tupleLists_2 = tuple[SmartList[str], SmartList[str]]
 tupleLists_3 = tuple[SmartList[str], SmartList[str], SmartList[str]]

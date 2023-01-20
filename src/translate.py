@@ -43,6 +43,8 @@ def main():
 def get_test_arguments():
     return shlex.split('t anomic en pl')
     # TODO: add test for no saved lang exception
+    # TODO: t anomic en pl
+    # TODO: add test for mis_tok
 
 
 if __name__ == '__main__':

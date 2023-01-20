@@ -13,7 +13,7 @@ class MisplacedTest(AbstractCliTest):
 
     def setUp(self) -> None:
         super().setUp()
-        Configurations.init(self.get_file_name(), default=self.get_default_configs()())
+        Configurations.init(self.get_file_name(), default=self.get_default_configs())
 
     def tearDown(self) -> None:
         super().tearDown()

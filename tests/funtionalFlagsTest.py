@@ -1,3 +1,5 @@
+import unittest
+
 from parameterized import parameterized
 
 from src.glosbe.configurations import Configurations
@@ -31,5 +33,6 @@ class FunctionalFlagsTest(AbstractCliTest):
 	@parameterized.expand([
 		('', '', [], [], [], '')
 	])
+	@unittest.skip
 	def test_from_lang_flag(self, name: str, input_line: str, e_words: list[str], e_from_langs: list[str], e_to_langs: list[str], default_mode: str):
 		self.fail(NotImplementedError.__name__)

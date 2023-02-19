@@ -1,63 +1,34 @@
-from src.translating.argumentParsing.configurations import Configurations
-from src.translating.argumentParsing.constants import FLAGS
-from src.translating.argumentParsing.parsingException import ParsingException
-from tests.abstractTranslationTest import AbstractTranslationTest
+from parameterized import parameterized
+
+from src.glosbe.translatorCli import CURRENT_MODES_COL
+from tests.abstractCliTest import AbstractCliTest
 
 
-class MultiLangTranslationTest(AbstractTranslationTest):
-
-    @classmethod
-    def _get_mode(cls):
-        return FLAGS.MULTI_LANG
+class MultiLangCliTest(AbstractCliTest):
 
     @classmethod
     def _get_test_name(cls) -> str:
-        return cls._get_mode() + ' mode'
+        return 'Lang Mode CLI'
 
-    def _perform_translation(self):
-        word = self.argumentParser.words[0] if self.argumentParser.words else None
-        from_lang = self.argumentParser.from_lang
-        to_langs = self.argumentParser.to_langs
-        return self.translator.multi_lang_translate(word, to_langs, from_lang)
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.cli.root.get_collection(CURRENT_MODES_COL).set_default('-m')
 
-    def test_all_args_set(self):
-        word, from_lang = 'Schweiz', 'de'
-        to_langs = ['pl', 'es', 'zh']
-        self.set_input_string(f't {word} {from_lang} {" ".join(to_langs)}')
+    @parameterized.expand([
+        ('all_arguments', 'to be', 'en', ['zh', 'es', 'ru'], 't to\ be en zh es ru'),
+        ('additional_with_flag', 'pensar', 'es', ['zh', 'en', 'ru'], 't pensar es zh en -m ru'),
+        ('no_from_lang_with_flag', 'pensar', 'es', ['zh', 'en', 'ru'], 't pensar -m zh en ru'),
+        ('only_word_with_flag', 'pensar', 'es', ['zh', 'en', 'ru'], 't pensar -m'),
+    ])
+    def test_parsing(self, name: str, e_word: str, e_from_lang: str, e_to_langs: str, input_line: str):
+        words, from_lang, to_langs = self.cli.root.get_collections('words', 'from_langs', 'to_langs')
+        from_lang.set_default(e_from_lang)
+        to_langs.set_default(e_to_langs)
 
-        translations = self.translate()
+        self.cli.parse_without_actions(input_line)
 
-        correct_translated_words = ['Szwajcaria', 'Suiza', '瑞士']
-        self.assertEqual(len(translations), len(to_langs))
-        for i, lang in enumerate(to_langs):
-            translation = translations[i]
-            batch = self.get_nth_translation_batch(0, translation)
-            translation_word = self.get_word_from_batch(batch)
-            self.assertEqual(lang, self.get_constant_part(translation))
-            self.assertEqual(translation_word, correct_translated_words[i])
+        self.assertEqual(e_word, words.get())
+        self.assertEqual(e_from_lang, from_lang.get())
+        self.assertCountEqual(e_to_langs, to_langs.get_plain())
 
-    def test_no_from_language_arg_set(self):
-        word, from_lang = '女人', 'zh'
-        to_langs = ['pl', 'es', 'de']
-        Configurations.change_last_used_languages(from_lang)
-        self.set_input_string(f't {word} -m {" ".join(to_langs)}')
-
-        translations = self.translate()
-
-        correct_translated_words = ['kobieta', 'mujer', 'Frau']
-        self.assertEqual(len(translations), len(to_langs))
-        for i, lang in enumerate(to_langs):
-            translation = translations[i]
-            batch = self.get_nth_translation_batch(0, translation)
-            translation_word = self.get_word_from_batch(batch)
-            self.assertEqual(lang, self.get_constant_part(translation))
-            self.assertEqual(translation_word, correct_translated_words[i])
-
-    def test_only_langs_set(self):
-        from_lang = 'zh'
-        to_langs = ['pl', 'es', 'de']
-        Configurations.change_last_used_languages(from_lang)
-        self.set_input_string(f't -m {" ".join(to_langs)}')
-
-        self.assertRaises(ParsingException, self.translate)
-        self.assertFalse(self.argumentParser.is_translation_mode_on())

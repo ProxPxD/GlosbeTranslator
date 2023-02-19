@@ -1,5 +1,6 @@
-from . import constants
-from .smartList import SmartList
+from smartcli.nodes.smartList import SmartList
+
+from .constants import supported_langages
 
 tupleLists_2 = tuple[SmartList[str], SmartList[str]]
 tupleLists_3 = tuple[SmartList[str], SmartList[str], SmartList[str]]
@@ -7,7 +8,10 @@ tupleLists_3 = tuple[SmartList[str], SmartList[str], SmartList[str]]
 
 class WordFilter:
 
+    alphabet = 'abcdefghijklmnopqrstuvwxyz'
+
     def __init__(self):
+        self._to_swap = []
         self._is_any_word_moved_from_from_langs = False
         self._is_any_word_moved_from_to_langs = False
 
@@ -21,14 +25,17 @@ class WordFilter:
     def is_any_word_moved_from_to_langs(self) -> bool:
         return self._is_any_word_moved_from_to_langs
 
-    def is_word(self, to_test: str) -> bool:
-        return len(to_test) > 3 or any(char not in constants.alphabet for char in to_test)
+    def get_to_swap(self) -> list:
+        return self._to_swap
+
+    def is_lang(self, to_test: str) -> bool:
+        return to_test in supported_langages
 
     def is_any_lang_misplaced(self, *to_check: str):
-        return any(self.is_word(elem) for elem in to_check)
+        return any(not self.is_lang(elem) for elem in to_check)
 
     def _membership(self, to_test):
-        return 1 if self.is_word(to_test) else 0
+        return 0 if self.is_lang(to_test) else 1
 
     def split_into_langs_and_words(self, to_split: SmartList[str]) -> tupleLists_2:
         langs_words: tupleLists_2 = (SmartList(), SmartList())
@@ -44,3 +51,5 @@ class WordFilter:
         if to_langs_words:
             self._is_any_word_moved_from_to_langs = True
         return new_from_lang, new_to_lang, from_langs_words + to_langs_words
+
+

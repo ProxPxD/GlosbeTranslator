@@ -1,21 +1,23 @@
-#!/usr/bin/python
 import logging
+import shlex
 import sys
+import traceback
 from dataclasses import dataclass
 
-from translating.argumentParsing import configChanger, configDisplayer, configurations
-from translating.argumentParsing.configurations import Configurations
-from translating.argumentParsing.intelligentArgumentParser import IntelligentArgumentParser
-from translating.argumentParsing.parsingException import ParsingException
-from translating.constants import LogMessages
-from translating.translatingPrinting.translationPrinter import TranslationPrinter
-from translating.translator import Translator
-from translating.web.wrongStatusCodeException import WrongStatusCodeException
+from glosbe.configurations import Configurations, Paths
+from glosbe.translatingPrinting.translationPrinter import TranslationPrinter
+from glosbe.translatorCli import TranslatorCli
+
+
+@dataclass(frozen=True)
+class ErrorMessages:
+    UNKNOWN_EXCEPTION: str = 'Unknown exception occurred!'
+    ATTRIBUTE_ERROR: str = 'Error! Please send logs to the creator'
 
 
 @dataclass(frozen=True)
 class Data:
-    LOG_PATH = configurations.Paths.RESOURCES_DIR / 'logs.txt'
+    LOG_PATH = Paths.RESOURCES_DIR / 'logs.txt'
 
 
 def main():
@@ -24,53 +26,25 @@ def main():
 
     try:
         Configurations.init()
-        logging.basicConfig(filename=Data.LOG_PATH, encoding='utf-8', level=logging.WARNING,
-                            format='%(levelname)s: %(message)s ')
-        argument_parser = IntelligentArgumentParser(sys.argv)
-        argument_parser.parse()
-        if argument_parser.modes.is_any_displayable_mode_on():
-             configDisplayer.display_information(argument_parser)
-        if argument_parser.modes.is_any_configurational_mode_on():
-            configChanger.set_configs(argument_parser)
-        if argument_parser.is_translation_mode_on():
-            translate_and_print(argument_parser)
-
-        if not argument_parser.modes.is_any_displayable_mode_on():
-            Configurations.save()
-
-    except WrongStatusCodeException as err:
-        logging.error(f'{err.page.status_code}: {err.page.text}')
-        print(LogMessages.UNKNOWN_PAGE_STATUS.format(err.page.status_code))
-    except ParsingException as err:
-        for msg in err.validation_messages:
-            print(msg)
+        logging.basicConfig(filename=Data.LOG_PATH, encoding='utf-8', level=logging.WARNING, format='%(levelname)s: %(message)s ')
+        cli = TranslatorCli(sys.argv)
+        cli.parse()
+        Configurations.change_last_used_languages(*cli.langs)
+        Configurations.save_and_close()
+    except AttributeError as err:
+        logging.error(traceback.format_exc())
+        TranslationPrinter.out(ErrorMessages.ATTRIBUTE_ERROR)
+    except Exception as ex:
+        # TODO: in next((flag for flag in self._flags if flag.has_name(name))) of cli parser add an exception to know that the flag has not been added. Similarly in sibling cli_elements
+        logging.exception(traceback.format_exc())
+        TranslationPrinter.out(ErrorMessages.UNKNOWN_EXCEPTION)
 
 
 def get_test_arguments():
-    return 't mąż pl de -s'.split(' ')  # t laborious en uk
-
-
-def translate_and_print(argument_parser: IntelligentArgumentParser):
-    translations = get_translations(argument_parser)
-    translation_printer = TranslationPrinter()
-    translation_printer.print_translations(translations, argument_parser)
-    Configurations.change_last_used_languages(argument_parser.from_lang, *argument_parser.to_langs)
-
-
-def get_translations(argument_parser: IntelligentArgumentParser):
-    translator = Translator(argument_parser.from_lang)
-    modes = argument_parser.modes
-    translations = None
-    if modes.is_multi_lang_mode_on():
-        translations = translator.multi_lang_translate(argument_parser.words[0], argument_parser.to_langs)
-    elif modes.is_multi_word_mode_on():
-        translations = translator.multi_word_translate(argument_parser.to_langs[0], argument_parser.words)
-    elif modes.is_single_mode_on():
-        translations = translator.single_translate(argument_parser.words[0], argument_parser.to_langs[0])
-    elif modes.is_double_multi_mode_on():
-        translations = translator.double_multi_translate(argument_parser.to_langs, argument_parser.words)
-
-    return translations
+    return shlex.split('t pl -w wyspa rzeka woda -m sv nb da')
+    # TODO: add test for no saved lang exception
+    # TODO: t anomic en pl
+    # TODO: add test for mis_tok
 
 
 if __name__ == '__main__':

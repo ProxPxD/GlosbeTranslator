@@ -1,73 +1,32 @@
-from src.translating.argumentParsing.configurations import Configurations
-from src.translating.argumentParsing.constants import FLAGS
-from src.translating.argumentParsing.parsingException import ParsingException
-from tests.abstractTranslationTest import AbstractTranslationTest
+from parameterized import parameterized
+
+from src.glosbe.translatorCli import CURRENT_MODES_COL
+from tests.abstractCliTest import AbstractCliTest
 
 
-class SingleTranslationTest(AbstractTranslationTest):
-
-    @classmethod
-    def _get_mode(cls):
-        return FLAGS.SINGLE
+class SingleModeCliTest(AbstractCliTest):
 
     @classmethod
     def _get_test_name(cls) -> str:
-        return cls._get_mode() + ' mode'
+        return 'Single Mode CLI'
 
-    def _perform_translation(self):
-        from_lang = self.argumentParser.from_lang
-        to_lang = self.argumentParser.to_langs[0] if self.argumentParser.to_langs else None
-        word = self.argumentParser.words[0] if self.argumentParser.words else None
-        return self.translator.single_translate(word, to_lang, from_lang)
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.cli.root.get_collection(CURRENT_MODES_COL).set_default('-s')
 
-    def test_no_args_set(self):
-        self.set_input_string('t')
-        self.assertRaises(ParsingException, self.translate)
+    @parameterized.expand([
+        ('all_arguments', 'tak', 'pl', 'zh', 't tak pl zh'),
+        ('no_from_lang', 'tak', 'pl', 'zh', 't tak zh'),
+        ('only_word', 'tak', 'pl', 'zh', 't tak'),
+    ])
+    def test_order_parsing(self, name: str, e_word: str, e_from_lang: str, e_to_lang: str, input_line: str):
+        words, from_langs, to_langs = self.cli.root.get_collections('words', 'from_langs', 'to_langs')
+        from_langs.set_default(e_from_lang)
+        to_langs.set_default(e_to_lang)
 
-    def test_all_args_set(self):
-        tak = 'tak'
-        self.set_input_string(f't {tak} pl zh')
+        self.cli.parse_without_actions(input_line)
 
-        translations = self.translate()
-        self.assertTrue(len(translations))
-
-        batch = self.get_nth_translation_batch(0, translations[0])
-        translated_word = self.get_word_from_batch(batch)
-
-        self.assertEqual(translations[0][0], tak)
-        self.assertTrue(len(batch))
-        self.assertTrue(translated_word)
-
-    def test_word_and_to_lang_args_set(self):
-        word, from_lang, to_lang = 'ir', 'es', 'pl'
-        Configurations.change_last_used_languages(from_lang)
-        self.set_input_string(f't {word} {to_lang}')
-
-        translation = self.translate()[0]
-        self.assertTrue(len(translation[1]))
-
-        constant_part = self.get_constant_part(translation)
-        batch = self.get_nth_translation_batch(0, translation)
-        translated_word = self.get_word_from_batch(batch)
-        part_of_speech = self.get_part_of_speech_from_batch(batch)
-
-        self.assertEqual(constant_part, word)
-        self.assertEqual(translated_word, 'iść')
-        self.assertEqual(part_of_speech, 'verb')
-
-    def test_word_arg_set(self):
-        word, from_lang, to_lang = 'estar', 'es', 'uk'
-        Configurations.change_last_used_languages(from_lang, to_lang)
-        self.set_input_string(f't {word}')
-
-        translation = self.translate()[0]
-        self.assertTrue(len(translation[1]))
-
-        constant_part = self.get_constant_part(translation)
-        batch = self.get_nth_translation_batch(0, translation)
-        translated_word = self.get_word_from_batch(batch)
-        part_of_speech = self.get_part_of_speech_from_batch(batch)
-
-        self.assertEqual(constant_part, word)
-        self.assertEqual(translated_word, 'бути')
-        self.assertEqual(part_of_speech, 'verb')
+        self.assertEqual(e_word, words.get())
+        self.assertEqual(e_from_lang, from_langs.get())
+        self.assertEqual(e_to_lang, to_langs.get())

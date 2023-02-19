@@ -32,19 +32,8 @@ class TranslatorArgumentException(ValueError):
 
 class Connector:
 
-    def __init__(self, from_lang: str, to_lang: str = None, word: str = None):
+    def __init__(self):
         self._session: requests.Session | None = None
-
-    # @property
-    # def trans_args(self):
-    #     return self._trans_args
-    #
-    # @trans_args.setter
-    # def trans_args_s(self, *values: str) -> None:
-    #     to_set = iter(values)
-    #     self._trans_args.to_lang = next(to_set, self._trans_args.to_lang)
-    #     self._trans_args.from_lang = next(to_set, self._trans_args.from_lang)
-    #     self._trans_args.word = next(to_set, self._trans_args.word)
 
     def establish_session(self):
         self._session = requests.Session()

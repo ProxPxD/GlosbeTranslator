@@ -50,3 +50,5 @@ class ConfigurationTest(AbstractCliTest):
 		self.cli.parse('t mieć pl -m')
 		a_to_langs = self.cli.to_langs
 		self.assertCountEqual(e_to_langs, a_to_langs)
+
+	# TODO: test other flags printing and possible values

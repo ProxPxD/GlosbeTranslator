@@ -44,7 +44,7 @@ class ErrorMessages:
 class Translator:
 
     def __init__(self, from_lang: str = None, to_lang: str = None, word: str = None):
-        self._connector: Connector = Connector(from_lang, to_lang, word)
+        self._connector: Connector = Connector()
         self._trans_args = TransArgs(from_lang, to_lang, word)
         self._parser: Parser = Parser()
 
@@ -123,7 +123,7 @@ class Translator:
     def _get_status_code_message(self, err: WrongStatusCodeError) -> str:
         match err.page.status_code:
             case 404:
-                return PageCodeMessages.PAGE_NOT_FOUND_404.format(str(self._connector.trans_args))
+                return PageCodeMessages.PAGE_NOT_FOUND_404.format(str(self._trans_args))
             case 303:
                 return PageCodeMessages.PAGE_NOT_FOUND_303
             case _:

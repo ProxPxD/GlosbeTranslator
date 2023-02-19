@@ -27,7 +27,7 @@ class LayoutAdjusterTest(AbstractCliTest):
 		('native_all_langs_and_flags', ['--single', 'pl', 'en'], ['trzymać'], 't trzymać пл ен -с', LayoutAdjustmentsMethods.NATIVE, 'uk'),
 		('native_some_langs_and_flags', ['--lang', '--word', 'uk', 'zh', 'es', 'de'], ['світло', 'привіт'], 't ук -m дж es де -в світло привіт', LayoutAdjustmentsMethods.NATIVE, 'uk'),
 		('native_chinese', ['--single', 'pl', 'en'], ['trzymać'], 't trzymać 波 英 -s', LayoutAdjustmentsMethods.NATIVE, 'zh'),
-	])
+	]) # TODO: test setting adjusting method
 	def test_adjuster(self, name: str, expected_adjusted: list[str], expected_not_adjusted: list[str], input_string: str, method: str, lang: str):
 		Configurations.set_conf(FLAGS.CONFIGURATIONAL.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG, method)
 		Configurations.set_conf(FLAGS.CONFIGURATIONAL.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG, lang)

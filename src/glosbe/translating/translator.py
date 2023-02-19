@@ -45,13 +45,14 @@ class Translator:
 
     def __init__(self, from_lang: str = None, to_lang: str = None, word: str = None):
         self._connector: Connector = Connector(from_lang, to_lang, word)
+        self._trans_args = TransArgs(from_lang, to_lang, word)
         self._parser: Parser = Parser()
 
     def set_from_lang(self, from_lang: str) -> None:
-        self._connector.trans_args.from_lang = from_lang
+        self._trans_args.from_lang = from_lang
 
     def set_to_lang(self, to_lang: str) -> None:
-        self._connector.trans_args.to_lang = to_lang
+        self._trans_args.to_lang = to_lang
 
     def multi_lang_translate(self, word: str, to_langs: list[str, ...], from_lang: str = None) -> Iterable[TranslationResult]:
         if from_lang:
@@ -93,28 +94,31 @@ class Translator:
         return product(to_langs, words)
 
     def _translate_as_result(self, word: str, to_lang: str = None) -> TranslationResult:
-        self._connector.trans_args.word = word
+        self._trans_args.word = word
         if to_lang:
             self.set_to_lang(to_lang)
 
-        trans_args = replace(self._connector.trans_args)
+        trans_args = replace(self._trans_args)
         try:
-            records = self._translate_from_attributes()
-        except WrongStatusCodeError as err:
-            logging.error(f'{err.page.status_code}: {err.page.text}')
-            return TranslationResult(trans_args, [Record(self._get_status_code_message(err))])
+            records = self._translate_from_url(self._trans_args.to_url())
         except TranslatorArgumentException:
             logging.exception(f'Exception: Invalid argument {str(trans_args)}')
-            return TranslationResult(trans_args, [Record(ErrorMessages.INVALID_ARGUMENT.format(str(trans_args)))])
-        except request_exceptions.ConnectionError as err:
-            logging.exception(traceback.format_exc())
-            return TranslationResult(trans_args, [Record(ErrorMessages.CONNECTION_ERROR)])
+            records = [Record(ErrorMessages.INVALID_ARGUMENT.format(str(trans_args)))]
         return TranslationResult(trans_args, records)
 
-    def _translate_from_attributes(self) -> Iterable[Record]:
-        page: requests.Response = self._connector.get_page()
-        self._parser.set_page(page)
-        return self._parser.parse()
+    def _translate_from_url(self, url: str) -> Iterable[Record]:
+        try:
+            page: requests.Response = self._connector.get_page(url)
+            self._parser.set_page(page)
+            yield from self._parser.parse()
+        except WrongStatusCodeError as err:
+            logging.error(f'{err.page.status_code}: {err.page.text}')
+            yield Record(self._get_status_code_message(err))
+        except request_exceptions.ConnectionError as err:
+            logging.exception(traceback.format_exc())
+            yield Record(ErrorMessages.CONNECTION_ERROR)
+        except TranslatorArgumentException:
+            raise TranslatorArgumentException
 
     def _get_status_code_message(self, err: WrongStatusCodeError) -> str:
         match err.page.status_code:

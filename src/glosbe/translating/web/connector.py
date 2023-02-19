@@ -17,6 +17,8 @@ class TransArgs:
     word: str = ''
 
     def to_url(self) -> str:
+        if not self:
+            raise TranslatorArgumentException(self)
         return f'https://{WebConstants.MAIN_URL}/{self.from_lang}/{self.to_lang}/{self.word}'
 
     def __bool__(self):
@@ -31,19 +33,18 @@ class TranslatorArgumentException(ValueError):
 class Connector:
 
     def __init__(self, from_lang: str, to_lang: str = None, word: str = None):
-        self._trans_args = TransArgs(from_lang, to_lang, word)
         self._session: requests.Session | None = None
 
-    @property
-    def trans_args(self):
-        return self._trans_args
-
-    @trans_args.setter
-    def trans_args_s(self, *values: str) -> None:
-        to_set = iter(values)
-        self._trans_args.to_lang = next(to_set, self._trans_args.to_lang)
-        self._trans_args.from_lang = next(to_set, self._trans_args.from_lang)
-        self._trans_args.word = next(to_set, self._trans_args.word)
+    # @property
+    # def trans_args(self):
+    #     return self._trans_args
+    #
+    # @trans_args.setter
+    # def trans_args_s(self, *values: str) -> None:
+    #     to_set = iter(values)
+    #     self._trans_args.to_lang = next(to_set, self._trans_args.to_lang)
+    #     self._trans_args.from_lang = next(to_set, self._trans_args.from_lang)
+    #     self._trans_args.word = next(to_set, self._trans_args.word)
 
     def establish_session(self):
         self._session = requests.Session()
@@ -52,10 +53,7 @@ class Connector:
     def close_session(self):
         self._session.close()
 
-    def get_page(self) -> requests.Response:
-        if not self._trans_args:
-            raise TranslatorArgumentException(self._trans_args)
-        url: str = self._trans_args.to_url()
+    def get_page(self, url: str) -> requests.Response:
         return self._session.get(url, allow_redirects=True)
 
     @staticmethod

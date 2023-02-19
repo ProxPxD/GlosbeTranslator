@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections import defaultdict, deque
 from dataclasses import replace
 from typing import Iterable, Callable, Any
 
@@ -74,7 +75,7 @@ class AbstractIntoPrintableIterableFormatter:
 		yield to_format
 
 	@classmethod
-	def format_many_into_printable_iterable(cls, to_formats: Iterable[Any], *, level=0, **kwargs) -> Iterable[str]:
+	def format_many_into_printable_iterable(cls, to_formats: Iterable[Any], *, level=None, **kwargs) -> Iterable[str]:
 		if level is None:
 			level = cls._get_starting_group_level(**kwargs)
 		yield from cls._gen_if(cls._get_pre_all(**kwargs))
@@ -91,7 +92,7 @@ class AbstractIntoPrintableIterableFormatter:
 
 	@classmethod
 	def _format_many_into_printable_iterable_core(cls, to_formats: Iterable[Any], level, **kwargs):
-		if not level == 0 and cls._is_grouped(**kwargs):
+		if level != 0 and cls._is_grouped(**kwargs):
 			yield from cls._format_with_groups(to_formats, level, **kwargs)
 		else:
 			yield from cls._format_without_groups(to_formats, **kwargs)
@@ -100,7 +101,7 @@ class AbstractIntoPrintableIterableFormatter:
 	def _format_without_groups(cls, to_formats: Iterable[Any], **kwargs) -> Iterable[str]:
 		is_first = True
 		for to_format in to_formats:
-			if not is_first:
+			if not is_first and cls.sep:
 				yield cls.sep
 			yield from cls.format_into_printable_iterable(to_format, **kwargs)
 			is_first = False

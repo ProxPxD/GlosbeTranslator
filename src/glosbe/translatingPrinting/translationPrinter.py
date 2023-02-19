@@ -1,3 +1,5 @@
+import time
+from time import sleep
 from typing import Iterable, Any
 
 from .formatting import TranslationFormatter
@@ -7,6 +9,7 @@ from ..translating.translator import TranslationResult
 class TranslationPrinter:
     out_func = print
     _is_turned_on = True
+    break_time = 0.2
 
     @classmethod
     def turn_off(cls) -> None:
@@ -39,5 +42,11 @@ class TranslationPrinter:
         if not cls._is_turned_on:
             return
         printable = TranslationFormatter.format_many_into_printable_iterable(translations, prefix_style=prefix_style, main_division=main_division)
+        curr_time = time.time()
         for to_print in printable:
             cls.out(to_print, end='')
+            iter_time = time.time()
+            elapsed_time = iter_time - curr_time
+            if cls.break_time - elapsed_time > 0:
+                sleep(cls.break_time - elapsed_time)
+            curr_time = time.time()

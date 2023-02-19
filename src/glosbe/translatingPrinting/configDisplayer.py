@@ -1,8 +1,10 @@
 from typing import Any
 
 from ..configurations import Configurations
+from ..layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods
+from ..translating.translator import TranslationTypes
 from ..translatingPrinting.translationPrinter import TranslationPrinter
-
+from ..constants import FLAGS as F
 
 # TODO: move it in translator printer
 class ConfigDisplayer:
@@ -32,8 +34,14 @@ class ConfigDisplayer:
         return str(list_to_transform)[1:-1].replace("'", '')
 
     @classmethod
-    def display_possible_values(cls, config_name: str):
-        possible_values = Configurations.get_possible_values_for(config_name)
-        if possible_values:
-            possible_values = cls.format_config(possible_values)
-            TranslationPrinter.out(f'Possible values: {possible_values}')
+    def display_possible_values(cls, config_name: str):  # TODO: test
+        match config_name:
+            case F.C.DOUBLE_MODE_STYLE_LONG_FLAG:
+                TranslationPrinter.out('Possible values: ', end='')
+                TranslationPrinter.out(str([TranslationTypes.SINGLE, TranslationTypes.LANG, TranslationTypes.WORD, TranslationTypes.DOUBLE])[1:-1])
+            case F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG:
+                TranslationPrinter.out('Possible values: ', end='')
+                TranslationPrinter.out(str([LayoutAdjustmentsMethods.NATIVE, LayoutAdjustmentsMethods.KEYBOARD, LayoutAdjustmentsMethods.NONE])[1:-1])
+            case F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG:
+                TranslationPrinter.out('Possible values: ', end='')
+                TranslationPrinter.out(str(['uk', 'de', 'zh'])[1:-1])

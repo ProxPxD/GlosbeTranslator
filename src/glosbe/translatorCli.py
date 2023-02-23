@@ -7,7 +7,7 @@ from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
 from .configurations import Configurations
 from .constants import FLAGS as F
 from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods, LayoutAdjusterFactory
-from .translating.scrapping import TranslatorScrapper, TranslationTypes, TranslationResult
+from .translating.scrapping import TranslatorScrapper, TranslationTypes, TranslationResult, Scrapper
 from .translatingPrinting.configDisplayer import ConfigDisplayer
 from .translatingPrinting.translationPrinter import TranslationPrinter
 from .wordFilter import WordFilter
@@ -53,7 +53,7 @@ class TranslatorCli(Cli):
         self._to_langs: Flag
         self._words: Flag
 
-        self._translator = TranslatorScrapper()
+        self._scrapper = Scrapper()
         self._translation_printer = TranslationPrinter()
         self._word_filter = WordFilter()
         self._is_translating = True
@@ -149,6 +149,7 @@ class TranslatorCli(Cli):
         self.root.add_flag(F.F.REVERSE_LONG_FLAG, F.F.REVERSE_SHORT_FLAG, flag_limit=0)
         self.root.add_flag(F.F.SYNOPSIS_LONG_FLAG, F.F.SYNOPSIS_SHORT_FLAG, flag_limit=0)
         self.root.add_flag(F.F.FROM_LANG_LONG_FLAG, F.F.FROM_LANG_SHORT_FLAG, flag_limit=1, storage=self._from_langs)
+        self.root.add_flag(F.F.CONJUGATION_LONG_FLAG, F.F.CONJUGATION_SHORT_FLAG, F.F.CONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()
@@ -232,24 +233,22 @@ class TranslatorCli(Cli):
         self._to_langs.reset()
         self._to_langs += from_langs
 
+    def _cli_translate(self):
+        return self._scrapper.scrap_translation(from_lang=self._from_langs.get(), to_langs=self._to_langs.get_as_list(), words=self._words.get_as_list())
+
     def _translate_single(self) -> None:
-        return self._translate(lambda: self._translator.single_translate(word=self._words.get(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()),
-                               prefix_style=TranslationTypes.SINGLE)
+        return self._translate(self._cli_translate, prefix_style=TranslationTypes.SINGLE)
 
     def _translate_multi_lang(self) -> None:
-        return self._translate(lambda: self._translator.multi_lang_translate(word=self._words.get(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
-                               prefix_style=TranslationTypes.LANG)
+        return self._translate(self._cli_translate, prefix_style=TranslationTypes.LANG)
 
     def _translate_multi_word(self) -> None:
-        return self._translate(lambda: self._translator.multi_word_translate(words=self._words.get_as_list(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()),
-                               prefix_style=TranslationTypes.WORD)
+        return self._translate(self._cli_translate, prefix_style=TranslationTypes.WORD)
 
     def _translate_double(self) -> None:
         main_division = self.root.get_flag(F.C.DOUBLE_MODE_STYLE_LONG_FLAG).get()
         prefix_style = self._get_prefix_style_for_main_division(main_division)
-        return self._translate(lambda: self._translator.double_multi_translate(words=self._words.get_as_list(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
-                               prefix_style=prefix_style,
-                               main_division=main_division)
+        return self._translate(self._cli_translate, prefix_style=prefix_style, main_division=main_division)
 
     def _get_prefix_style_for_main_division(self, main_division: TranslationTypes) -> TranslationTypes:
         match main_division:

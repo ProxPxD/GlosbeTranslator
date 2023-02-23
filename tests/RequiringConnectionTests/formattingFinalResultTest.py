@@ -37,7 +37,7 @@ class FormattingFinalResultTest(AbstractCliTest):
 
 	@parameterized.expand([
 		('all_args', 't piec pl es', ['horno [masc] (noun);', ' hornear (verb);'], []),
-		('no_from_lang', 't piec de', ['backen (verb);', 'Ofen [masc] (noun);'], ['pl', 'de']),
+		('no_from_lang', 't piec de', ['backen [v] (verb);', 'Ofen [masc] (noun);'], ['pl', 'de']),
 		('only_word', 't piec', ['horno [masc] (noun);', ' hornear (verb); '], ['pl', 'es']),
 	])
 	def test_single_mode_formatting(self, name: str, input_line: str, expected_in_formatted: list[str], last_langs: list[str, str]):
@@ -53,6 +53,9 @@ class FormattingFinalResultTest(AbstractCliTest):
 			self.assertIn(expected, string)
 		self.assertTrue(string.endswith('\n'))
 		self.assertFalse(string.startswith(('pl', 'de', 'es', '\n', ' ', 'piec')))
+
+	def test_single_mode_formatting(self):
+		self.run_current_test_with_params(None)
 
 	@parameterized.expand([
 		('multi', 't piec pl -m ar es', ['ar', 'es'], []),

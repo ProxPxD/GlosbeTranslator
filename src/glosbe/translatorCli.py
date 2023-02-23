@@ -7,7 +7,7 @@ from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
 from .configurations import Configurations
 from .constants import FLAGS as F
 from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods, LayoutAdjusterFactory
-from .translating.translator import Translator, TranslationTypes, TranslationResult
+from .translating.translatorscrapper import TranslatorScrapper, TranslationTypes, TranslationResult
 from .translatingPrinting.configDisplayer import ConfigDisplayer
 from .translatingPrinting.translationPrinter import TranslationPrinter
 from .wordFilter import WordFilter
@@ -53,7 +53,7 @@ class TranslatorCli(Cli):
         self._to_langs: Flag
         self._words: Flag
 
-        self._translator = Translator()
+        self._translator = TranslatorScrapper()
         self._translation_printer = TranslationPrinter()
         self._word_filter = WordFilter()
         self._is_translating = True

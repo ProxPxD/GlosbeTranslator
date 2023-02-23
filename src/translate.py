@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from glosbe.configurations import Configurations, Paths
 from glosbe.translatingPrinting.translationPrinter import TranslationPrinter
 from glosbe.translatorCli import TranslatorCli
+from src.glosbe.translating.translatorscrapper import Scrapper
 
 
 @dataclass(frozen=True)
@@ -49,6 +50,10 @@ def get_test_arguments():
 
 if __name__ == '__main__':
     try:
-        main()
+        scrapper = Scrapper()
+        res = scrapper.scrap_conjugation('pl', 'dać')  # mieć
+        res = list(res)
+
+        # main()
     except KeyboardInterrupt:
         pass

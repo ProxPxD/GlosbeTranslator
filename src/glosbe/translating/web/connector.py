@@ -39,6 +39,16 @@ class Connector:
         self._session = requests.Session()
         self._session.headers.update(Connector._get_default_headers())
 
+    def __getattr__(self, name):
+        match name:
+            case 'session':
+                return self._session
+            case _:
+                raise AttributeError
+
+    def get_session(self) -> requests.Session:
+        return self._session
+
     def close_session(self):
         self._session.close()
 

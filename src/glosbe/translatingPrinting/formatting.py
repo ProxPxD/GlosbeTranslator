@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections import defaultdict, deque
 from dataclasses import replace
 from typing import Iterable, Callable, Any
 
 from more_itertools import bucket
 
-from ..translating.parsing.parser import Record
-from ..translating.translator import TranslationResult, TranslationTypes
+from ..translating.parsing.translationparser import Record
+from ..translating.translatorscrapper import TranslationResult, TranslationTypes
 
 
 class AbstractFormatter(ABC):

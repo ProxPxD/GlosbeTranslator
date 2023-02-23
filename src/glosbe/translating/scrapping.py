@@ -7,7 +7,7 @@ from typing import Iterable, Any
 import requests
 import requests.exceptions as request_exceptions
 
-from .parsing.translationparser import TranslationParser, Record, WrongStatusCodeError, ConjugationParser, AbstractParser
+from .parsing.parsing import TranslationParser, Record, WrongStatusCodeError, ConjugationParser, AbstractParser
 from .web.connector import Connector, TransArgs, TranslatorArgumentException
 
 

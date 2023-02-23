@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from glosbe.configurations import Configurations, Paths
 from glosbe.translatingPrinting.translationPrinter import TranslationPrinter
 from glosbe.translatorCli import TranslatorCli
-from src.glosbe.translating.translatorscrapper import Scrapper
+from src.glosbe.translating.scrapping import Scrapper
 
 
 @dataclass(frozen=True)

@@ -2,7 +2,7 @@ from typing import Any
 
 from ..configurations import Configurations
 from ..layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods
-from ..translating.translatorscrapper import TranslationTypes
+from ..translating.scrapping import TranslationTypes
 from ..translatingPrinting.translationPrinter import TranslationPrinter
 from ..constants import FLAGS as F
 

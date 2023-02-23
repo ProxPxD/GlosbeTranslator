@@ -7,7 +7,7 @@ from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
 from .configurations import Configurations
 from .constants import FLAGS as F
 from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods, LayoutAdjusterFactory
-from .translating.translatorscrapper import TranslatorScrapper, TranslationTypes, TranslationResult
+from .translating.scrapping import TranslatorScrapper, TranslationTypes, TranslationResult
 from .translatingPrinting.configDisplayer import ConfigDisplayer
 from .translatingPrinting.translationPrinter import TranslationPrinter
 from .wordFilter import WordFilter

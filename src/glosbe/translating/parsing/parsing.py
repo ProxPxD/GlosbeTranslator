@@ -2,15 +2,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from itertools import product
 from typing import Iterable
 
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-import pandas as pd
-from pandas import DataFrame
-from tabulate import tabulate
 
 
 class WrongStatusCodeError(ConnectionError):
@@ -40,7 +37,7 @@ class AbstractParser(ABC):
     def parse(self):
         if self._page.status_code != 200:
             raise WrongStatusCodeError(self._page)
-        return self._parse()
+        yield from self._parse()
 
     @abstractmethod
     def _parse(self):
@@ -89,12 +86,4 @@ class ConjugationParser(AbstractParser):
         self._page = page
 
     def _parse(self):
-        tables = pd.read_html(self._page.text)
-        result_tables: list[DataFrame] = []
-        for table in tables:
-            if all((not table.equals(result_table) for result_table in result_tables)):
-                result_tables.append(table)
-        for table in result_tables:
-            print(tabulate(table, headers='keys', tablefmt='psql'), end='\n'*5)
-        print(len(tables), len(result_tables))
-        return tables
+        return pd.read_html(self._page.text)

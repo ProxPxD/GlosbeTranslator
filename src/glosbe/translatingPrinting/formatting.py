@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import replace
-from itertools import product
+from itertools import product, islice, count, chain
 from typing import Iterable, Callable, Any
 
+import pandas as pd
 from more_itertools import bucket
 from pandas import DataFrame, RangeIndex
 from pandas.core.indexes.numeric import Int64Index, NumericIndex
@@ -283,7 +284,6 @@ class TableFormatter(AbstractFormatter, AbstractIntoStringFormatter):
 
 	@classmethod
 	def format(cls, table: DataFrame) -> DataFrame:
-
 		print(f'cols: {table.columns}')
 		print(f'rows: {table.index}')
 		print()
@@ -291,19 +291,40 @@ class TableFormatter(AbstractFormatter, AbstractIntoStringFormatter):
 		zo = table.iloc[0, 1]
 		oz = table.iloc[1, 0]
 		print(f'{zz}: {type(zz)} --- {zo}: {type(zo)} --- {oz}: {type(oz)}\n\n')
+		table = HeaderToDefaultFormatter.format(table)
 		table = DataTableFormatter.format(table)
-		table = ColumnsTableFormatter.format(table)
-		table = RowsTableFormmater.format(table)
+		table = HeaderTableFormatter.format(table)
+		table = RowNamesTableFormatter.format(table)
 		return table
 
-	def _remove_empty_rows(self, table: DataFrame) -> DataFrame:
-		pass
+
+class HeaderToDefaultFormatter(AbstractFormatter):
+	@classmethod
+	def format(cls, table: DataFrame):
+		if str(table.iloc[0, 0]) + str(table.iloc[0, 1]) == '01':
+			table = pd.concat([table.columns.to_frame().T, table], ignore_index=True)
+			table.columns = range(len(table.columns))
+		return table
 
 
 class DataTableFormatter(AbstractFormatter):
 	@classmethod
 	def format(cls, table: DataFrame) -> DataFrame:
+		table = TrashRemovingFormatter.format(table)
 		table = DuplicateRemoverTableFormatter.format(table)
+		return table
+
+
+class TrashRemovingFormatter(AbstractFormatter):
+
+	_unnamed = 'Unnamed:'
+	_invisibles = ' ', '\u00A0', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005' '\u2006', '\u2007', '\u2008', '\u2009',
+
+	@classmethod
+	def format(cls, table: DataFrame) -> DataFrame:
+		for row, col in product(table.index, islice(table.columns, 3)):
+			if str(table.at[row, col]).startswith(cls._unnamed):
+				table.at[row, col] = list(islice(chain(cls._invisibles, count()), col+1))[-1]
 		return table
 
 
@@ -322,7 +343,7 @@ class DuplicateRemoverTableFormatter(AbstractFormatter):
 		return table
 
 
-class ColumnsTableFormatter(AbstractFormatter):
+class HeaderTableFormatter(AbstractFormatter):
 	@classmethod
 	def format(cls, table: DataFrame) -> DataFrame:
 		if isinstance(table.columns, (RangeIndex, Int64Index, NumericIndex)):
@@ -330,7 +351,7 @@ class ColumnsTableFormatter(AbstractFormatter):
 		return table
 
 
-class RowsTableFormmater(AbstractFormatter):
+class RowNamesTableFormatter(AbstractFormatter):
 	@classmethod
 	def format(cls, table: DataFrame) -> DataFrame:
 		if isinstance(table.index, (RangeIndex, Int64Index, NumericIndex)):

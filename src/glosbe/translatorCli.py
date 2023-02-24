@@ -4,13 +4,13 @@ from typing import Callable, Iterable
 from more_itertools import unique_everseen
 from pandas import DataFrame
 from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
-from tabulate import tabulate
 
 from .configurations import Configurations
 from .constants import FLAGS as F
 from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods, LayoutAdjusterFactory
 from .translating.scrapping import TranslationTypes, TranslationResult, Scrapper
 from .translatingPrinting.configDisplayer import ConfigDisplayer
+from .translatingPrinting.formatting import TableFormatter
 from .translatingPrinting.translationPrinter import TranslationPrinter
 from .wordFilter import WordFilter
 
@@ -272,17 +272,22 @@ class TranslatorCli(Cli):
 
     def _get_conjugation(self) -> None:
         tables = self._scrapper.scrap_conjugation(self._from_langs.get(), self._words.get())  # Check if it's being parsed well
-        self._print_conjugation(tables)
+        filtered = self._filter_unnecessary_tables(tables)
+        formatted = TableFormatter.format_many(filtered)
+        # string = (t for f in formatted for t in TableFormatter.format_into_string(f))
+        string = TableFormatter.format_many_into_string(formatted, sep='\n\n')
+        # for table in string:
+        #     print(table)
+            # input()
+        TranslationPrinter.out(string)
 
-    # TODO: move to separate printer
-    def _print_conjugation(self, tables):
-        # TODO: last
-        result_tables: list[DataFrame] = []
-        for table in tables:
-            if all((not table.equals(result_table) for result_table in result_tables)):
-                result_tables.append(table)
-        for table in result_tables:
-            print(tabulate(table, headers='keys', tablefmt='psql'), end='\n'*5)
+    # TODO: test
+    def _filter_unnecessary_tables(self, tables: Iterable[DataFrame]) -> Iterable[DataFrame]:
+        tables_instances = list(tables)
+        length = len(tables_instances)
+        if length > 1:
+            return tables_instances[length//2:]
+        return tables_instances
 
     def _get_prefix_style_for_main_division(self, main_division: TranslationTypes) -> TranslationTypes:
         match main_division:

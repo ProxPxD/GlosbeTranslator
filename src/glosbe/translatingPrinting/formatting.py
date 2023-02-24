@@ -2,9 +2,13 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import replace
+from itertools import product
 from typing import Iterable, Callable, Any
 
 from more_itertools import bucket
+from pandas import DataFrame, RangeIndex
+from pandas.core.indexes.numeric import Int64Index, NumericIndex
+from tabulate import tabulate
 
 from ..translating.parsing.parsing import Record
 from ..translating.scrapping import TranslationResult, TranslationTypes
@@ -270,3 +274,65 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 	@classmethod
 	def format_into_printable_iterable(cls, translation: TranslationResult, **kwargs) -> Iterable[str]:
 		yield ''.join(super().format_into_printable_iterable(translation, **kwargs))
+
+
+class TableFormatter(AbstractFormatter, AbstractIntoStringFormatter):
+	@classmethod
+	def format_into_string(cls, table, **kwargs) -> str:
+		return tabulate(table, headers='keys', tablefmt='rounded_outline')
+
+	@classmethod
+	def format(cls, table: DataFrame) -> DataFrame:
+
+		print(f'cols: {table.columns}')
+		print(f'rows: {table.index}')
+		print()
+		zz = table.iloc[0, 0]
+		zo = table.iloc[0, 1]
+		oz = table.iloc[1, 0]
+		print(f'{zz}: {type(zz)} --- {zo}: {type(zo)} --- {oz}: {type(oz)}\n\n')
+		table = DataTableFormatter.format(table)
+		table = ColumnsTableFormatter.format(table)
+		table = RowsTableFormmater.format(table)
+		return table
+
+	def _remove_empty_rows(self, table: DataFrame) -> DataFrame:
+		pass
+
+
+class DataTableFormatter(AbstractFormatter):
+	@classmethod
+	def format(cls, table: DataFrame) -> DataFrame:
+		table = DuplicateRemoverTableFormatter.format(table)
+		return table
+
+
+class DuplicateRemoverTableFormatter(AbstractFormatter):
+	_replacing_value = ''
+
+	@classmethod
+	def format(cls, table: DataFrame) -> DataFrame:
+		last = None
+		for row, col in product(table.index, table.columns):
+			curr = table.at[row, col]
+			if curr == last:
+				table.at[row, col] = cls._replacing_value
+			else:
+				last = curr
+		return table
+
+
+class ColumnsTableFormatter(AbstractFormatter):
+	@classmethod
+	def format(cls, table: DataFrame) -> DataFrame:
+		if isinstance(table.columns, (RangeIndex, Int64Index, NumericIndex)):
+			table, table.columns = table[1:], table.iloc[0]
+		return table
+
+
+class RowsTableFormmater(AbstractFormatter):
+	@classmethod
+	def format(cls, table: DataFrame) -> DataFrame:
+		if isinstance(table.index, (RangeIndex, Int64Index, NumericIndex)):
+			table = table.set_index(table.columns.array[0])
+		return table

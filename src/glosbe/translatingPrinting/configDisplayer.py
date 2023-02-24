@@ -38,7 +38,7 @@ class ConfigDisplayer:
         match config_name:
             case F.C.DOUBLE_MODE_STYLE_LONG_FLAG:
                 TranslationPrinter.out('Possible values: ', end='')
-                TranslationPrinter.out(str([TranslationTypes.SINGLE, TranslationTypes.LANG, TranslationTypes.WORD, TranslationTypes.DOUBLE])[1:-1])
+                TranslationPrinter.out(str([TranslationTypes.LANG, TranslationTypes.WORD, TranslationTypes.DOUBLE])[1:-1])
             case F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG:
                 TranslationPrinter.out('Possible values: ', end='')
                 TranslationPrinter.out(str([LayoutAdjustmentsMethods.NATIVE, LayoutAdjustmentsMethods.KEYBOARD, LayoutAdjustmentsMethods.NONE])[1:-1])

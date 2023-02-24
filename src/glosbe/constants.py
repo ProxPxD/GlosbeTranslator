@@ -47,6 +47,9 @@ class FLAGS:
         SYNOPSIS_SHORT_FLAG = '-syn'
         FROM_LANG_LONG_FLAG = '--from'
         FROM_LANG_SHORT_FLAG = '-f'
+        CONJUGATION_LONG_FLAG = '--conjugation'
+        CONJUGATION_SHORT_FLAG = '-conj'
+        CONJUGATION_SUPER_SHORT_FLAG = '-c'
 
     HELP_LONG_FLAG = '--help'
     HELP_SHORT_FLAG = '-h'

@@ -41,10 +41,12 @@ def main():
 
 
 def get_test_arguments():
-    return shlex.split('t pl -w wyspa rzeka woda -m sv nb da')
+    return shlex.split('t mieć pl de -c')
+    # TOOO: add test for "mieć pl de -c"
+    # TOOO: add test for "mieć pl -c"
     # TODO: add test for no saved lang exception
-    # TODO: t anomic en pl
     # TODO: add test for mis_tok
+    # TODO: t anomic en pl
 
 
 if __name__ == '__main__':

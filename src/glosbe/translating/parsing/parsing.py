@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Iterable
 
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
@@ -24,20 +26,30 @@ class Record:
         return any(filter(bool, (self.translation, self.part_of_speech, self.gender)))
 
 
-class Parser:
+class AbstractParser(ABC):
 
-    def __init__(self, page: requests.Response = None):
+    def __init__(self, page: requests.Response = None, **kwargs):
         self._page = page
 
     def set_page(self, page: requests.Response):
         self._page = page
 
-    def parse(self) -> Iterable[Record]:
+    def parse(self):
         if self._page.status_code != 200:
             raise WrongStatusCodeError(self._page)
-        return self._parse_translation()
+        yield from self._parse()
 
-    def _parse_translation(self) -> Iterable[Record]:
+    @abstractmethod
+    def _parse(self):
+        raise NotImplemented
+
+
+class TranslationParser(AbstractParser):
+
+    def __init__(self, page: requests.Response = None, **kwargs):
+        super().__init__(page, **kwargs)
+
+    def _parse(self) -> Iterable[Record]:
         soup = BeautifulSoup(self._page.text, features="html.parser")
         trans_elems = soup.find_all('div', {'class': 'py-1'})
         actual_trans = filter(lambda trans_elem: trans_elem.select_one('h3'), trans_elems)
@@ -66,3 +78,12 @@ class Parser:
 
     def _get_ith(self, items: list[Tag, ...], i: int):
         return items[i].text if len(items) > i else ''
+
+
+class ConjugationParser(AbstractParser):
+    def __init__(self, page: requests.Response = None, **kwargs):
+        super().__init__(**kwargs)
+        self._page = page
+
+    def _parse(self):
+        return pd.read_html(self._page.text)

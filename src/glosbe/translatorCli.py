@@ -2,12 +2,14 @@ from itertools import chain
 from typing import Callable, Iterable
 
 from more_itertools import unique_everseen
+from pandas import DataFrame
 from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
+from tabulate import tabulate
 
 from .configurations import Configurations
 from .constants import FLAGS as F
 from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods, LayoutAdjusterFactory
-from .translating.translator import Translator, TranslationTypes, TranslationResult
+from .translating.scrapping import TranslationTypes, TranslationResult, Scrapper
 from .translatingPrinting.configDisplayer import ConfigDisplayer
 from .translatingPrinting.translationPrinter import TranslationPrinter
 from .wordFilter import WordFilter
@@ -48,12 +50,14 @@ class TranslatorCli(Cli):
         self._word_node: HiddenNode
         self._lang_node: HiddenNode
         self._double_multi_node: HiddenNode
+        self._conjugation_node: HiddenNode
 
         self._from_langs: Flag
         self._to_langs: Flag
         self._words: Flag
+        self._conjugation_flag: Flag
 
-        self._translator = Translator()
+        self._scrapper = Scrapper()
         self._translation_printer = TranslationPrinter()
         self._word_filter = WordFilter()
         self._is_translating = True
@@ -149,6 +153,7 @@ class TranslatorCli(Cli):
         self.root.add_flag(F.F.REVERSE_LONG_FLAG, F.F.REVERSE_SHORT_FLAG, flag_limit=0)
         self.root.add_flag(F.F.SYNOPSIS_LONG_FLAG, F.F.SYNOPSIS_SHORT_FLAG, flag_limit=0)
         self.root.add_flag(F.F.FROM_LANG_LONG_FLAG, F.F.FROM_LANG_SHORT_FLAG, flag_limit=1, storage=self._from_langs)
+        self._conjugation_flag = self.root.add_flag(F.F.CONJUGATION_LONG_FLAG, F.F.CONJUGATION_SHORT_FLAG, F.F.CONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()
@@ -156,7 +161,7 @@ class TranslatorCli(Cli):
         self._configure_functional_flags()
 
     def _configure_mode_flags(self) -> None:
-        self._current_modes.add_to_add_names(self._single_flag, self._lang_flag, self._word_flag)
+        self._current_modes.add_to_add_names(self._single_flag, self._lang_flag, self._word_flag, self._conjugation_flag)
         self._word_flag.set_limit(None, storage=self._words)  # infinite
         self._lang_flag.set_limit(None, storage=self._to_langs)  # infinite
 
@@ -189,6 +194,7 @@ class TranslatorCli(Cli):
         self._lang_node = self._translation_node.add_hidden_node(TranslationTypes.LANG, action=self._translate_multi_lang)
         self._word_node = self._translation_node.add_hidden_node(TranslationTypes.WORD, action=self._translate_multi_word)
         self._double_multi_node = self._translation_node.add_hidden_node(TranslationTypes.DOUBLE, action=self._translate_double)
+        self._conjugation_node = self._translation_node.add_hidden_node(TranslationTypes.CONJ, action=self._get_conjugation)
 
     def _create_configuration_node(self) -> None:
         self._configuration_node = self.root.add_hidden_node('conf')
@@ -207,6 +213,7 @@ class TranslatorCli(Cli):
         self._configure_lang_node()
         self._configure_word_node()
         self._configure_double_node()
+        self._configure_conjugation_node()
 
     def _configure_main_translation_node(self) -> None:
         self._translation_node.set_only_hidden_nodes()
@@ -214,7 +221,11 @@ class TranslatorCli(Cli):
         # self._translation_node.set_inactive_on_conditions(lambda: not len(self._args))
 
     def _configure_single_node(self) -> None:
-        self._single_node.set_active_on_flags_in_collection(self._current_modes, self._single_flag, but_not=[self._word_flag, self._lang_flag])
+        self._single_node.set_active_on_flags_in_collection(self._current_modes, self._single_flag, self._conjugation_flag, func=any, but_not=[self._word_flag, self._lang_flag])
+        self.add_post_flag_parsing_action_when(
+            lambda: self._single_node.set_inactive_and(lambda: True),
+            lambda: self._conjugation_flag.is_active() and self._used_arity == 2
+        )
 
         self._single_node.set_params('word', 'from_lang', 'to_lang', storages=(self._words, self._from_langs, self._to_langs))
         self._single_node.set_possible_param_order('word from_lang to_lang')
@@ -232,24 +243,46 @@ class TranslatorCli(Cli):
         self._to_langs.reset()
         self._to_langs += from_langs
 
-    def _translate_single(self) -> None:
-        return self._translate(lambda: self._translator.single_translate(word=self._words.get(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()),
-                               prefix_style=TranslationTypes.SINGLE)
+    def _cli_translate(self):
+        return self._scrapper.scrap_translation(from_lang=self._from_langs.get(), to_langs=self._to_langs.get_as_list(), words=self._words.get_as_list())
+
+    def _translate_single(self) -> None:  # TODO: write a test for conj in single
+        if self._conjugation_flag.is_inactive():
+            return self._translate(self._cli_translate, prefix_style=TranslationTypes.SINGLE)
+        else:
+            self._correct_misplaced()
+            result = self._scrapper.scrap_translation_and_conjugation(from_lang=self._from_langs.get(), to_lang=self._to_langs.get(), word=self._words.get())
+            translations = next(result)
+            TranslationPrinter.print_with_formatting(translations, prefix_style=TranslationTypes.SINGLE)
+            conjugations = next(result)
+            self._print_conjugation(conjugations)
+            return translations
 
     def _translate_multi_lang(self) -> None:
-        return self._translate(lambda: self._translator.multi_lang_translate(word=self._words.get(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
-                               prefix_style=TranslationTypes.LANG)
+        return self._translate(self._cli_translate, prefix_style=TranslationTypes.LANG)
 
     def _translate_multi_word(self) -> None:
-        return self._translate(lambda: self._translator.multi_word_translate(words=self._words.get_as_list(), to_lang=self._to_langs.get(), from_lang=self._from_langs.get()),
-                               prefix_style=TranslationTypes.WORD)
+        return self._translate(self._cli_translate, prefix_style=TranslationTypes.WORD)
 
     def _translate_double(self) -> None:
         main_division = self.root.get_flag(F.C.DOUBLE_MODE_STYLE_LONG_FLAG).get()
         prefix_style = self._get_prefix_style_for_main_division(main_division)
-        return self._translate(lambda: self._translator.double_multi_translate(words=self._words.get_as_list(), to_langs=self._to_langs.get_as_list(), from_lang=self._from_langs.get()),
-                               prefix_style=prefix_style,
-                               main_division=main_division)
+        translations = self._translate(self._cli_translate, prefix_style=prefix_style, main_division=main_division)
+        return translations
+
+    def _get_conjugation(self) -> None:
+        tables = self._scrapper.scrap_conjugation(self._from_langs.get(), self._words.get())  # Check if it's being parsed well
+        self._print_conjugation(tables)
+
+    # TODO: move to separate printer
+    def _print_conjugation(self, tables):
+        # TODO: last
+        result_tables: list[DataFrame] = []
+        for table in tables:
+            if all((not table.equals(result_table) for result_table in result_tables)):
+                result_tables.append(table)
+        for table in result_tables:
+            print(tabulate(table, headers='keys', tablefmt='psql'), end='\n'*5)
 
     def _get_prefix_style_for_main_division(self, main_division: TranslationTypes) -> TranslationTypes:
         match main_division:
@@ -290,6 +323,10 @@ class TranslatorCli(Cli):
         self._double_multi_node.set_params('word', 'from_lang', 'to_langs', storages=(self._words, self._from_langs, self._to_langs))
         self._double_multi_node.set_possible_param_order('from_lang')
         self._double_multi_node.set_possible_param_order('')
+
+    def _configure_conjugation_node(self) -> None:
+        self._conjugation_node.set_active_and(self._conjugation_flag.is_active, self._single_node.is_inactive)
+        self._conjugation_node.set_params('word', 'lang', storages=(self._words, self._from_langs))
 
     # TODO: add information printing after setting a conf
     # TODO: add possible values checking (also in smartcli)

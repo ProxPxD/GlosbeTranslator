@@ -9,7 +9,7 @@ from more_itertools import partition
 
 from .constants import FLAGS
 from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods
-from .translating.translator import TranslationTypes
+from .translating.scrapping import TranslationTypes
 from .translatingPrinting.translationPrinter import TranslationPrinter
 
 C = FLAGS.CONFIGURATIONAL

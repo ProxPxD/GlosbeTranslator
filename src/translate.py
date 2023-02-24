@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from glosbe.configurations import Configurations, Paths
 from glosbe.translatingPrinting.translationPrinter import TranslationPrinter
 from glosbe.translatorCli import TranslatorCli
-from src.glosbe.translating.scrapping import Scrapper
 
 
 @dataclass(frozen=True)
@@ -42,18 +41,16 @@ def main():
 
 
 def get_test_arguments():
-    return shlex.split('t pl -w wyspa rzeka woda -m sv nb da')
+    return shlex.split('t mieć pl de -c')
+    # TOOO: add test for "mieć pl de -c"
+    # TOOO: add test for "mieć pl -c"
     # TODO: add test for no saved lang exception
-    # TODO: t anomic en pl
     # TODO: add test for mis_tok
+    # TODO: t anomic en pl
 
 
 if __name__ == '__main__':
     try:
-        scrapper = Scrapper()
-        res = scrapper.scrap_conjugation('pl', 'dać')  # mieć
-        res = list(res)
-
-        # main()
+        main()
     except KeyboardInterrupt:
         pass

@@ -17,6 +17,7 @@ class TranslationTypes:
     LANG = 'Lang'
     WORD = 'Word'
     DOUBLE = 'Double'
+    CONJ = 'Conjugation'
 
 
 @dataclass
@@ -73,7 +74,7 @@ class TranslatorScrapper(AbstractScrapper):
         if isinstance(words, str):
             words = [words]
         if isinstance(to_langs, str):
-            words = [to_langs]
+            to_langs = [to_langs]
         langs_words = get_product(to_langs, words, by_word)
         for to_lang, word in langs_words:
             yield self.translate_single(from_lang, to_lang, word)
@@ -117,10 +118,10 @@ class ConjugationScrapper(AbstractScrapper):
         super().__init__(parser=ConjugationParser(), **kwargs)
 
     def get_conjugation(self, lang: str, word: str):
-        trans_args = TransArgs(lang, 'en', word)
+        trans_args = TransArgs(lang, 'en' if lang != 'en' else 'es', word)
         page: requests.Response = self._session.get(f'{trans_args.to_url()}/fragment/details', allow_redirects=True)
         self._parser.set_page(page)
-        return self._parser.parse()
+        yield from self._parser.parse()
 
 
 class Scrapper:
@@ -146,13 +147,14 @@ class Scrapper:
 
         self._connector.close_session()
 
-    def scrap_translation_and_conjugation(self, from_lang: str, to_lang: str, word: str, by_word=False) -> tuple[Iterable[TranslationResult], Any]:
+    def scrap_translation_and_conjugation(self, from_lang: str, to_lang: str, word: str, by_word=False) -> Iterable[TranslationResult] | Any:
         self._connector.establish_session()
         self._translation_scrapper.session = self._connector.session
         self._conjugation_scrapper.session = self._connector.session
 
         translation_result = self._translation_scrapper.translate(from_lang, to_lang, word, by_word=by_word)
         conjugation_result = self._conjugation_scrapper.get_conjugation(from_lang, word)
-        yield translation_result, conjugation_result
+        yield translation_result
+        yield conjugation_result
 
         self._connector.close_session()

@@ -3,7 +3,7 @@ from time import sleep
 from typing import Iterable, Any
 
 from .formatting import TranslationFormatter
-from ..translating.translator import TranslationResult
+from ..translating.scrapping import TranslationResult
 
 
 class TranslationPrinter:

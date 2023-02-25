@@ -274,11 +274,7 @@ class TranslatorCli(Cli):
         tables = self._scrapper.scrap_conjugation(self._from_langs.get(), self._words.get())  # Check if it's being parsed well
         filtered = self._filter_unnecessary_tables(tables)
         formatted = TableFormatter.format_many(filtered)
-        # string = (t for f in formatted for t in TableFormatter.format_into_string(f))
         string = TableFormatter.format_many_into_string(formatted, sep='\n\n')
-        # for table in string:
-        #     print(table)
-            # input()
         TranslationPrinter.out(string)
 
     # TODO: test

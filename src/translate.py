@@ -41,9 +41,9 @@ def main():
 
 
 def get_test_arguments():
-    # return shlex.split('t dać pl -c')
+    return shlex.split('t dać pl -c')
     # return shlex.split('t sweter pl -c')
-    return shlex.split('t machen de -c')
+    # return shlex.split('t machen de -c')
     # TOOO: add test for "mieć pl de -c"
     # TOOO: add test for "mieć pl -c"
     # TODO: add test for no saved lang exception

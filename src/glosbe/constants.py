@@ -50,6 +50,9 @@ class FLAGS:
         CONJUGATION_LONG_FLAG = '--conjugation'
         CONJUGATION_SHORT_FLAG = '-conj'
         CONJUGATION_SUPER_SHORT_FLAG = '-c'
+        CCONJUGATION_LONG_FLAG = '--cconjugation'
+        CCONJUGATION_SHORT_FLAG = '-cconj'
+        CCONJUGATION_SUPER_SHORT_FLAG = '-cc'
 
     HELP_LONG_FLAG = '--help'
     HELP_SHORT_FLAG = '-h'

@@ -1,4 +1,4 @@
-from itertools import chain
+from itertools import chain, islice
 from typing import Callable, Iterable
 
 from more_itertools import unique_everseen
@@ -56,6 +56,7 @@ class TranslatorCli(Cli):
         self._to_langs: Flag
         self._words: Flag
         self._conjugation_flag: Flag
+        self._cconjugation_flag: Flag
 
         self._scrapper = Scrapper()
         self._translation_printer = TranslationPrinter()
@@ -154,6 +155,7 @@ class TranslatorCli(Cli):
         self.root.add_flag(F.F.SYNOPSIS_LONG_FLAG, F.F.SYNOPSIS_SHORT_FLAG, flag_limit=0)
         self.root.add_flag(F.F.FROM_LANG_LONG_FLAG, F.F.FROM_LANG_SHORT_FLAG, flag_limit=1, storage=self._from_langs)
         self._conjugation_flag = self.root.add_flag(F.F.CONJUGATION_LONG_FLAG, F.F.CONJUGATION_SHORT_FLAG, F.F.CONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
+        self._cconjugation_flag = self.root.add_flag(F.F.CCONJUGATION_LONG_FLAG, F.F.CCONJUGATION_SHORT_FLAG, F.F.CCONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()
@@ -224,7 +226,7 @@ class TranslatorCli(Cli):
         self._single_node.set_active_on_flags_in_collection(self._current_modes, self._single_flag, self._conjugation_flag, func=any, but_not=[self._word_flag, self._lang_flag])
         self.add_post_flag_parsing_action_when(
             lambda: self._single_node.set_inactive_and(lambda: True),
-            lambda: self._conjugation_flag.is_active() and self._used_arity == 2
+            lambda: (self._conjugation_flag.is_active() or self._cconjugation_flag.is_active()) and self._used_arity <= 2
         )
 
         self._single_node.set_params('word', 'from_lang', 'to_lang', storages=(self._words, self._from_langs, self._to_langs))
@@ -279,6 +281,8 @@ class TranslatorCli(Cli):
 
     # TODO: test
     def _filter_unnecessary_tables(self, tables: Iterable[DataFrame]) -> Iterable[DataFrame]:
+        if self._conjugation_flag.is_active():
+            return islice(tables, 1)
         tables_instances = list(tables)
         length = len(tables_instances)
         if length > 1:
@@ -326,7 +330,10 @@ class TranslatorCli(Cli):
         self._double_multi_node.set_possible_param_order('')
 
     def _configure_conjugation_node(self) -> None:
-        self._conjugation_node.set_active_and(self._conjugation_flag.is_active, self._single_node.is_inactive)
+        self._conjugation_node.set_active_or(
+            lambda: self._conjugation_flag.is_active() and self._single_node.is_inactive(),
+            lambda: self._cconjugation_flag.is_active() and self._single_node.is_inactive()
+        )
         self._conjugation_node.set_params('word', 'lang', storages=(self._words, self._from_langs))
 
     # TODO: add information printing after setting a conf

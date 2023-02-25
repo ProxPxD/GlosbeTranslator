@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from more_itertools import bucket, split_when
 from numpy import ndarray
-from pandas import DataFrame, RangeIndex, MultiIndex, Series
+from pandas import DataFrame, RangeIndex, MultiIndex
 from pandas.core.indexes.numeric import Int64Index, NumericIndex
 from tabulate import tabulate
 

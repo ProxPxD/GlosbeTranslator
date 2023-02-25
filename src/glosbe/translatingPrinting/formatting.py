@@ -365,10 +365,10 @@ class DuplicateRemoverTableFormatter(AbstractFormatter):
 	@classmethod
 	def format(cls, table: DataFrame) -> DataFrame:
 		last = None
-		for row, col in product(table.index, table.columns):
-			curr = table.at[row, col]
-			if curr == last:
-				table.at[row, col] = cls._replacing_value
+		for row, col in product(range(len(table.index)), range(len(table.columns))):
+			curr = table.iloc[row, col]
+			if last is not None and curr == last:
+				table.iloc[row, col] = cls._replacing_value
 			else:
 				last = curr
 		return table

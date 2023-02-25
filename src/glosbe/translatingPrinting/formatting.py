@@ -5,9 +5,11 @@ from dataclasses import replace
 from itertools import product, islice, count, chain
 from typing import Iterable, Callable, Any
 
+import numpy as np
 import pandas as pd
-from more_itertools import bucket
-from pandas import DataFrame, RangeIndex
+from more_itertools import bucket, split_when
+from numpy import ndarray
+from pandas import DataFrame, RangeIndex, MultiIndex, Series
 from pandas.core.indexes.numeric import Int64Index, NumericIndex
 from tabulate import tabulate
 
@@ -16,6 +18,8 @@ from ..translating.scrapping import TranslationResult, TranslationTypes
 
 
 class AbstractFormatter(ABC):
+
+	invisibles = '',  ' ', '\u00A0', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005' '\u2006', '\u2007', '\u2008', '\u2009',
 
 	@classmethod
 	@abstractmethod
@@ -280,28 +284,34 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 class TableFormatter(AbstractFormatter, AbstractIntoStringFormatter):
 	@classmethod
 	def format_into_string(cls, table, **kwargs) -> str:
-		return tabulate(table, headers='keys', tablefmt='rounded_outline')
+		return tabulate(table, tablefmt='rounded_outline')
 
 	@classmethod
-	def format(cls, table: DataFrame) -> DataFrame:
-		print(f'cols: {table.columns}')
-		print(f'rows: {table.index}')
-		print()
-		zz = table.iloc[0, 0]
-		zo = table.iloc[0, 1]
-		oz = table.iloc[1, 0]
-		print(f'{zz}: {type(zz)} --- {zo}: {type(zo)} --- {oz}: {type(oz)}\n\n')
+	def format(cls, table: DataFrame) -> Iterable[DataFrame]:
+		# print(f'cols: {table.columns}')
+		# print(f'rows: {table.index}')
+		# print()
+		# zz = table.iloc[0, 0]
+		# zo = table.iloc[0, 1]
+		# oz = table.iloc[1, 0]
+		# print(f'{zz}: {type(zz)} --- {zo}: {type(zo)} --- {oz}: {type(oz)}\n\n')
 		table = HeaderToDefaultFormatter.format(table)
 		table = DataTableFormatter.format(table)
-		table = HeaderTableFormatter.format(table)
-		table = RowNamesTableFormatter.format(table)
-		return table
+		tables = TableSplitter.format(table)
+		# tables = HeaderTableFormatter.format_many(tables)
+		tables = RowNamesTableFormatter.format_many(tables)
+		yield from tables
+
+	@classmethod
+	def format_many(cls, tables) -> Iterable:
+		for table in tables:
+			yield from cls.format(table)
 
 
 class HeaderToDefaultFormatter(AbstractFormatter):
 	@classmethod
 	def format(cls, table: DataFrame):
-		if str(table.iloc[0, 0]) + str(table.iloc[0, 1]) == '01':
+		if str(table.iloc[0, 0]) + str(table.iloc[0, 1]) == '01' or isinstance(table.columns, MultiIndex):
 			table = pd.concat([table.columns.to_frame().T, table], ignore_index=True)
 			table.columns = range(len(table.columns))
 		return table
@@ -318,14 +328,20 @@ class DataTableFormatter(AbstractFormatter):
 class TrashRemovingFormatter(AbstractFormatter):
 
 	_unnamed = 'Unnamed:'
-	_invisibles = ' ', '\u00A0', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005' '\u2006', '\u2007', '\u2008', '\u2009',
 
 	@classmethod
 	def format(cls, table: DataFrame) -> DataFrame:
 		for row, col in product(table.index, islice(table.columns, 3)):
-			if str(table.at[row, col]).startswith(cls._unnamed):
-				table.at[row, col] = list(islice(chain(cls._invisibles, count()), col+1))[-1]
+			if cls._is_trash(table.at[row, col]):
+				table.at[row, col] = list(islice(chain(cls.invisibles, count()), col + 1))[-1]
+
+		table.columns = list(map(lambda c: '' if cls._is_trash(c) else c, iter(table.columns)))
+
 		return table
+
+	@classmethod
+	def _is_trash(cls, val):
+		return str(val).startswith(cls._unnamed)
 
 
 class DuplicateRemoverTableFormatter(AbstractFormatter):
@@ -341,6 +357,45 @@ class DuplicateRemoverTableFormatter(AbstractFormatter):
 			else:
 				last = curr
 		return table
+
+
+class TableSplitter(AbstractFormatter):
+	@classmethod
+	def format(cls, table: DataFrame) -> Iterable[DataFrame]:
+		by_empties = EmptyRowSplitter.format(table.values.tolist())
+
+		for by_empty in by_empties:
+			yield pd.DataFrame(by_empty, columns=range(len(by_empty[0])))
+
+		# drop_first = table.drop(table.columns[0], axis=1)
+		# bool_table = drop_first.applymap(lambda v: v in cls.invisibles)
+		# unique = bool_table.drop_duplicates().values.tolist()
+		# is_invisible = np.vectorize(lambda v: v in cls.invisibles)
+		# presence_table = is_invisible(drop_first.values.tolist())
+		# no_empty = (list(row) for row in drop_first.values.tolist() if all(cls.get_presence_list(row)))
+		# separateds = split_when(no_empty, lambda r1, r2: cls.get_presence_list(r1) != cls.get_presence_list(r2))
+		# for separated in separateds:
+		# 	yield pd.DataFrame({0: table.iloc[:, 0]} | {i+1: row for i, row in enumerate(separated)})
+
+		# yield table
+
+	@classmethod
+	def get_presence_list(cls, row: list[str]) -> list[bool]:
+		return list(map(lambda v: v not in cls.invisibles, row))
+
+
+class EmptyRowSplitter(AbstractFormatter):
+	@classmethod
+	def format(cls, table: ndarray) -> ndarray:
+		curr_table = []
+		for row in table:
+			if any(row):
+				curr_table.append(row)
+			else:
+				yield curr_table
+				curr_table = []
+		yield curr_table
+
 
 
 class HeaderTableFormatter(AbstractFormatter):

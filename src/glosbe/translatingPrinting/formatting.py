@@ -312,8 +312,8 @@ class TableFormatter(AbstractFormatter, AbstractIntoStringFormatter):
 		table = HeaderToDefaultFormatter.format(table)
 		table = DataTableFormatter.format(table)
 		tables = TableSplitter.format_to_many(table)
-		tables = TableSizeAdjusterFormatter.format_many(tables)
 		tables = TableMerger.format_from_many(tables)
+		tables = TableSizeAdjusterFormatter.format_many(tables)
 		tables = RowNamesTableFormatter.format_many(tables)
 		yield from tables
 
@@ -404,7 +404,7 @@ class TypeSplitter(AbstractToManyFormatter):
 
 	@classmethod
 	def format_to_many(cls, table: ndarray) -> Iterable[list]:
-		return split_when(table,cls._should_split)
+		return split_when(table, cls._should_split)
 
 	@classmethod
 	def _should_split(cls, row1, row2) -> bool:
@@ -427,11 +427,8 @@ class TableMerger(AbstractFromManyToManyFormatter):
 	def format_from_many(cls, tables: Iterable) -> Iterable:
 		merged = None
 		for table in tables:
-			if (len([v for v in table.iloc[:,0] if v]) == 1) and (merged is None or len(table.columns) == len(merged.columns)):
-				if merged is None:
-					merged = table
-				else:
-					merged = pd.concat([merged, table], ignore_index=True)
+			if (len([v for v in table.iloc[:, 0] if v]) == 1) and (merged is None or len(table.columns) == len(merged.columns)):
+				merged = table if merged is None else pd.concat([merged, table], ignore_index=True)
 			else:
 				if merged is not None:
 					yield merged

@@ -86,4 +86,4 @@ class ConjugationParser(AbstractParser):
         self._page = page
 
     def _parse(self):
-        return pd.read_html(self._page.text)
+        return pd.read_html(self._page.text, keep_default_na=False, header=None)

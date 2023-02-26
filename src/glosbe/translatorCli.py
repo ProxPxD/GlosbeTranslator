@@ -257,7 +257,7 @@ class TranslatorCli(Cli):
             translations = next(result)
             TranslationPrinter.print_with_formatting(translations, prefix_style=TranslationTypes.SINGLE)
             conjugations = next(result)
-            self._print_conjugation(conjugations)
+            self._print_conjugations(conjugations)
             return translations
 
     def _translate_multi_lang(self) -> None:
@@ -274,6 +274,9 @@ class TranslatorCli(Cli):
 
     def _get_conjugation(self) -> None:
         tables = self._scrapper.scrap_conjugation(self._from_langs.get(), self._words.get())  # Check if it's being parsed well
+        self._print_conjugations(tables)
+
+    def _print_conjugations(self, tables: Iterable) -> None:
         filtered = self._filter_unnecessary_tables(tables)
         formatted = TableFormatter.format_many(filtered)
         string = TableFormatter.format_many_into_string(formatted, sep='\n\n')

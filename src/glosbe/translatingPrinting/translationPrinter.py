@@ -33,8 +33,8 @@ class TranslationPrinter:
             cls.out_func(to_print)
 
     @classmethod
-    def print_with_formatting(cls, translations: Iterable[TranslationResult], *, prefix_style=None, main_division=None) -> None:
-        formatted = TranslationFormatter.format_many(translations)
+    def print_with_formatting(cls, translations: Iterable[TranslationResult], *, prefix_style=None, main_division=None, to_lang=None) -> None:
+        formatted = TranslationFormatter.format_many(translations, to_lang=to_lang)
         cls.print(formatted, prefix_style=prefix_style, main_division=main_division)
 
     @classmethod

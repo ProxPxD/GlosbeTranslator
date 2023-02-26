@@ -165,18 +165,30 @@ class GenderFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter)
 	pre_one = ' ['
 	post_one = ']'
 
-	@classmethod
-	def format(cls, gender: str, **kwargs) -> str:
-		if not gender:
-			return gender
+	GENERAL = 'general'
 
-		if gender == 'feminine':
-			gender = 'fem'
-		elif gender == 'masculine':
-			gender = 'masc'
-		elif gender == 'neuter':
-			gender = 'neut'
-		return gender
+	FEMININE = 'feminine'
+	MASCULINE = 'masculine'
+	NEUTER = 'neuter'
+
+	_trans = {
+		GENERAL: {
+			MASCULINE: 'masc',
+			FEMININE: 'fem',
+			NEUTER: 'neut',
+		},
+		'de': {
+			MASCULINE: 'der',
+			FEMININE: 'die',
+			NEUTER: 'das',
+		},
+	}
+
+	@classmethod
+	def format(cls, gender: str, to_lang: str = None, **kwargs) -> str:
+		return cls._trans\
+			.setdefault(to_lang, cls._trans[cls.GENERAL])\
+			.setdefault(gender, gender)
 
 
 class PartOfSpeechFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter):
@@ -203,7 +215,7 @@ class RecordFormatter(AbstractFormatter, AbstractIntoStringFormatter, AbstractIn
 	@classmethod
 	def format(cls, record: Record, **kwargs):
 		record = replace(record)
-		record.gender = GenderFormatter.format(record.gender)
+		record.gender = GenderFormatter.format(record.gender, to_lang=kwargs.setdefault('to_lang', None))
 		record.part_of_speech = PartOfSpeechFormatter.format(record.part_of_speech)
 		return record
 

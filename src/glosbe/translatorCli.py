@@ -306,7 +306,7 @@ class TranslatorCli(Cli):
         self._correct_misplaced()
         if self._is_translating:
             translation = translate()
-            TranslationPrinter.print_with_formatting(translation, prefix_style=prefix_style, main_division=main_division)
+            TranslationPrinter.print_with_formatting(translation, prefix_style=prefix_style, main_division=main_division, to_lang=self._to_langs.get() if len(self._to_langs) else None)
             return translation
 
     def _configure_lang_node(self) -> None:

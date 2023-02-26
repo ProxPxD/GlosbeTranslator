@@ -42,7 +42,7 @@ def main():
 # TODO: test conj
 # TODO: test cconj
 def get_test_arguments():
-    return shlex.split('t manger fr -c')
+    return shlex.split('t kobieta pl de')
     # return shlex.split('t dać pl -c')
     # return shlex.split('t sweter pl -c')
     # return shlex.split('t machen de -c')

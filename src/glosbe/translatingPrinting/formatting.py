@@ -182,6 +182,17 @@ class GenderFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter)
 			FEMININE: 'die',
 			NEUTER: 'das',
 		},
+		'pl': {
+			MASCULINE: 'ten',
+			FEMININE: 'ta',
+			NEUTER: 'to',
+		},
+		'uk': {
+			MASCULINE: 'цей',
+			FEMININE: 'ця',
+			NEUTER: 'це',
+		},
+
 	}
 
 	@classmethod

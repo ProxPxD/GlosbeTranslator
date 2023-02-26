@@ -246,6 +246,7 @@ class TranslatorCli(Cli):
         self._to_langs += from_langs
 
     def _cli_translate(self):
+        # TODO: fix reverse mode for single
         return self._scrapper.scrap_translation(from_lang=self._from_langs.get(), to_langs=self._to_langs.get_as_list(), words=self._words.get_as_list())
 
     def _translate_single(self) -> None:  # TODO: write a test for conj in single

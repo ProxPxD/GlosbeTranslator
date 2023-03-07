@@ -349,7 +349,7 @@ class TableFormatter(AbstractFormatter, AbstractIntoStringFormatter):
 class HeaderToDefaultFormatter(AbstractFormatter):
 	@classmethod
 	def format(cls, table: DataFrame, **kwargs):
-		if str(table.iloc[0, 0]) + str(table.iloc[0, 1]) == '01' or isinstance(table.columns, MultiIndex):
+		if len(table.columns) >= 2 and (str(table.iloc[0, 0]) + str(table.iloc[0, 1]) == '01' or isinstance(table.columns, MultiIndex)):
 			table = pd.concat([table.columns.to_frame().T, table], ignore_index=True)
 			table.columns = range(len(table.columns))
 		return table

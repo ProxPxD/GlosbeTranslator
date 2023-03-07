@@ -86,4 +86,14 @@ class ConjugationParser(AbstractParser):
         self._page = page
 
     def _parse(self):
-        return pd.read_html(self._page.text, keep_default_na=False, header=None)
+        try:
+            return pd.read_html(self._page.text, keep_default_na=False, header=None)
+        except ValueError as e:
+            match e.args[0]:
+                case "invalid literal for int() with base 10: '100%'":
+                    return [pd.DataFrame({'Error': []})]
+                case "No tables found":
+                    #TODO: implement error printing
+                    return [pd.DataFrame({'Error': [e.args[0]]})]
+                case _:
+                    raise e

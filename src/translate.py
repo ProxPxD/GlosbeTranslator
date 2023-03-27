@@ -37,12 +37,12 @@ def main():
     except Exception as ex:
         # TODO: in next((flag for flag in self._flags if flag.has_name(name))) of cli parser add an exception to know that the flag has not been added. Similarly in sibling cli_elements
         logging.exception(traceback.format_exc())
-        TranslationPrinter.out(ErrorMessages.UNKNOWN_EXCEPTION)
+        TranslationPrinter.out(ErrorMessages.UNKNOWN_EXCEPTION, end='\n')
 
 # TODO: test conj
 # TODO: test cconj
 def get_test_arguments():
-    return shlex.split('t kobieta pl de')
+    return shlex.split(' trans  condescending en -def')
     # return shlex.split('t dać pl -c')
     # return shlex.split('t sweter pl -c')
     # return shlex.split('t machen de -c')
@@ -50,6 +50,7 @@ def get_test_arguments():
     # TOOO: add test for "mieć pl -c"
     # TODO: add test for no saved lang exception
     # TODO: add test for mis_tok
+    # TODO: add tests for definitions
     # TODO: t anomic en pl
 
 

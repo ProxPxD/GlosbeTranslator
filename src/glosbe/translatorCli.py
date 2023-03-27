@@ -8,6 +8,7 @@ from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
 from .configurations import Configurations
 from .constants import FLAGS as F
 from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods, LayoutAdjusterFactory
+from .translating.parsing.parsing import Definition
 from .translating.scrapping import TranslationTypes, TranslationResult, Scrapper
 from .translatingPrinting.configDisplayer import ConfigDisplayer
 from .translatingPrinting.formatting import TableFormatter
@@ -51,12 +52,14 @@ class TranslatorCli(Cli):
         self._lang_node: HiddenNode
         self._double_multi_node: HiddenNode
         self._conjugation_node: HiddenNode
+        self._definition_node: HiddenNode
 
         self._from_langs: Flag
         self._to_langs: Flag
         self._words: Flag
         self._conjugation_flag: Flag
         self._cconjugation_flag: Flag
+        self._definition_flag: Flag
 
         self._scrapper = Scrapper()
         self._translation_printer = TranslationPrinter()
@@ -156,14 +159,15 @@ class TranslatorCli(Cli):
         self.root.add_flag(F.F.FROM_LANG_LONG_FLAG, F.F.FROM_LANG_SHORT_FLAG, flag_limit=1, storage=self._from_langs)
         self._conjugation_flag = self.root.add_flag(F.F.CONJUGATION_LONG_FLAG, F.F.CONJUGATION_SHORT_FLAG, F.F.CONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
         self._cconjugation_flag = self.root.add_flag(F.F.CCONJUGATION_LONG_FLAG, F.F.CCONJUGATION_SHORT_FLAG, F.F.CCONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
+        self._definition_flag = self.root.add_flag(F.F.DEFINITION_LONG_FLAG, F.F.DEFINITION_MID_FLAG, F.F.DEFINITION_SHORT_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()
         self._configure_configuration_flags()
         self._configure_functional_flags()
 
-    def _configure_mode_flags(self) -> None:
-        self._current_modes.add_to_add_names(self._single_flag, self._lang_flag, self._word_flag, self._conjugation_flag)
+    def _configure_mode_flags(self) -> None:  # TODO: what about _cconj flag?
+        self._current_modes.add_to_add_names(self._single_flag, self._lang_flag, self._word_flag, self._conjugation_flag, self._definition_flag)
         self._word_flag.set_limit(None, storage=self._words)  # infinite
         self._lang_flag.set_limit(None, storage=self._to_langs)  # infinite
 
@@ -197,6 +201,7 @@ class TranslatorCli(Cli):
         self._word_node = self._translation_node.add_hidden_node(TranslationTypes.WORD, action=self._translate_multi_word)
         self._double_multi_node = self._translation_node.add_hidden_node(TranslationTypes.DOUBLE, action=self._translate_double)
         self._conjugation_node = self._translation_node.add_hidden_node(TranslationTypes.CONJ, action=self._get_conjugation)
+        self._definition_node = self._translation_node.add_hidden_node(TranslationTypes.DEF, action=self._get_definition)
 
     def _create_configuration_node(self) -> None:
         self._configuration_node = self.root.add_hidden_node('conf')
@@ -216,6 +221,7 @@ class TranslatorCli(Cli):
         self._configure_word_node()
         self._configure_double_node()
         self._configure_conjugation_node()
+        self._configure_definition_node()
 
     def _configure_main_translation_node(self) -> None:
         self._translation_node.set_only_hidden_nodes()
@@ -302,6 +308,18 @@ class TranslatorCli(Cli):
             case _:
                 return TranslationTypes.DOUBLE
 
+    def _get_definition(self):
+        definitions = self._scrapper.scrap_definition(self._from_langs.get(), self._words.get())
+        self._print_definitions(definitions)
+
+    def _print_definitions(self, definitions: Iterable[Definition]) -> None:  # TODO add simple formatter
+        for definition in definitions:
+            if definition.example:
+                TranslationPrinter.out(f'-{definition.definition.replace(".", ":")}\n\t{definition.example}\n')
+            else:
+                TranslationPrinter.out(f'-{definition.definition}\n')
+
+
     def _translate(self, translate: Callable[[], Iterable[TranslationResult]], *, prefix_style: TranslationTypes, main_division: TranslationTypes = None) -> None | Iterable[TranslationResult]:
         self._correct_misplaced()
         if self._is_translating:
@@ -339,6 +357,10 @@ class TranslatorCli(Cli):
             lambda: self._cconjugation_flag.is_active() and self._single_node.is_inactive()
         )
         self._conjugation_node.set_params('word', 'lang', storages=(self._words, self._from_langs))
+
+    def _configure_definition_node(self) -> None:  # TODO: think of imitating the conjugation node
+        self._definition_node.set_active(self._definition_flag.is_active)
+        self._definition_node.set_params('word', 'lang', storages=(self._words, self._from_langs))
 
     # TODO: add information printing after setting a conf
     # TODO: add possible values checking (also in smartcli)

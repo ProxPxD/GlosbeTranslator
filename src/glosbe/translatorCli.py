@@ -471,6 +471,12 @@ class TranslatorCli(Cli):
         self._double_multi_node.help.short_description = 'Translates many words from a single language into many languages'
         self._double_multi_node.help.long_description = ''
         self._double_multi_node.help.synopsis = 'trans [FROM_LANG] -w <WORD>... -m <TO_LANG>... '
+        self._conjugation_node.help.short_description = 'Shows the conjugation of nouns and verbs'
+        self._conjugation_node.help.long_description = ''
+        self._conjugation_node.help.synopsis = 'trans <WORD> [LANG] -c/-cc'
+        self._definition_node.help.short_description = 'Shows the definitions of the words'
+        self._definition_node.help.long_description = ''
+        self._definition_node.help.synopsis = 'trans <WORD> [LANG] -d'
 
         self.root.help.name = 'trans'
         self.root.help.short_description = 'Translation program'
@@ -484,4 +490,6 @@ class TranslatorCli(Cli):
             + f'{self._single_node.name}: {self._single_node.help.synopsis}\n'\
             + f'{self._lang_node.name}: {self._lang_node.help.synopsis}\n'\
             + f'{self._word_node.name}: {self._word_node.help.synopsis}\n'\
-            + f'{self._double_multi_node.name}: {self._double_multi_node.help.synopsis}'
+            + f'{self._double_multi_node.name}: {self._double_multi_node.help.synopsis}\n'\
+            + f'{self._conjugation_node.name}: {self._conjugation_node.help.synopsis}\n'\
+            + f'{self._definition_node.name}: {self._definition_node.help.synopsis}'

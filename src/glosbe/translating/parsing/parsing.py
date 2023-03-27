@@ -26,6 +26,12 @@ class Record:
         return any(filter(bool, (self.translation, self.part_of_speech, self.gender)))
 
 
+@dataclass
+class Definition:
+    definition: str = ''
+    example: str = ''
+
+
 class AbstractParser(ABC):
 
     def __init__(self, page: requests.Response = None, **kwargs):
@@ -82,8 +88,7 @@ class TranslationParser(AbstractParser):
 
 class ConjugationParser(AbstractParser):
     def __init__(self, page: requests.Response = None, **kwargs):
-        super().__init__(**kwargs)
-        self._page = page
+        super().__init__(page, **kwargs)
 
     def _parse(self):
         try:
@@ -97,3 +102,36 @@ class ConjugationParser(AbstractParser):
                     return [pd.DataFrame({'Error': [e.args[0]]})]
                 case _:
                     raise e
+
+
+class DefinitionParser(AbstractParser):
+
+    def __init__(self, page: requests.Response = None, **kwargs):
+        super().__init__(page, **kwargs)
+
+    def _parse(self):
+        soup = BeautifulSoup(self._page.text, features="html.parser")
+        definitions_nodes = soup.find_all('li', {'class': 'pb-2'})
+        definitions = map(self._parse_definition, definitions_nodes)
+        return definitions
+
+    def _parse_definition(self, definition_tag: Tag) -> Definition:
+        example = self._parse_example(definition_tag)
+        definition_text = self._parse_definition_text(definition_tag)
+        return Definition(definition_text, example)
+
+    def _parse_definition_text(self, definition_tag: Tag) -> str:
+        return definition_tag.get_text()\
+            .removeprefix('\n')\
+            .removesuffix('\n')\
+            .replace('\n\n', ' ')\
+            .replace('\n', ' ')\
+            .removeprefix(' ')\
+            .removeprefix(' ')
+
+    def _parse_example(self, definition_tag: Tag) -> str:
+        example_tag = definition_tag.select_one('div', {'class': 'border-l-2 pl-2 border-gray-200 text-gray-600 '})
+        example = example_tag.text.replace('\n', '') if example_tag else ''
+        if any((to_skip == example for to_skip in ('adjective', 'verb', 'noun'))):
+            return ''
+        return example

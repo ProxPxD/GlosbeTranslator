@@ -8,6 +8,7 @@ from smartcli import Parameter, HiddenNode, Cli, Root, CliCollection, Flag
 from .configurations import Configurations
 from .constants import FLAGS as F
 from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods, LayoutAdjusterFactory
+from .translating.parsing.parsing import Definition
 from .translating.scrapping import TranslationTypes, TranslationResult, Scrapper
 from .translatingPrinting.configDisplayer import ConfigDisplayer
 from .translatingPrinting.formatting import TableFormatter
@@ -51,12 +52,14 @@ class TranslatorCli(Cli):
         self._lang_node: HiddenNode
         self._double_multi_node: HiddenNode
         self._conjugation_node: HiddenNode
+        self._definition_node: HiddenNode
 
         self._from_langs: Flag
         self._to_langs: Flag
         self._words: Flag
         self._conjugation_flag: Flag
         self._cconjugation_flag: Flag
+        self._definition_flag: Flag
 
         self._scrapper = Scrapper()
         self._translation_printer = TranslationPrinter()
@@ -156,14 +159,15 @@ class TranslatorCli(Cli):
         self.root.add_flag(F.F.FROM_LANG_LONG_FLAG, F.F.FROM_LANG_SHORT_FLAG, flag_limit=1, storage=self._from_langs)
         self._conjugation_flag = self.root.add_flag(F.F.CONJUGATION_LONG_FLAG, F.F.CONJUGATION_SHORT_FLAG, F.F.CONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
         self._cconjugation_flag = self.root.add_flag(F.F.CCONJUGATION_LONG_FLAG, F.F.CCONJUGATION_SHORT_FLAG, F.F.CCONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
+        self._definition_flag = self.root.add_flag(F.F.DEFINITION_LONG_FLAG, F.F.DEFINITION_MID_FLAG, F.F.DEFINITION_SHORT_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()
         self._configure_configuration_flags()
         self._configure_functional_flags()
 
-    def _configure_mode_flags(self) -> None:
-        self._current_modes.add_to_add_names(self._single_flag, self._lang_flag, self._word_flag, self._conjugation_flag)
+    def _configure_mode_flags(self) -> None:  # TODO: what about _cconj flag?
+        self._current_modes.add_to_add_names(self._single_flag, self._lang_flag, self._word_flag, self._conjugation_flag, self._definition_flag)
         self._word_flag.set_limit(None, storage=self._words)  # infinite
         self._lang_flag.set_limit(None, storage=self._to_langs)  # infinite
 
@@ -197,6 +201,7 @@ class TranslatorCli(Cli):
         self._word_node = self._translation_node.add_hidden_node(TranslationTypes.WORD, action=self._translate_multi_word)
         self._double_multi_node = self._translation_node.add_hidden_node(TranslationTypes.DOUBLE, action=self._translate_double)
         self._conjugation_node = self._translation_node.add_hidden_node(TranslationTypes.CONJ, action=self._get_conjugation)
+        self._definition_node = self._translation_node.add_hidden_node(TranslationTypes.DEF, action=self._get_definition)
 
     def _create_configuration_node(self) -> None:
         self._configuration_node = self.root.add_hidden_node('conf')
@@ -216,6 +221,7 @@ class TranslatorCli(Cli):
         self._configure_word_node()
         self._configure_double_node()
         self._configure_conjugation_node()
+        self._configure_definition_node()
 
     def _configure_main_translation_node(self) -> None:
         self._translation_node.set_only_hidden_nodes()
@@ -246,6 +252,7 @@ class TranslatorCli(Cli):
         self._to_langs += from_langs
 
     def _cli_translate(self):
+        # TODO: fix reverse mode for single
         return self._scrapper.scrap_translation(from_lang=self._from_langs.get(), to_langs=self._to_langs.get_as_list(), words=self._words.get_as_list())
 
     def _translate_single(self) -> None:  # TODO: write a test for conj in single
@@ -257,7 +264,7 @@ class TranslatorCli(Cli):
             translations = next(result)
             TranslationPrinter.print_with_formatting(translations, prefix_style=TranslationTypes.SINGLE)
             conjugations = next(result)
-            self._print_conjugation(conjugations)
+            self._print_conjugations(conjugations)
             return translations
 
     def _translate_multi_lang(self) -> None:
@@ -274,6 +281,9 @@ class TranslatorCli(Cli):
 
     def _get_conjugation(self) -> None:
         tables = self._scrapper.scrap_conjugation(self._from_langs.get(), self._words.get())  # Check if it's being parsed well
+        self._print_conjugations(tables)
+
+    def _print_conjugations(self, tables: Iterable) -> None:
         filtered = self._filter_unnecessary_tables(tables)
         formatted = TableFormatter.format_many(filtered)
         string = TableFormatter.format_many_into_string(formatted, sep='\n\n')
@@ -298,11 +308,23 @@ class TranslatorCli(Cli):
             case _:
                 return TranslationTypes.DOUBLE
 
+    def _get_definition(self):
+        definitions = self._scrapper.scrap_definition(self._from_langs.get(), self._words.get())
+        self._print_definitions(definitions)
+
+    def _print_definitions(self, definitions: Iterable[Definition]) -> None:  # TODO add simple formatter
+        for definition in definitions:
+            if definition.example:
+                TranslationPrinter.out(f'-{definition.definition.replace(".", ":")}\n\t{definition.example}\n')
+            else:
+                TranslationPrinter.out(f'-{definition.definition}\n')
+
+
     def _translate(self, translate: Callable[[], Iterable[TranslationResult]], *, prefix_style: TranslationTypes, main_division: TranslationTypes = None) -> None | Iterable[TranslationResult]:
         self._correct_misplaced()
         if self._is_translating:
             translation = translate()
-            TranslationPrinter.print_with_formatting(translation, prefix_style=prefix_style, main_division=main_division)
+            TranslationPrinter.print_with_formatting(translation, prefix_style=prefix_style, main_division=main_division, to_lang=self._to_langs.get() if len(self._to_langs) == 1 else None)
             return translation
 
     def _configure_lang_node(self) -> None:
@@ -335,6 +357,10 @@ class TranslatorCli(Cli):
             lambda: self._cconjugation_flag.is_active() and self._single_node.is_inactive()
         )
         self._conjugation_node.set_params('word', 'lang', storages=(self._words, self._from_langs))
+
+    def _configure_definition_node(self) -> None:  # TODO: think of imitating the conjugation node
+        self._definition_node.set_active(self._definition_flag.is_active)
+        self._definition_node.set_params('word', 'lang', storages=(self._words, self._from_langs))
 
     # TODO: add information printing after setting a conf
     # TODO: add possible values checking (also in smartcli)
@@ -445,6 +471,12 @@ class TranslatorCli(Cli):
         self._double_multi_node.help.short_description = 'Translates many words from a single language into many languages'
         self._double_multi_node.help.long_description = ''
         self._double_multi_node.help.synopsis = 'trans [FROM_LANG] -w <WORD>... -m <TO_LANG>... '
+        self._conjugation_node.help.short_description = 'Shows the conjugation of nouns and verbs'
+        self._conjugation_node.help.long_description = ''
+        self._conjugation_node.help.synopsis = 'trans <WORD> [LANG] -c/-cc'
+        self._definition_node.help.short_description = 'Shows the definitions of the words'
+        self._definition_node.help.long_description = ''
+        self._definition_node.help.synopsis = 'trans <WORD> [LANG] -d'
 
         self.root.help.name = 'trans'
         self.root.help.short_description = 'Translation program'
@@ -458,4 +490,6 @@ class TranslatorCli(Cli):
             + f'{self._single_node.name}: {self._single_node.help.synopsis}\n'\
             + f'{self._lang_node.name}: {self._lang_node.help.synopsis}\n'\
             + f'{self._word_node.name}: {self._word_node.help.synopsis}\n'\
-            + f'{self._double_multi_node.name}: {self._double_multi_node.help.synopsis}'
+            + f'{self._double_multi_node.name}: {self._double_multi_node.help.synopsis}\n'\
+            + f'{self._conjugation_node.name}: {self._conjugation_node.help.synopsis}\n'\
+            + f'{self._definition_node.name}: {self._definition_node.help.synopsis}'

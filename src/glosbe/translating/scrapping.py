@@ -7,7 +7,7 @@ from typing import Iterable, Any
 import requests
 import requests.exceptions as request_exceptions
 
-from .parsing.parsing import TranslationParser, Record, WrongStatusCodeError, ConjugationParser, AbstractParser
+from .parsing.parsing import TranslationParser, Record, WrongStatusCodeError, ConjugationParser, AbstractParser, DefinitionParser
 from .web.connector import Connector, TransArgs, TranslatorArgumentException
 
 
@@ -18,6 +18,7 @@ class TranslationTypes:
     WORD = 'Word'
     DOUBLE = 'Double'
     CONJ = 'Conjugation'
+    DEF = 'Definition'
 
 
 @dataclass
@@ -117,9 +118,20 @@ class ConjugationScrapper(AbstractScrapper):
     def __init__(self, **kwargs):
         super().__init__(parser=ConjugationParser(), **kwargs)
 
-    def get_conjugation(self, lang: str, word: str):
+    def get_conjugation(self, lang: str, word: str) -> Iterable:
         trans_args = TransArgs(lang, 'en' if lang != 'en' else 'es', word)
         page: requests.Response = self._session.get(f'{trans_args.to_url()}/fragment/details', allow_redirects=True)
+        self._parser.set_page(page)
+        yield from self._parser.parse()
+
+
+class DefinitionScrapper(AbstractScrapper):
+    def __init__(self, **kwargs):
+        super().__init__(parser=DefinitionParser(), **kwargs)
+
+    def scrap_definitions(self, lang: str, word: str) -> Iterable:
+        trans_args = TransArgs(lang, lang, word)
+        page: requests.Response = self._session.get(trans_args.to_url(), allow_redirects=True)
         self._parser.set_page(page)
         yield from self._parser.parse()
 
@@ -130,6 +142,7 @@ class Scrapper:
         self._connector = Connector()
         self._conjugation_scrapper = ConjugationScrapper()
         self._translation_scrapper = TranslatorScrapper()
+        self._definition_scrapper = DefinitionScrapper()
 
     def scrap_translation(self, from_lang: str, to_langs: list[str, ...], words: list[str, ...], by_word=False) -> Iterable[TranslationResult]:
         self._connector.establish_session()
@@ -139,7 +152,7 @@ class Scrapper:
 
         self._connector.close_session()
 
-    def scrap_conjugation(self, lang: str, word: str):
+    def scrap_conjugation(self, lang: str, word: str) -> Iterable:
         self._connector.establish_session()
         self._conjugation_scrapper.session = self._connector.session
 
@@ -157,4 +170,10 @@ class Scrapper:
         yield translation_result
         yield conjugation_result
 
+        self._connector.close_session()
+
+    def scrap_definition(self, lang: str, word: str) -> Iterable:
+        self._connector.establish_session()
+        self._definition_scrapper.session = self._connector.session
+        yield from self._definition_scrapper.scrap_definitions(lang, word)
         self._connector.close_session()

@@ -23,12 +23,12 @@ class AbstractFormatter(ABC):
 
 	@classmethod
 	@abstractmethod
-	def format(cls, to_format):
+	def format(cls, to_format, **kwargs):
 		raise NotImplementedError
 
 	@classmethod
-	def format_many(cls, to_formats) -> Iterable:
-		return (cls.format(to_format) for to_format in to_formats)
+	def format_many(cls, to_formats, **kwargs) -> Iterable:
+		return (cls.format(to_format, **kwargs) for to_format in to_formats)
 
 
 class AbstractIntoStringFormatter(ABC):
@@ -165,18 +165,41 @@ class GenderFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter)
 	pre_one = ' ['
 	post_one = ']'
 
-	@classmethod
-	def format(cls, gender: str) -> str:
-		if not gender:
-			return gender
+	GENERAL = 'general'
 
-		if gender == 'feminine':
-			gender = 'fem'
-		elif gender == 'masculine':
-			gender = 'masc'
-		elif gender == 'neuter':
-			gender = 'neut'
-		return gender
+	FEMININE = 'feminine'
+	MASCULINE = 'masculine'
+	NEUTER = 'neuter'
+
+	_trans = {
+		GENERAL: {
+			MASCULINE: 'masc',
+			FEMININE: 'fem',
+			NEUTER: 'neut',
+		},
+		'de': {
+			MASCULINE: 'der',
+			FEMININE: 'die',
+			NEUTER: 'das',
+		},
+		'pl': {
+			MASCULINE: 'm',
+			FEMININE: 'ż',
+			NEUTER: 'n',
+		},
+		'uk': {
+			MASCULINE: 'цей',
+			FEMININE: 'ця',
+			NEUTER: 'це',
+		},
+
+	}
+
+	@classmethod
+	def format(cls, gender: str, to_lang: str = None, **kwargs) -> str:
+		return cls._trans\
+			.setdefault(to_lang, cls._trans[cls.GENERAL])\
+			.setdefault(gender, gender)
 
 
 class PartOfSpeechFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter):
@@ -185,7 +208,7 @@ class PartOfSpeechFormatter(AbstractFormatter, AbstractIntoPrintableIterableForm
 	post_one = ')'
 
 	@classmethod
-	def format(cls, part_of_speech: str) -> str:
+	def format(cls, part_of_speech: str, **kwargs) -> str:
 		if part_of_speech == 'adverb':
 			part_of_speech = 'adv.'
 		if part_of_speech == 'adjective':
@@ -201,9 +224,9 @@ class RecordFormatter(AbstractFormatter, AbstractIntoStringFormatter, AbstractIn
 	NO_RECORDS_MESSAGE = 'No translation has been found!'
 
 	@classmethod
-	def format(cls, record: Record):
+	def format(cls, record: Record, **kwargs):
 		record = replace(record)
-		record.gender = GenderFormatter.format(record.gender)
+		record.gender = GenderFormatter.format(record.gender, to_lang=kwargs.setdefault('to_lang', None))
 		record.part_of_speech = PartOfSpeechFormatter.format(record.part_of_speech)
 		return record
 
@@ -241,8 +264,8 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 	post_all = ''
 
 	@classmethod
-	def format(cls, translation: TranslationResult) -> TranslationResult:
-		translation.records = RecordFormatter.format_many(translation.records)
+	def format(cls, translation: TranslationResult, **kwargs) -> TranslationResult:
+		translation.records = RecordFormatter.format_many(translation.records, **kwargs)
 		return translation
 
 	@classmethod
@@ -308,7 +331,7 @@ class TableFormatter(AbstractFormatter, AbstractIntoStringFormatter):
 		return tabulate(table, tablefmt='rounded_outline')
 
 	@classmethod
-	def format(cls, table: DataFrame) -> Iterable[DataFrame]:
+	def format(cls, table: DataFrame, **kwargs) -> Iterable[DataFrame]:
 		table = HeaderToDefaultFormatter.format(table)
 		table = DataTableFormatter.format(table)
 		tables = TableSplitter.format_to_many(table)
@@ -318,15 +341,15 @@ class TableFormatter(AbstractFormatter, AbstractIntoStringFormatter):
 		yield from tables
 
 	@classmethod
-	def format_many(cls, tables) -> Iterable:
+	def format_many(cls, tables, **kwargs) -> Iterable:
 		for table in tables:
-			yield from cls.format(table)
+			yield from cls.format(table, **kwargs)
 
 
 class HeaderToDefaultFormatter(AbstractFormatter):
 	@classmethod
-	def format(cls, table: DataFrame):
-		if str(table.iloc[0, 0]) + str(table.iloc[0, 1]) == '01' or isinstance(table.columns, MultiIndex):
+	def format(cls, table: DataFrame, **kwargs):
+		if len(table.columns) >= 2 and (str(table.iloc[0, 0]) + str(table.iloc[0, 1]) == '01' or isinstance(table.columns, MultiIndex)):
 			table = pd.concat([table.columns.to_frame().T, table], ignore_index=True)
 			table.columns = range(len(table.columns))
 		return table
@@ -334,7 +357,7 @@ class HeaderToDefaultFormatter(AbstractFormatter):
 
 class DataTableFormatter(AbstractFormatter):
 	@classmethod
-	def format(cls, table: DataFrame) -> DataFrame:
+	def format(cls, table: DataFrame, **kwargs) -> DataFrame:
 		table = TrashRemovingFormatter.format(table)
 		table = DuplicateRemoverTableFormatter.format(table)
 		return table
@@ -345,7 +368,7 @@ class TrashRemovingFormatter(AbstractFormatter):
 	_unnamed = 'Unnamed:'
 
 	@classmethod
-	def format(cls, table: DataFrame) -> DataFrame:
+	def format(cls, table: DataFrame, **kwargs) -> DataFrame:
 		for row, col in product(table.index, islice(table.columns, 3)):
 			if cls._is_trash(table.at[row, col]):
 				table.at[row, col] = list(islice(chain(cls.invisibles, count()), col + 1))[-1]
@@ -363,7 +386,7 @@ class DuplicateRemoverTableFormatter(AbstractFormatter):
 	_replacing_value = ''
 
 	@classmethod
-	def format(cls, table: DataFrame) -> DataFrame:
+	def format(cls, table: DataFrame, **kwargs) -> DataFrame:
 		last = None
 		for row, col in product(range(len(table.index)), range(len(table.columns))):
 			curr = table.iloc[row, col]
@@ -413,7 +436,7 @@ class TypeSplitter(AbstractToManyFormatter):
 
 class TableSizeAdjusterFormatter(AbstractFormatter):
 	@classmethod
-	def format(cls, table: DataFrame) -> DataFrame:
+	def format(cls, table: DataFrame, **kwargs) -> DataFrame:
 		df = pd.DataFrame(table, columns=table.columns)
 		df.replace('', np.nan, inplace=True)
 		df.dropna(how='all', axis=1, inplace=True)
@@ -440,7 +463,7 @@ class TableMerger(AbstractFromManyToManyFormatter):
 
 class HeaderTableFormatter(AbstractFormatter):
 	@classmethod
-	def format(cls, table: DataFrame) -> DataFrame:
+	def format(cls, table: DataFrame, **kwargs) -> DataFrame:
 		if isinstance(table.columns, (RangeIndex, Int64Index, NumericIndex)):
 			table, table.columns = table[1:], table.iloc[0]
 		return table
@@ -448,7 +471,7 @@ class HeaderTableFormatter(AbstractFormatter):
 
 class RowNamesTableFormatter(AbstractFormatter):
 	@classmethod
-	def format(cls, table: DataFrame) -> DataFrame:
+	def format(cls, table: DataFrame, **kwargs) -> DataFrame:
 		if isinstance(table.index, (RangeIndex, Int64Index, NumericIndex)):
 			table = table.set_index(table.columns.array[0])
 		return table

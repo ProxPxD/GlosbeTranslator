@@ -1,3 +1,4 @@
+import sys
 import time
 from time import sleep
 from typing import Iterable, Any
@@ -7,7 +8,7 @@ from ..translating.scrapping import TranslationResult
 
 
 class TranslationPrinter:
-    out_func = print
+    out_func = lambda to_print: print(to_print, end='')
     _is_turned_on = True
     break_time = 0.2
 
@@ -27,14 +28,14 @@ class TranslationPrinter:
     def out(cls, to_print: Any, end=None) -> None:
         if not cls._is_turned_on:
             return
-        if end is not None:
-            cls.out_func(to_print, end=end)
+        if end:
+            cls.out_func(f'{to_print}{end}')
         else:
             cls.out_func(to_print)
 
     @classmethod
-    def print_with_formatting(cls, translations: Iterable[TranslationResult], *, prefix_style=None, main_division=None) -> None:
-        formatted = TranslationFormatter.format_many(translations)
+    def print_with_formatting(cls, translations: Iterable[TranslationResult], *, prefix_style=None, main_division=None, to_lang=None) -> None:
+        formatted = TranslationFormatter.format_many(translations, to_lang=to_lang)
         cls.print(formatted, prefix_style=prefix_style, main_division=main_division)
 
     @classmethod

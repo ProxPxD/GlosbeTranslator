@@ -319,7 +319,6 @@ class TranslatorCli(Cli):
             else:
                 TranslationPrinter.out(f'-{definition.definition}\n')
 
-
     def _translate(self, translate: Callable[[], Iterable[TranslationResult]], *, prefix_style: TranslationTypes, main_division: TranslationTypes = None) -> None | Iterable[TranslationResult]:
         self._correct_misplaced()
         if self._is_translating:

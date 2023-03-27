@@ -6,7 +6,7 @@ from typing import Iterable
 
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from bs4.element import Tag
 
 
@@ -116,12 +116,13 @@ class DefinitionParser(AbstractParser):
         return definitions
 
     def _parse_definition(self, definition_tag: Tag) -> Definition:
-        example = self._parse_example(definition_tag)
         definition_text = self._parse_definition_text(definition_tag)
+        example = self._parse_example(definition_tag)
         return Definition(definition_text, example)
 
     def _parse_definition_text(self, definition_tag: Tag) -> str:
-        return definition_tag.get_text()\
+        core_content = ''.join((content for content in definition_tag.contents if isinstance(content, (NavigableString, str))))
+        return core_content\
             .removeprefix('\n')\
             .removesuffix('\n')\
             .replace('\n\n', ' ')\

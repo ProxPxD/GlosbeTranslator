@@ -6,7 +6,7 @@ from typing import Iterable
 
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from bs4.element import Tag
 
 
@@ -57,7 +57,7 @@ class TranslationParser(AbstractParser):
 
     def _parse(self) -> Iterable[Record]:
         soup = BeautifulSoup(self._page.text, features="html.parser")
-        trans_elems = soup.find_all('div', {'class': 'py-1'})
+        trans_elems = soup.find_all('div', {'class': 'inline leading-10'})
         actual_trans = filter(lambda trans_elem: trans_elem.select_one('h3'), trans_elems)
         records = map(self._parse_single_translation_tag, actual_trans)
         return records
@@ -70,7 +70,7 @@ class TranslationParser(AbstractParser):
         return Record(translation, part_of_speech, gender)
 
     def _get_translation(self, translation_tag: Tag) -> str:
-        return translation_tag.select_one('h3').text
+        return translation_tag.select_one('h3').text.replace('\n', '')
 
     def _get_spans(self, translation_tag: Tag) -> list[Tag, ...]:
         main_span = translation_tag.select_one('span', {'class': 'text-xxs text-gray-500'})
@@ -116,12 +116,13 @@ class DefinitionParser(AbstractParser):
         return definitions
 
     def _parse_definition(self, definition_tag: Tag) -> Definition:
-        example = self._parse_example(definition_tag)
         definition_text = self._parse_definition_text(definition_tag)
+        example = self._parse_example(definition_tag)
         return Definition(definition_text, example)
 
     def _parse_definition_text(self, definition_tag: Tag) -> str:
-        return definition_tag.get_text()\
+        core_content = ''.join((content for content in definition_tag.contents if isinstance(content, (NavigableString, str))))
+        return core_content\
             .removeprefix('\n')\
             .removesuffix('\n')\
             .replace('\n\n', ' ')\

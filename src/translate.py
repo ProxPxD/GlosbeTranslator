@@ -42,7 +42,7 @@ def main():
 # TODO: test conj
 # TODO: test cconj
 def get_test_arguments():
-    return shlex.split(' trans  condescending en -def')
+    return shlex.split('trans znać pl -def')
     # return shlex.split('t dać pl -c')
     # return shlex.split('t sweter pl -c')
     # return shlex.split('t machen de -c')

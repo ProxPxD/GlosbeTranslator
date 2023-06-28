@@ -57,7 +57,7 @@ class TranslationParser(AbstractParser):
 
     def _parse(self) -> Iterable[Record]:
         soup = BeautifulSoup(self._page.text, features="html.parser")
-        trans_elems = soup.find_all('div', {'class': 'py-1'})
+        trans_elems = soup.find_all('div', {'class': 'inline leading-10'})
         actual_trans = filter(lambda trans_elem: trans_elem.select_one('h3'), trans_elems)
         records = map(self._parse_single_translation_tag, actual_trans)
         return records
@@ -70,7 +70,7 @@ class TranslationParser(AbstractParser):
         return Record(translation, part_of_speech, gender)
 
     def _get_translation(self, translation_tag: Tag) -> str:
-        return translation_tag.select_one('h3').text
+        return translation_tag.select_one('h3').text.replace('\n', '')
 
     def _get_spans(self, translation_tag: Tag) -> list[Tag, ...]:
         main_span = translation_tag.select_one('span', {'class': 'text-xxs text-gray-500'})

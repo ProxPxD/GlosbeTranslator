@@ -21,8 +21,8 @@ TO_LANGS_COL = 'to_langs'
 WORDS_COL = 'words'
 CONFS_COL = 'configurations'
 
-just_set = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG)
-just_display = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DEFAULT_MODE_LONG_FLAG, F.C.LANGS_SHOW_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG)
+just_set = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG, F.C.SHOW_INFO_MODE_FLAG_LONG)
+just_display = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DEFAULT_MODE_LONG_FLAG, F.C.LANGS_SHOW_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG, F.C.SHOW_INFO_MODE_FLAG_LONG)
 display_with_arg = (F.C.LAST_LANG_LONG_FLAG, )
 other_config = (F.C.LAST_1_LONG_FLAG, F.C.LAST_2_LONG_FLAG, F.C.ADD_LANG_LONG_FLAG, F.C.REMOVE_LANG_LONG_FLAG, F.C.SETTINGS_LONG_FLAG, F.F.SYNOPSIS_LONG_FLAG)
 
@@ -151,6 +151,7 @@ class TranslatorCli(Cli):
         self.root.add_flag(F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_SHORT_FLAG, flag_limit=1)
         self.root.add_flag(F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_METHOD_SHORT_FLAG, flag_limit=1)
         self.root.add_flag(F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_LANG_SHORT_FLAG, flag_limit=1)
+        self.root.add_flag(F.C.SHOW_INFO_MODE_FLAG_LONG, F.C.SHOW_INFO_MODE_FLAG_SHORT, flag_limit=1)
 
     def _create_functional_flags(self) -> None:
         self.root.add_flag(F.F.SILENT_LONG_FLAG, flag_limit=0)
@@ -259,7 +260,7 @@ class TranslatorCli(Cli):
             from_lang=self._from_langs.get(),
             to_langs=self._to_langs.get_as_list(),
             words=self._words.get_as_list(),
-            show_info=self._info_flag.is_active()
+            show_info=Configurations.get_conf(F.C.SHOW_INFO_MODE_FLAG_LONG) or self._info_flag.is_active()
         )
 
     def _translate_single(self) -> None:  # TODO: write a test for conj in single
@@ -271,7 +272,7 @@ class TranslatorCli(Cli):
                 from_lang=self._from_langs.get(),
                 to_lang=self._to_langs.get(),
                 word=self._words.get(),
-                show_info=self._info_flag.is_active()
+                show_info=Configurations.get_conf(F.C.SHOW_INFO_MODE_FLAG_LONG) or self._info_flag.is_active()
             )
             translations = next(result)
             TranslationPrinter.print_with_formatting(translations,

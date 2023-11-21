@@ -47,3 +47,6 @@ class ConfigDisplayer:
             case F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG:
                 TranslationPrinter.out('Possible values: ', end='')
                 TranslationPrinter.out(str(['uk', 'de', 'zh'])[1:-1])
+            case F.C.SHOW_INFO_MODE_FLAG_LONG:
+                TranslationPrinter.out('Possible values: ', end='')
+                TranslationPrinter.out(str([True, False]))

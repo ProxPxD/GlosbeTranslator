@@ -33,15 +33,15 @@ class TranslationPrinter:
             cls.out_func(to_print)
 
     @classmethod
-    def print_with_formatting(cls, translations: Iterable[TranslationResult], *, prefix_style=None, main_division=None, to_lang=None, show_info=None) -> None:
-        formatted = TranslationFormatter.format_many(translations, to_lang=to_lang)
-        cls.print(formatted, prefix_style=prefix_style, main_division=main_division, show_info=show_info)
+    def print_with_formatting(cls, translations: Iterable[TranslationResult], **kwargs) -> None:
+        formatted = TranslationFormatter.format_many(translations, **kwargs)
+        cls.print(formatted, **kwargs)
 
     @classmethod
-    def print(cls, translations: Iterable[TranslationResult], prefix_style=None, main_division=None, show_info=None) -> None:
+    def print(cls, translations: Iterable[TranslationResult], **kwargs) -> None:
         if not cls._is_turned_on:
             return
-        printable = TranslationFormatter.format_many_into_printable_iterable(translations, prefix_style=prefix_style, main_division=main_division, show_info=show_info)
+        printable = TranslationFormatter.format_many_into_printable_iterable(translations, **kwargs)
         curr_time = time.time()
         for to_print in printable:
             cls.out(to_print, end='')

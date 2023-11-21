@@ -193,10 +193,9 @@ class GenderFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter)
 	}
 
 	@classmethod
-	def format(cls, gender: str, to_lang: str = None, **kwargs) -> str:
-		return cls._trans\
-			.setdefault(to_lang, cls._trans[cls.GENERAL])\
-			.setdefault(gender, gender)
+	def format(cls, gender: str, to_lang: str = None, from_lang: str = None, is_info=False, **kwargs) -> str:
+		formatting_lang = to_lang if not is_info else from_lang
+		return cls._trans.get(formatting_lang, cls._trans[cls.GENERAL]).get(gender, gender)
 
 
 class PartOfSpeechFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter):
@@ -223,7 +222,7 @@ class RecordFormatter(AbstractFormatter, AbstractIntoStringFormatter, AbstractIn
 	@classmethod
 	def format(cls, record: Record, **kwargs):
 		record = replace(record)
-		record.gender = GenderFormatter.format(record.gender, to_lang=kwargs.setdefault('to_lang', None))
+		record.gender = GenderFormatter.format(record.gender,  is_info=not record.translation, **kwargs)
 		record.part_of_speech = PartOfSpeechFormatter.format(record.part_of_speech)
 		return record
 

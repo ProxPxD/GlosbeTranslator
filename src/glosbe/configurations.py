@@ -89,7 +89,6 @@ class Configurations:
     def change_conf(cls, conf: str, value) -> None:
         if Configurations._configs is None:
             Configurations.init()
-
         Configurations._configs[conf] = cls.purify_value(value)
 
     @classmethod

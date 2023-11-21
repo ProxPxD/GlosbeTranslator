@@ -276,6 +276,8 @@ class TranslatorCli(Cli):
             )
             translations = next(result)
             TranslationPrinter.print_with_formatting(translations,
+                                                     from_lang=self._from_langs.get(),
+                                                     to_lang=self._to_langs.get(),
                                                      prefix_style=TranslationTypes.SINGLE,
                                                      show_info=self._info_flag.is_active(),
             )
@@ -342,6 +344,7 @@ class TranslatorCli(Cli):
             TranslationPrinter.print_with_formatting(translation,
                                                      prefix_style=prefix_style,
                                                      main_division=main_division,
+                                                     from_lang=self._from_langs.get(),
                                                      to_lang=self._to_langs.get() if len(self._to_langs) == 1 else None,
                                                      show_info=self._info_flag.is_active(),
             )

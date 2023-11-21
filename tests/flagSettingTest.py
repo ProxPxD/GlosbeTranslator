@@ -48,18 +48,19 @@ class FlagSettingTest(AbstractCliTest):
 		('long_default_mode_with_change', F.C.DEFAULT_MODE_LONG_FLAG, F.C.DEFAULT_MODE_LONG_FLAG, [F.M.LANG_LONG_FLAG]),
 		('short_langs', F.C.LANGS_SHOW_SHORT_FLAG, F.C.LANGS_SHOW_LONG_FLAG, ['pl', 'es', 'de']),
 		('long_langs', F.C.LANGS_SHOW_LONG_FLAG, F.C.LANGS_SHOW_LONG_FLAG, ['pl', 'es', 'de']),
+		('short_show_info', F.C.SHOW_INFO_MODE_FLAG_SHORT, F.C.SHOW_INFO_MODE_FLAG_LONG, [False]),
+		('long_show_info', F.C.SHOW_INFO_MODE_FLAG_LONG, F.C.SHOW_INFO_MODE_FLAG_LONG, [True]),
 	])
 	def test_display_configuration(self, name: str, flag: str, conf_to_set: str, to_saves: list[str]):
 		to_save = to_saves[0] if len(to_saves) == 1 else to_saves
-		if to_save:
-			Configurations.set_conf(conf_to_set, to_save)
+		Configurations.set_conf(conf_to_set, to_save)
 		text = SmartList()
 
 		self.cli.set_out_stream(text.__iadd__)
 		self.cli.parse(f't {flag}')
-		text = '\n'.join(text)
+		text = ''.join(text).replace('\n', '')
 		expected_ending = ', '.join(to_save) if 'langs' in name else str(to_save)
-		self.assertTrue(text.endswith(expected_ending))
+		self.assertTrue(text.endswith(expected_ending), f'"{text}" does not end with "{expected_ending}"')
 
 	@parameterized.expand([
 		('last_1st', F.C.LAST_LANG_LONG_FLAG, [1], 0),
@@ -77,7 +78,7 @@ class FlagSettingTest(AbstractCliTest):
 
 		self.cli.parse(f't {flag} {" ".join(map(str, flag_args))}')
 
-		actual_lang = '\n'.join(text).split(' ')[-1]
+		actual_lang = '\n'.join(text).split(' ')[-1].replace('\n', '')
 		expected_lang = Configurations.get_nth_saved_language(lang_to_take)
 		self.assertEqual(expected_lang, actual_lang)
 
@@ -110,7 +111,7 @@ class FlagSettingTest(AbstractCliTest):
 
 		self.cli.parse(f't {flag}')
 
-		printed_keys = list(map(lambda t: f'--{t.split(":")[0]}', text))
+		printed_keys = [f'--{t.split(":")[0]}' for t in text if '\n' not in t]
 		configs = list(Configurations.get_all_configs().keys())
 
 		self.assertEqual(configs, printed_keys)

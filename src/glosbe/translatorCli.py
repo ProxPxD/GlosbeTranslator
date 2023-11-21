@@ -245,10 +245,11 @@ class TranslatorCli(Cli):
         self.add_post_parse_action_when(self._reverse_langs, lambda: self.root.get_flag(F.F.REVERSE_SHORT_FLAG).is_active() and self._single_node.is_active())
 
     def _reverse_langs(self):
-        from_langs = self._from_langs[:]
+        from_langs = self._from_langs.get_as_list()[:]
+        to_langs = self._to_langs.get_as_list()[:]
         self._from_langs.reset()
-        self._from_langs += self._to_langs
         self._to_langs.reset()
+        self._from_langs += to_langs
         self._to_langs += from_langs
 
     def _cli_translate(self):

@@ -37,6 +37,8 @@ class FLAGS:
         ADD_LANG_SHORT_FLAG = '-al'
         REMOVE_LANG_LONG_FLAG = '--remove-lang'
         REMOVE_LANG_SHORT_FLAG = '-rl'
+        SHOW_INFO_MODE_FLAG_LONG = '--show-info-mode'
+        SHOW_INFO_MODE_FLAG_SHORT = '-si'
 
     @dataclass(frozen=True)
     class FUNCTIONAL:
@@ -56,6 +58,8 @@ class FLAGS:
         DEFINITION_LONG_FLAG = '--definition'
         DEFINITION_MID_FLAG = '-def'
         DEFINITION_SHORT_FLAG = '-d'
+        INFO_LONG_FLAG = '--info'
+        INFO_SHORT_FLAG = '-i'
 
     HELP_LONG_FLAG = '--help'
     HELP_SHORT_FLAG = '-h'

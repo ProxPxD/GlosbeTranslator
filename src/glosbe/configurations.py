@@ -1,6 +1,6 @@
 
 from dataclasses import dataclass
-from itertools import islice
+from itertools import islice, chain
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -11,6 +11,7 @@ from .constants import FLAGS
 from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods
 from .translating.scrapping import TranslationTypes
 from .translatingPrinting.translationPrinter import TranslationPrinter
+from more_itertools import nth
 
 C = FLAGS.CONFIGURATIONAL
 M = FLAGS.MODES
@@ -41,6 +42,7 @@ class Configurations:
         C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG: LayoutAdjustmentsMethods.NONE,
         C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG: '',
         C.DOUBLE_MODE_STYLE_LONG_FLAG: TranslationTypes.LANG,
+        C.SHOW_INFO_MODE_FLAG_LONG: False
     }
 
     @classmethod
@@ -87,7 +89,20 @@ class Configurations:
     def change_conf(cls, conf: str, value) -> None:
         if Configurations._configs is None:
             Configurations.init()
-        Configurations._configs[conf] = value
+        Configurations._configs[conf] = cls.purify_value(value)
+
+    @classmethod
+    def purify_value(cls, value: str) -> str | bool | int | list:
+        if isinstance(value, (list, int, bool)):
+            return value
+        if value.isnumeric():
+            return int(value)
+
+        true_values = ('true', '1')
+        false_values = ('false', '0')
+        if value.lower() in chain(true_values, false_values):
+            return value.lower() in true_values
+        return value
 
     @classmethod
     def set_conf(cls, conf: str, value) -> None:
@@ -101,7 +116,7 @@ class Configurations:
         return dict(cls._configs)
 
     @classmethod
-    def get_conf(cls, name: str) -> Any:  # TODO: think of default configs and setting them in case of new features
+    def get_conf(cls, name: str) -> list | str | bool | int:  # TODO: think of default configs and setting them in case of new features
         if name not in Configurations._configs:
             cls._set_default_value_for(name)
         return Configurations._configs[name]
@@ -149,7 +164,8 @@ class Configurations:
     @classmethod
     def get_nth_saved_language(cls, index: int, *to_skips: str) -> str:
         langs = cls.load_config_languages(*to_skips)
-        return next(islice(langs, int(index), None), None)
+        nth_lang = nth(langs, index)
+        return nth_lang
 
     @classmethod
     def get_adjustment_method(cls) -> str:

@@ -39,10 +39,12 @@ def main():
         logging.exception(traceback.format_exc())
         TranslationPrinter.out(ErrorMessages.UNKNOWN_EXCEPTION, end='\n')
 
+
 # TODO: test conj
 # TODO: test cconj
 def get_test_arguments():
-    return shlex.split('trans znać pl -def')
+    return shlex.split('trans lalka pl en')
+    # return shlex.split('trans definicja pl -def')
     # return shlex.split('t dać pl -c')
     # return shlex.split('t sweter pl -c')
     # return shlex.split('t machen de -c')

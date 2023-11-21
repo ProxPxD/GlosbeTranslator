@@ -21,8 +21,8 @@ TO_LANGS_COL = 'to_langs'
 WORDS_COL = 'words'
 CONFS_COL = 'configurations'
 
-just_set = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG)
-just_display = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DEFAULT_MODE_LONG_FLAG, F.C.LANGS_SHOW_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG)
+just_set = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG, F.C.SHOW_INFO_MODE_FLAG_LONG)
+just_display = (F.C.LANG_LIMIT_LONG_FLAG, F.C.DEFAULT_MODE_LONG_FLAG, F.C.LANGS_SHOW_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG, F.C.SHOW_INFO_MODE_FLAG_LONG)
 display_with_arg = (F.C.LAST_LANG_LONG_FLAG, )
 other_config = (F.C.LAST_1_LONG_FLAG, F.C.LAST_2_LONG_FLAG, F.C.ADD_LANG_LONG_FLAG, F.C.REMOVE_LANG_LONG_FLAG, F.C.SETTINGS_LONG_FLAG, F.F.SYNOPSIS_LONG_FLAG)
 
@@ -151,6 +151,7 @@ class TranslatorCli(Cli):
         self.root.add_flag(F.C.DOUBLE_MODE_STYLE_LONG_FLAG, F.C.DOUBLE_MODE_STYLE_SHORT_FLAG, flag_limit=1)
         self.root.add_flag(F.C.LAYOUT_ADJUSTMENT_METHOD_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_METHOD_SHORT_FLAG, flag_limit=1)
         self.root.add_flag(F.C.LAYOUT_ADJUSTMENT_LANG_LONG_FLAG, F.C.LAYOUT_ADJUSTMENT_LANG_SHORT_FLAG, flag_limit=1)
+        self.root.add_flag(F.C.SHOW_INFO_MODE_FLAG_LONG, F.C.SHOW_INFO_MODE_FLAG_SHORT, flag_limit=1)
 
     def _create_functional_flags(self) -> None:
         self.root.add_flag(F.F.SILENT_LONG_FLAG, flag_limit=0)
@@ -160,6 +161,7 @@ class TranslatorCli(Cli):
         self._conjugation_flag = self.root.add_flag(F.F.CONJUGATION_LONG_FLAG, F.F.CONJUGATION_SHORT_FLAG, F.F.CONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
         self._cconjugation_flag = self.root.add_flag(F.F.CCONJUGATION_LONG_FLAG, F.F.CCONJUGATION_SHORT_FLAG, F.F.CCONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
         self._definition_flag = self.root.add_flag(F.F.DEFINITION_LONG_FLAG, F.F.DEFINITION_MID_FLAG, F.F.DEFINITION_SHORT_FLAG, flag_limit=0)
+        self._info_flag = self.root.add_flag(F.F.INFO_LONG_FLAG, F.F.INFO_SHORT_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()
@@ -245,24 +247,40 @@ class TranslatorCli(Cli):
         self.add_post_parse_action_when(self._reverse_langs, lambda: self.root.get_flag(F.F.REVERSE_SHORT_FLAG).is_active() and self._single_node.is_active())
 
     def _reverse_langs(self):
-        from_langs = self._from_langs[:]
+        # TODO: add tests for explicte and implicite reversing
+        from_langs = self._from_langs.get_as_list()[:]
+        to_langs = self._to_langs.get_as_list()[:]
         self._from_langs.reset()
-        self._from_langs += self._to_langs
         self._to_langs.reset()
+        self._from_langs += to_langs
         self._to_langs += from_langs
 
     def _cli_translate(self):
-        # TODO: fix reverse mode for single
-        return self._scrapper.scrap_translation(from_lang=self._from_langs.get(), to_langs=self._to_langs.get_as_list(), words=self._words.get_as_list())
+        return self._scrapper.scrap_translation(
+            from_lang=self._from_langs.get(),
+            to_langs=self._to_langs.get_as_list(),
+            words=self._words.get_as_list(),
+            show_info=Configurations.get_conf(F.C.SHOW_INFO_MODE_FLAG_LONG) or self._info_flag.is_active()
+        )
 
     def _translate_single(self) -> None:  # TODO: write a test for conj in single
         if self._conjugation_flag.is_inactive():
             return self._translate(self._cli_translate, prefix_style=TranslationTypes.SINGLE)
         else:
             self._correct_misplaced()
-            result = self._scrapper.scrap_translation_and_conjugation(from_lang=self._from_langs.get(), to_lang=self._to_langs.get(), word=self._words.get())
+            result = self._scrapper.scrap_translation_and_conjugation(
+                from_lang=self._from_langs.get(),
+                to_lang=self._to_langs.get(),
+                word=self._words.get(),
+                show_info=Configurations.get_conf(F.C.SHOW_INFO_MODE_FLAG_LONG) or self._info_flag.is_active()
+            )
             translations = next(result)
-            TranslationPrinter.print_with_formatting(translations, prefix_style=TranslationTypes.SINGLE)
+            TranslationPrinter.print_with_formatting(translations,
+                                                     from_lang=self._from_langs.get(),
+                                                     to_lang=self._to_langs.get(),
+                                                     prefix_style=TranslationTypes.SINGLE,
+                                                     show_info=self._info_flag.is_active(),
+            )
             conjugations = next(result)
             self._print_conjugations(conjugations)
             return translations
@@ -323,7 +341,13 @@ class TranslatorCli(Cli):
         self._correct_misplaced()
         if self._is_translating:
             translation = translate()
-            TranslationPrinter.print_with_formatting(translation, prefix_style=prefix_style, main_division=main_division, to_lang=self._to_langs.get() if len(self._to_langs) == 1 else None)
+            TranslationPrinter.print_with_formatting(translation,
+                                                     prefix_style=prefix_style,
+                                                     main_division=main_division,
+                                                     from_lang=self._from_langs.get(),
+                                                     to_lang=self._to_langs.get() if len(self._to_langs) == 1 else None,
+                                                     show_info=self._info_flag.is_active(),
+            )
             return translation
 
     def _configure_lang_node(self) -> None:

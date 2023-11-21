@@ -1,10 +1,11 @@
 from typing import Any
 
 from ..configurations import Configurations
+from ..constants import FLAGS as F
 from ..layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods
 from ..translating.scrapping import TranslationTypes
 from ..translatingPrinting.translationPrinter import TranslationPrinter
-from ..constants import FLAGS as F
+
 
 # TODO: move it in translator printer
 class ConfigDisplayer:
@@ -22,6 +23,7 @@ class ConfigDisplayer:
 
         if show_possible:
             cls.display_possible_values(config_name)
+        TranslationPrinter.out('\n')
 
     @classmethod
     def format_config(cls, config: list | str):

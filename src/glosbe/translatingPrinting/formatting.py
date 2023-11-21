@@ -19,7 +19,7 @@ from ..translating.scrapping import TranslationResult, TranslationTypes
 
 class AbstractFormatter(ABC):
 
-	invisibles = '',  ' ', '\u00A0', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005' '\u2006', '\u2007', '\u2008', '\u2009',
+	invisibles = '',  ' ', '\u00A0', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009',
 
 	@classmethod
 	@abstractmethod
@@ -43,10 +43,6 @@ class AbstractIntoStringFormatter(ABC):
 		formatted = map(lambda to_format: cls.format_into_string(to_format, **kwargs), to_formats)
 		string = sep.join(formatted)
 		return string
-
-	@classmethod
-	def _add_if_exist(cls, to_add: str, brackets: str = '()', sep=' ') -> str:
-		return sep + brackets[0] + to_add + brackets[1] if to_add else ''
 
 
 class AbstractToManyFormatter(ABC):
@@ -72,6 +68,7 @@ class AbstractFromManyToManyFormatter(ABC):
 
 class AbstractIntoPrintableIterableFormatter:
 	sep = ' '
+	sep2 = ' '
 	pre_all = ''
 	pre_one = ''
 	post_all = '\n'
@@ -162,7 +159,7 @@ class AbstractIntoPrintableIterableFormatter:
 
 class GenderFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter):
 
-	pre_one = ' ['
+	pre_one = '['
 	post_one = ']'
 
 	GENERAL = 'general'
@@ -196,15 +193,14 @@ class GenderFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter)
 	}
 
 	@classmethod
-	def format(cls, gender: str, to_lang: str = None, **kwargs) -> str:
-		return cls._trans\
-			.setdefault(to_lang, cls._trans[cls.GENERAL])\
-			.setdefault(gender, gender)
+	def format(cls, gender: str, to_lang: str = None, from_lang: str = None, is_info=False, **kwargs) -> str:
+		formatting_lang = to_lang if not is_info else from_lang
+		return cls._trans.get(formatting_lang, cls._trans[cls.GENERAL]).get(gender, gender)
 
 
 class PartOfSpeechFormatter(AbstractFormatter, AbstractIntoPrintableIterableFormatter):
 
-	pre_one = ' ('
+	pre_one = '('
 	post_one = ')'
 
 	@classmethod
@@ -226,7 +222,7 @@ class RecordFormatter(AbstractFormatter, AbstractIntoStringFormatter, AbstractIn
 	@classmethod
 	def format(cls, record: Record, **kwargs):
 		record = replace(record)
-		record.gender = GenderFormatter.format(record.gender, to_lang=kwargs.setdefault('to_lang', None))
+		record.gender = GenderFormatter.format(record.gender,  is_info=not record.translation, **kwargs)
 		record.part_of_speech = PartOfSpeechFormatter.format(record.part_of_speech)
 		return record
 
@@ -242,12 +238,16 @@ class RecordFormatter(AbstractFormatter, AbstractIntoStringFormatter, AbstractIn
 	def format_into_printable_iterable(cls, record: Record, **kwargs) -> Iterable[str]:
 		yield record.translation
 		if record.gender:
+			if record.translation:
+				yield cls.sep2
 			yield from GenderFormatter.format_into_printable_iterable(record.gender, **kwargs)
 		if record.part_of_speech:
+			if record.translation or record.gender:
+				yield cls.sep2
 			yield from PartOfSpeechFormatter.format_into_printable_iterable(record.part_of_speech, **kwargs)
 
 	@classmethod
-	def format_many_into_printable_iterable(cls, records: Iterable, **kwargs):
+	def format_many_into_printable_iterable(cls, records: Iterable[Record], **kwargs):
 		records = list(records)
 		if not records:
 			records = [Record(cls.NO_RECORDS_MESSAGE)]
@@ -273,20 +273,28 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 		return ''.join(cls.format_into_printable_iterable(**kwargs))
 
 	@classmethod
-	def format_many_into_string(cls, translations: Iterable[TranslationResult], main_division: TranslationTypes = None, prefix_style: TranslationTypes = None, level: int =None) -> str:
+	def format_many_into_string(cls, translations: Iterable[TranslationResult], main_division: TranslationTypes = None, prefix_style: TranslationTypes = None, level: int = None) -> str:
 		return ''.join(cls.format_many_into_printable_iterable(translations, main_division=main_division, prefix_style=prefix_style, level=level))
 
 	@classmethod
-	def _get_pre_one(cls, translation: TranslationResult, prefix_style=None, **kwargs) -> str:
-		match prefix_style:
-			case TranslationTypes.LANG:
-				prefix = translation.trans_args.to_lang
-			case TranslationTypes.WORD:
-				prefix = translation.trans_args.word
-			case TranslationTypes.DOUBLE:
-				prefix = f'{translation.trans_args.to_lang}-{translation.trans_args.word}'
-			case _:
-				prefix = ''
+	def _get_pre_one(cls, translation: TranslationResult, prefix_style: str = '', **kwargs) -> str:
+		prefix = ''
+		if translation.kind in (TranslationTypes.DOUBLE, TranslationTypes.WORD_INFO):  # TODO: add tests for printing word info
+			match prefix_style:
+				case TranslationTypes.DOUBLE:
+					prefix = f'{translation.trans_args.to_lang}-{translation.trans_args.word}'
+				case TranslationTypes.WORD:
+					prefix = translation.trans_args.word
+				case TranslationTypes.LANG:
+					prefix = translation.trans_args.to_lang if translation.kind == TranslationTypes.DOUBLE else ''
+		else:
+			match translation.kind:
+				case TranslationTypes.LANG:
+					prefix = translation.trans_args.to_lang
+				case TranslationTypes.WORD:
+					prefix = translation.trans_args.word
+				case TranslationTypes.SINGLE:
+					prefix = ''
 		return f'{prefix}: ' if prefix else prefix
 
 	@classmethod
@@ -299,22 +307,29 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 		return f'{pre_dash} {group_str} {post_dash}\n'
 
 	@classmethod
-	def _get_grouping_key(cls, main_division: TranslationTypes, **kwargs) -> Callable:
+	def _get_grouping_key(cls, main_division: TranslationTypes, prefix_style, show_info, **kwargs) -> Callable:
 		match main_division:
 			case TranslationTypes.WORD:
-				return lambda tr: tr.trans_args.word
+				return lambda tr: tr.trans_args.word if tr.kind != TranslationTypes.WORD_INFO else TranslationTypes.WORD_INFO
 			case TranslationTypes.LANG:
-				return lambda tr: tr.trans_args.to_lang
+				return lambda tr: tr.trans_args.to_lang if tr.kind != TranslationTypes.WORD_INFO else TranslationTypes.WORD_INFO
 			case _:
-				return lambda tr: ''
+				match prefix_style:
+					case TranslationTypes.LANG:
+						return lambda tr: tr.trans_args.word if tr.kind != TranslationTypes.WORD_INFO else TranslationTypes.WORD_INFO
+					case TranslationTypes.WORD:
+						return lambda tr: tr.trans_args.to_lang if tr.kind != TranslationTypes.WORD_INFO else TranslationTypes.WORD_INFO
+					case _:
+						return lambda tr: ''
 
 	@classmethod
-	def _is_grouped(cls, main_division: TranslationTypes, **kwargs) -> bool:
-		return main_division in (TranslationTypes.WORD, TranslationTypes.LANG)
+	def _is_grouped(cls, main_division: TranslationTypes, prefix_style, show_info, **kwargs) -> bool:
+		is_lang_mode = main_division is None and prefix_style == TranslationTypes.LANG
+		return not is_lang_mode or main_division in (TranslationTypes.WORD, TranslationTypes.LANG)
 
 	@classmethod
-	def _get_starting_group_level(cls, main_division: TranslationTypes, **kwargs) -> int:
-		return 1 if cls._is_grouped(main_division) else 0
+	def _get_starting_group_level(cls, **kwargs) -> int:
+		return 1 if cls._is_grouped(**kwargs) else 0
 
 	@classmethod
 	def _format_core_into_printable_iterable(cls, translation: TranslationResult, **kwargs) -> Iterable[str]:

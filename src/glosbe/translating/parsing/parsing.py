@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Callable
 
 import pandas as pd
 import requests
@@ -41,7 +41,7 @@ class AbstractParser(ABC):
         self._page = page
 
     def parse(self):
-        if self._page.status_code != 200:
+        if not self._page.ok:
             raise WrongStatusCodeError(self._page)
         yield from self._parse()
 
@@ -50,31 +50,21 @@ class AbstractParser(ABC):
         raise NotImplemented
 
 
-class TranslationParser(AbstractParser):
-
+class FeatureParser(AbstractParser, ABC):
     def __init__(self, page: requests.Response = None, **kwargs):
         super().__init__(page, **kwargs)
 
-    def _parse(self) -> Iterable[Record]:
-        soup = BeautifulSoup(self._page.text, features="html.parser")
-        trans_elems = soup.find_all('div', {'class': 'inline leading-10'})
-        actual_trans = filter(lambda trans_elem: trans_elem.select_one('h3'), trans_elems)
-        records = map(self._parse_single_translation_tag, actual_trans)
-        return records
+    def _get_create_featured_record_from_tag(self, get_main: Callable[[Tag], str], get_spans: Callable[[Tag], list]):
+        return lambda tag: self._create_featured_record_with_spans(get_main(tag), get_spans(tag))
 
-    def _parse_single_translation_tag(self, translation_tag: Tag) -> Record:
-        translation = self._get_translation(translation_tag)
-        spans = self._get_spans(translation_tag)
+    def _create_featured_record_with_spans(self, main: str, spans: list) -> Record:
+        features = self._get_features(spans)
+        return Record(main, *features)
+
+    def _get_features(self, spans):
         part_of_speech = self._get_part_of_speech(spans)
         gender = self._get_gender(spans)
-        return Record(translation, part_of_speech, gender)
-
-    def _get_translation(self, translation_tag: Tag) -> str:
-        return translation_tag.select_one('h3').text.replace('\n', '')
-
-    def _get_spans(self, translation_tag: Tag) -> list[Tag, ...]:
-        main_span = translation_tag.select_one('span', {'class': 'text-xxs text-gray-500'})
-        return main_span.findAll('span')
+        return part_of_speech, gender
 
     def _get_part_of_speech(self, spans: list[Tag, ...]) -> str:
         return self._get_ith(spans, 0)
@@ -84,6 +74,51 @@ class TranslationParser(AbstractParser):
 
     def _get_ith(self, items: list[Tag, ...], i: int):
         return items[i].text if len(items) > i else ''
+
+
+class WordInfoParser(FeatureParser):
+    def __init__(self, page: requests.Response = None, **kwargs):
+        super().__init__(page, **kwargs)
+
+    def _parse(self) -> Iterable[Record]:  # TODO: add test for it
+        soup = BeautifulSoup(self._page.text, features="html.parser")
+        word_info_tag = soup.find('div', {'class': 'text-xl text-gray-900 px-1 pb-1'})
+        # actual_trans = filter(lambda trans_elem: trans_elem.select_one('h3'), trans_elems)
+        get_featured_record = self._get_create_featured_record_from_tag(self._get_word, self._get_spans)
+        record = get_featured_record(word_info_tag)
+        yield record
+
+    def _get_word(self, tag: Tag) -> str:
+        word = tag.select_one('span', {'class': 'font-medium break-words'}).text
+        return ''
+
+    def _get_spans(self, tag: Tag) -> list:
+        main_span = tag.find('span', {'class': 'text-xxs text-gray-500 inline-block'})
+        return main_span.find_all('span')
+
+
+class TranslationParser(FeatureParser):
+    def __init__(self, page: requests.Response = None, **kwargs):
+        super().__init__(page, **kwargs)
+
+    def _parse(self) -> Iterable[Record]:
+        soup = BeautifulSoup(self._page.text, features="html.parser")
+        translation_records = self._parse_translation_records(soup)
+        return translation_records
+
+    def _parse_translation_records(self, soup: BeautifulSoup) -> Iterable[Record]:
+        trans_elems = soup.find_all('div', {'class': 'inline leading-10'})
+        actual_trans = filter(lambda trans_elem: trans_elem.select_one('h3'), trans_elems)
+        get_featured_record = self._get_create_featured_record_from_tag(self._get_translation, self._get_spans)
+        records = map(get_featured_record, actual_trans)
+        return records
+
+    def _get_translation(self, translation_tag: Tag) -> str:
+        return translation_tag.select_one('h3').text.replace('\n', '')
+
+    def _get_spans(self, translation_tag: Tag) -> list[Tag, ...]:
+        main_span = translation_tag.select_one('span', {'class': 'text-xxs text-gray-500'})
+        return main_span.find_all('span')
 
 
 class ConjugationParser(AbstractParser):

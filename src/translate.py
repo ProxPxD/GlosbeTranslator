@@ -39,6 +39,7 @@ def main():
         logging.exception(traceback.format_exc())
         TranslationPrinter.out(ErrorMessages.UNKNOWN_EXCEPTION, end='\n')
 
+
 # TODO: test conj
 # TODO: test cconj
 def get_test_arguments():

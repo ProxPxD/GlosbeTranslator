@@ -11,6 +11,7 @@ from .constants import FLAGS
 from .layoutAdjusting.layoutAdjuster import LayoutAdjustmentsMethods
 from .translating.scrapping import TranslationTypes
 from .translatingPrinting.translationPrinter import TranslationPrinter
+from more_itertools import nth
 
 C = FLAGS.CONFIGURATIONAL
 M = FLAGS.MODES
@@ -149,7 +150,8 @@ class Configurations:
     @classmethod
     def get_nth_saved_language(cls, index: int, *to_skips: str) -> str:
         langs = cls.load_config_languages(*to_skips)
-        return next(islice(langs, int(index), None), None)
+        nth_lang = nth(langs, index)
+        return nth_lang
 
     @classmethod
     def get_adjustment_method(cls) -> str:

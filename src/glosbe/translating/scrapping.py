@@ -155,9 +155,7 @@ class Scrapper:
     def scrap_conjugation(self, lang: str, word: str) -> Iterable:
         self._connector.establish_session()
         self._conjugation_scrapper.session = self._connector.session
-
         yield from self._conjugation_scrapper.get_conjugation(lang, word)
-
         self._connector.close_session()
 
     def scrap_translation_and_conjugation(self, from_lang: str, to_lang: str, word: str, by_word=False) -> Iterable[TranslationResult] | Any:

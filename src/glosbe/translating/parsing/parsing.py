@@ -84,9 +84,13 @@ class WordInfoParser(FeatureParser):
         soup = BeautifulSoup(self._page.text, features="html.parser")
         word_info_tag = soup.find('div', {'class': 'text-xl text-gray-900 px-1 pb-1'})
         # actual_trans = filter(lambda trans_elem: trans_elem.select_one('h3'), trans_elems)
-        get_featured_record = self._get_create_featured_record_from_tag(lambda tag: '', self._get_spans)
+        get_featured_record = self._get_create_featured_record_from_tag(self._get_word, self._get_spans)
         record = get_featured_record(word_info_tag)
         yield record
+
+    def _get_word(self, tag: Tag) -> str:
+        word = tag.select_one('span', {'class': 'font-medium break-words'}).text
+        return ''
 
     def _get_spans(self, tag: Tag) -> list:
         main_span = tag.find('span', {'class': 'text-xxs text-gray-500 inline-block'})

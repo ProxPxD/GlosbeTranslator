@@ -160,6 +160,7 @@ class TranslatorCli(Cli):
         self._conjugation_flag = self.root.add_flag(F.F.CONJUGATION_LONG_FLAG, F.F.CONJUGATION_SHORT_FLAG, F.F.CONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
         self._cconjugation_flag = self.root.add_flag(F.F.CCONJUGATION_LONG_FLAG, F.F.CCONJUGATION_SHORT_FLAG, F.F.CCONJUGATION_SUPER_SHORT_FLAG, flag_limit=0)
         self._definition_flag = self.root.add_flag(F.F.DEFINITION_LONG_FLAG, F.F.DEFINITION_MID_FLAG, F.F.DEFINITION_SHORT_FLAG, flag_limit=0)
+        self._info_flag = self.root.add_flag(F.F.INFO_LONG_FLAG, F.F.INFO_SHORT_FLAG, flag_limit=0)
 
     def _configure_flags(self) -> None:
         self._configure_mode_flags()
@@ -254,16 +255,29 @@ class TranslatorCli(Cli):
         self._to_langs += from_langs
 
     def _cli_translate(self):
-        return self._scrapper.scrap_translation(from_lang=self._from_langs.get(), to_langs=self._to_langs.get_as_list(), words=self._words.get_as_list())
+        return self._scrapper.scrap_translation(
+            from_lang=self._from_langs.get(),
+            to_langs=self._to_langs.get_as_list(),
+            words=self._words.get_as_list(),
+            show_info=self._info_flag.is_active()
+        )
 
     def _translate_single(self) -> None:  # TODO: write a test for conj in single
         if self._conjugation_flag.is_inactive():
             return self._translate(self._cli_translate, prefix_style=TranslationTypes.SINGLE)
         else:
             self._correct_misplaced()
-            result = self._scrapper.scrap_translation_and_conjugation(from_lang=self._from_langs.get(), to_lang=self._to_langs.get(), word=self._words.get())
+            result = self._scrapper.scrap_translation_and_conjugation(
+                from_lang=self._from_langs.get(),
+                to_lang=self._to_langs.get(),
+                word=self._words.get(),
+                show_info=self._info_flag.is_active()
+            )
             translations = next(result)
-            TranslationPrinter.print_with_formatting(translations, prefix_style=TranslationTypes.SINGLE)
+            TranslationPrinter.print_with_formatting(translations,
+                                                     prefix_style=TranslationTypes.SINGLE,
+                                                     show_info=self._info_flag.is_active(),
+            )
             conjugations = next(result)
             self._print_conjugations(conjugations)
             return translations
@@ -324,7 +338,12 @@ class TranslatorCli(Cli):
         self._correct_misplaced()
         if self._is_translating:
             translation = translate()
-            TranslationPrinter.print_with_formatting(translation, prefix_style=prefix_style, main_division=main_division, to_lang=self._to_langs.get() if len(self._to_langs) == 1 else None)
+            TranslationPrinter.print_with_formatting(translation,
+                                                     prefix_style=prefix_style,
+                                                     main_division=main_division,
+                                                     to_lang=self._to_langs.get() if len(self._to_langs) == 1 else None,
+                                                     show_info=self._info_flag.is_active(),
+            )
             return translation
 
     def _configure_lang_node(self) -> None:

@@ -278,18 +278,24 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 		return ''.join(cls.format_many_into_printable_iterable(translations, main_division=main_division, prefix_style=prefix_style, level=level))
 
 	@classmethod
-	def _get_pre_one(cls, translation: TranslationResult, **kwargs) -> str:
-		match translation.type:
-			case TranslationTypes.LANG:
-				prefix = translation.trans_args.to_lang
-			case TranslationTypes.WORD:
-				prefix = translation.trans_args.word
-			case TranslationTypes.DOUBLE:
-				prefix = f'{translation.trans_args.to_lang}-{translation.trans_args.word}'
-			case TranslationTypes.SINGLE | TranslationTypes.WORD_INFO:
-				prefix = ''
-			case _:
-				prefix = ''
+	def _get_pre_one(cls, translation: TranslationResult, prefix_style: str = '', **kwargs) -> str:
+		prefix = ''
+		if translation.kind in (TranslationTypes.DOUBLE, TranslationTypes.WORD_INFO):
+			match prefix_style:
+				case TranslationTypes.DOUBLE:
+					prefix = f'{translation.trans_args.to_lang}-{translation.trans_args.word}'
+				case TranslationTypes.WORD:
+					prefix = translation.trans_args.word
+				case TranslationTypes.LANG:
+					prefix = translation.trans_args.to_lang if translation.kind == TranslationTypes.DOUBLE else ''
+		else:
+			match translation.kind:
+				case TranslationTypes.LANG:
+					prefix = translation.trans_args.to_lang
+				case TranslationTypes.WORD:
+					prefix = translation.trans_args.word
+				case TranslationTypes.SINGLE:
+					prefix = ''
 		return f'{prefix}: ' if prefix else prefix
 
 	@classmethod
@@ -302,22 +308,29 @@ class TranslationFormatter(AbstractFormatter, AbstractIntoStringFormatter, Abstr
 		return f'{pre_dash} {group_str} {post_dash}\n'
 
 	@classmethod
-	def _get_grouping_key(cls, main_division: TranslationTypes, **kwargs) -> Callable:
+	def _get_grouping_key(cls, main_division: TranslationTypes, prefix_style, show_info, **kwargs) -> Callable:
 		match main_division:
 			case TranslationTypes.WORD:
-				return lambda tr: tr.trans_args.word
+				return lambda tr: tr.trans_args.word if tr.kind != TranslationTypes.WORD_INFO else TranslationTypes.WORD_INFO
 			case TranslationTypes.LANG:
-				return lambda tr: tr.trans_args.to_lang
+				return lambda tr: tr.trans_args.to_lang if tr.kind != TranslationTypes.WORD_INFO else TranslationTypes.WORD_INFO
 			case _:
-				return lambda tr: ''
+				match prefix_style:
+					case TranslationTypes.LANG:
+						return lambda tr: tr.trans_args.word if tr.kind != TranslationTypes.WORD_INFO else TranslationTypes.WORD_INFO
+					case TranslationTypes.WORD:
+						return lambda tr: tr.trans_args.to_lang if tr.kind != TranslationTypes.WORD_INFO else TranslationTypes.WORD_INFO
+					case _:
+						return lambda tr: ''
 
 	@classmethod
-	def _is_grouped(cls, main_division: TranslationTypes, **kwargs) -> bool:
-		return main_division in (TranslationTypes.WORD, TranslationTypes.LANG)
+	def _is_grouped(cls, main_division: TranslationTypes, prefix_style, show_info, **kwargs) -> bool:
+		is_lang_mode = main_division is None and prefix_style == TranslationTypes.LANG
+		return not is_lang_mode or main_division in (TranslationTypes.WORD, TranslationTypes.LANG)
 
 	@classmethod
-	def _get_starting_group_level(cls, main_division: TranslationTypes, **kwargs) -> int:
-		return 1 if cls._is_grouped(main_division) else 0
+	def _get_starting_group_level(cls, **kwargs) -> int:
+		return 1 if cls._is_grouped(**kwargs) else 0
 
 	@classmethod
 	def _format_core_into_printable_iterable(cls, translation: TranslationResult, **kwargs) -> Iterable[str]:

@@ -26,7 +26,7 @@ class TranslationTypes:
 class TranslationResult:
     trans_args: TransArgs = field(default_factory=lambda: TransArgs())
     records: Iterable[Record] = field(default_factory=lambda: [])
-    type: str = TranslationTypes.SINGLE
+    kind: str = TranslationTypes.SINGLE
 
 
 @dataclass(frozen=True)
@@ -72,30 +72,46 @@ class TranslatorScrapper(AbstractScrapper):
     def __init__(self, **kwargs):
         super().__init__(parser=TranslationParser(), **kwargs)
         self._word_info_parser = WordInfoParser()
+        self.kind: str = ''
 
-    def translate(self, from_lang: str, to_langs: list[str, ...] | str, words: list[str, ...] | str, by_word=False) -> Iterable[TranslationResult]:
+    def translate(self, from_lang: str, to_langs: list[str] | str, words: list[str] | str, by_word=False, show_info=True) -> Iterable[TranslationResult]:
         if isinstance(words, str):
             words = [words]
         if isinstance(to_langs, str):
             to_langs = [to_langs]
         langs_words = get_product(to_langs, words, by_word)
-        is_first = True
+        self.kind = self.get_translation_kind(to_langs, words)
+
+        gathered_info = []
         for to_lang, word in langs_words:
-            yield from self.translate_single(from_lang, to_lang, word, is_first)
-            is_first = False
+            is_first = show_info and word not in gathered_info
+            # print(f'{to_lang}, {word}, {is_first}, {gathered_info}')
+            yield from self.translate_single(from_lang, to_lang, word, is_first=is_first)
+            if is_first:
+                gathered_info.append(word)
+
+    def get_translation_kind(self, to_langs: list[str], words: list[str]):
+        if len(to_langs) == 1 and len(words) == 1:
+            return TranslationTypes.SINGLE
+        if len(to_langs) == 1 and len(words) > 1:
+            return TranslationTypes.WORD
+        if len(to_langs) > 1 and len(words) == 1:
+            return TranslationTypes.LANG
+        if len(to_langs) > 1 and len(words) > 1:
+            return TranslationTypes.DOUBLE
+        return ''
 
     def translate_single(self, from_lang: str, to_lang: str, word: str, is_first=False) -> TranslationResult:
         trans_args = TransArgs(from_lang, to_lang, word)
         try:
-            self.request_and_set_page(trans_args)
             if is_first:
                 word_info_record = self._parse_word_info(trans_args)
-                yield TranslationResult(trans_args, word_info_record, type=TranslationTypes.WORD_INFO)
+                yield TranslationResult(trans_args, word_info_record, kind=TranslationTypes.WORD_INFO)
             records = self._translate_from_url(trans_args)
         except TranslatorArgumentException:
             logging.exception(f'Exception: Invalid argument {str(trans_args)}')
             records = [Record(ErrorMessages.INVALID_ARGUMENT.format(str(trans_args)))]
-        yield TranslationResult(trans_args, records)
+        yield TranslationResult(trans_args, records, kind=self.kind)
 
     def request_and_set_page(self, trans_args: TransArgs):
         page: requests.Response = self._session.get(trans_args.to_url(), allow_redirects=True)
@@ -104,6 +120,7 @@ class TranslatorScrapper(AbstractScrapper):
 
     def _parse_word_info(self, trans_args: TransArgs):
         try:
+            self.request_and_set_page(trans_args)  # due to laziness needs to be here
             yield from self._word_info_parser.parse()
         except WrongStatusCodeError as err:
             logging.error(f'{err.page.status_code}: {err.page.text}')
@@ -111,6 +128,7 @@ class TranslatorScrapper(AbstractScrapper):
 
     def _translate_from_url(self, trans_args: TransArgs) -> Iterable[Record]:
         try:
+            self.request_and_set_page(trans_args)  # due to laziness needs to be here
             yield from self._parser.parse()
         except WrongStatusCodeError as err:
             logging.error(f'{err.page.status_code}: {err.page.text}')
@@ -178,11 +196,11 @@ class Scrapper:
         self._definition_scrapper = DefinitionScrapper()
         self._word_info_scrapper = WordScrapper()
 
-    def scrap_translation(self, from_lang: str, to_langs: list[str, ...], words: list[str, ...], by_word=False) -> Iterable[TranslationResult]:
+    def scrap_translation(self, from_lang: str, to_langs: list[str, ...], words: list[str, ...], by_word=False, show_info=True) -> Iterable[TranslationResult]:
         self._connector.establish_session()
         self._translation_scrapper.session = self._connector.session
 
-        yield from self._translation_scrapper.translate(from_lang, to_langs, words, by_word=by_word)
+        yield from self._translation_scrapper.translate(from_lang, to_langs, words, by_word=by_word, show_info=show_info)
 
         self._connector.close_session()
 
@@ -194,12 +212,12 @@ class Scrapper:
 
         self._connector.close_session()
 
-    def scrap_translation_and_conjugation(self, from_lang: str, to_lang: str, word: str, by_word=False) -> Iterable[TranslationResult] | Any:
+    def scrap_translation_and_conjugation(self, from_lang: str, to_lang: str, word: str, **scrapper_kwargs) -> Iterable[TranslationResult] | Any:
         self._connector.establish_session()
         self._translation_scrapper.session = self._connector.session
         self._conjugation_scrapper.session = self._connector.session
 
-        translation_result = self._translation_scrapper.translate(from_lang, to_lang, word, by_word=by_word)
+        translation_result = self._translation_scrapper.translate(from_lang, to_lang, word, **scrapper_kwargs)
         conjugation_result = self._conjugation_scrapper.get_conjugation(from_lang, word)
         yield translation_result
         yield conjugation_result

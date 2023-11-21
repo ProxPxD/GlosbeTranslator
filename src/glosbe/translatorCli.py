@@ -245,6 +245,7 @@ class TranslatorCli(Cli):
         self.add_post_parse_action_when(self._reverse_langs, lambda: self.root.get_flag(F.F.REVERSE_SHORT_FLAG).is_active() and self._single_node.is_active())
 
     def _reverse_langs(self):
+        # TODO: add tests for explicte and implicite reversing
         from_langs = self._from_langs.get_as_list()[:]
         to_langs = self._to_langs.get_as_list()[:]
         self._from_langs.reset()
@@ -253,7 +254,6 @@ class TranslatorCli(Cli):
         self._to_langs += from_langs
 
     def _cli_translate(self):
-        # TODO: fix reverse mode for single
         return self._scrapper.scrap_translation(from_lang=self._from_langs.get(), to_langs=self._to_langs.get_as_list(), words=self._words.get_as_list())
 
     def _translate_single(self) -> None:  # TODO: write a test for conj in single

@@ -7,7 +7,7 @@ from typing import Iterable, Any
 import requests
 import requests.exceptions as request_exceptions
 
-from .parsing.parsing import TranslationParser, Record, WrongStatusCodeError, ConjugationParser, AbstractParser, DefinitionParser
+from .parsing.parsing import TranslationParser, Record, WrongStatusCodeError, ConjugationParser, AbstractParser, DefinitionParser, WordInfoParser
 from .web.connector import Connector, TransArgs, TranslatorArgumentException
 
 
@@ -19,13 +19,14 @@ class TranslationTypes:
     DOUBLE = 'Double'
     CONJ = 'Conjugation'
     DEF = 'Definition'
+    WORD_INFO = 'Word Info'
 
 
 @dataclass
 class TranslationResult:
     trans_args: TransArgs = field(default_factory=lambda: TransArgs())
     records: Iterable[Record] = field(default_factory=lambda: [])
-    type = TranslationTypes.SINGLE
+    type: str = TranslationTypes.SINGLE
 
 
 @dataclass(frozen=True)
@@ -70,6 +71,7 @@ class TranslatorScrapper(AbstractScrapper):
 
     def __init__(self, **kwargs):
         super().__init__(parser=TranslationParser(), **kwargs)
+        self._word_info_parser = WordInfoParser()
 
     def translate(self, from_lang: str, to_langs: list[str, ...] | str, words: list[str, ...] | str, by_word=False) -> Iterable[TranslationResult]:
         if isinstance(words, str):
@@ -77,22 +79,38 @@ class TranslatorScrapper(AbstractScrapper):
         if isinstance(to_langs, str):
             to_langs = [to_langs]
         langs_words = get_product(to_langs, words, by_word)
+        is_first = True
         for to_lang, word in langs_words:
-            yield self.translate_single(from_lang, to_lang, word)
+            yield from self.translate_single(from_lang, to_lang, word, is_first)
+            is_first = False
 
-    def translate_single(self, from_lang: str, to_lang: str, word: str) -> TranslationResult:
+    def translate_single(self, from_lang: str, to_lang: str, word: str, is_first=False) -> TranslationResult:
         trans_args = TransArgs(from_lang, to_lang, word)
         try:
+            self.request_and_set_page(trans_args)
+            if is_first:
+                word_info_record = self._parse_word_info(trans_args)
+                yield TranslationResult(trans_args, word_info_record, type=TranslationTypes.WORD_INFO)
             records = self._translate_from_url(trans_args)
         except TranslatorArgumentException:
             logging.exception(f'Exception: Invalid argument {str(trans_args)}')
             records = [Record(ErrorMessages.INVALID_ARGUMENT.format(str(trans_args)))]
-        return TranslationResult(trans_args, records)
+        yield TranslationResult(trans_args, records)
+
+    def request_and_set_page(self, trans_args: TransArgs):
+        page: requests.Response = self._session.get(trans_args.to_url(), allow_redirects=True)
+        self._parser.set_page(page)
+        self._word_info_parser.set_page(page)
+
+    def _parse_word_info(self, trans_args: TransArgs):
+        try:
+            yield from self._word_info_parser.parse()
+        except WrongStatusCodeError as err:
+            logging.error(f'{err.page.status_code}: {err.page.text}')
+            yield Record(self._get_status_code_message(err, trans_args))
 
     def _translate_from_url(self, trans_args: TransArgs) -> Iterable[Record]:
         try:
-            page: requests.Response = self._session.get(trans_args.to_url(), allow_redirects=True)
-            self._parser.set_page(page)
             yield from self._parser.parse()
         except WrongStatusCodeError as err:
             logging.error(f'{err.page.status_code}: {err.page.text}')
@@ -136,6 +154,21 @@ class DefinitionScrapper(AbstractScrapper):
         yield from self._parser.parse()
 
 
+class WordScrapper(AbstractScrapper):
+    def __init__(self, **kwargs):
+        super().__init__(parser=WordInfoParser(), **kwargs)
+
+    def scrap(self, from_lang, to_lang, word):
+        trans_args = TransArgs(from_lang, to_lang, word)
+        page: requests.Response
+        page = self._session.get(trans_args.to_url(), allow_redirects=True)
+        if not page.ok and 'en' not in (from_lang, to_lang):
+            trans_args = TransArgs(from_lang, 'en', word)
+            page = self._session.get(trans_args.to_url(), allow_redirects=True)
+        self._parser.set_page(page)
+        yield from self._parser.parse()
+
+
 class Scrapper:
     def __init__(self):
         self.args = TransArgs()
@@ -143,6 +176,7 @@ class Scrapper:
         self._conjugation_scrapper = ConjugationScrapper()
         self._translation_scrapper = TranslatorScrapper()
         self._definition_scrapper = DefinitionScrapper()
+        self._word_info_scrapper = WordScrapper()
 
     def scrap_translation(self, from_lang: str, to_langs: list[str, ...], words: list[str, ...], by_word=False) -> Iterable[TranslationResult]:
         self._connector.establish_session()

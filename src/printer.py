@@ -74,7 +74,7 @@ class Printer:
             return
         bias = len(group)
         colored_group = self.color(group, self.context.color.main)
-        self.print(f'{sep*4} {colored_group} {sep*(36-bias)}{sep*4}')
+        self.print(f'{sep*4} {colored_group} {sep*(24-bias)}{sep*4}')
 
     def print_inflection(self, outcome: Outcome) -> None:
         if outcome.is_fail():
